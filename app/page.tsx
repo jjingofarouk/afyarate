@@ -1,0 +1,68 @@
+import { getStats, isDbReady } from "@/lib/practitioners";
+import PractitionerSearch from "@/components/PractitionerSearch";
+import Link from "next/link";
+
+export const dynamic = "force-dynamic";
+
+export default function HomePage() {
+  const ready = isDbReady();
+  const stats = ready ? getStats() : null;
+
+  return (
+    <div className="mx-auto max-w-6xl px-4">
+      {/* Hero */}
+      <section className="py-10 text-center sm:py-16">
+        <p className="mx-auto mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800">
+          🇺🇬 Uganda&apos;s licensed health professionals, rated by patients
+        </p>
+        <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+          Find a licensed practitioner.{" "}
+          <span className="text-emerald-600">See how patients rate them.</span>
+        </h1>
+        <p className="mx-auto mt-4 max-w-2xl text-base text-slate-600">
+          Search doctors, nurses, pharmacists and allied health professionals with a
+          valid licence from the Uganda Health Professionals Portal, read community
+          ratings, and leave your own.
+        </p>
+      </section>
+
+      {/* Stats */}
+      {stats && (
+        <section className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            { label: "Practitioners", value: stats.practitioners.toLocaleString() },
+            { label: "Active licences", value: stats.active.toLocaleString() },
+            { label: "With photo", value: stats.withPhoto.toLocaleString() },
+            { label: "Patient ratings", value: stats.totalRatings.toLocaleString() },
+          ].map((s) => (
+            <div
+              key={s.label}
+              className="rounded-2xl border border-slate-200 bg-white p-4 text-center shadow-sm"
+            >
+              <div className="text-2xl font-bold text-emerald-700">{s.value}</div>
+              <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                {s.label}
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {!ready ? (
+        <div className="mx-auto max-w-xl rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center">
+          <h2 className="text-lg font-semibold text-amber-900">
+            Database not loaded yet
+          </h2>
+          <p className="mt-2 text-sm text-amber-800">
+            The scraped registry hasn&apos;t been imported. Once{" "}
+            <code className="rounded bg-amber-100 px-1">npm run scrape</code> finishes,
+            run <code className="rounded bg-amber-100 px-1">npm run import</code> to
+            build the database. <Link href="/about" className="underline">Learn more</Link>
+          </p>
+        </div>
+      ) : (
+        <PractitionerSearch />
+      )}
+    </div>
+  );
+}
