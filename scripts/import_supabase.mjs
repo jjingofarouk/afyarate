@@ -32,6 +32,42 @@ if (!url) {
   process.exit(1);
 }
 
+// --- profession classification --------------------------------------------
+// Derives a coarse cadre/profession from council + qualifications. Kept here
+// (not in SQL) so the logic is easy to read and tune; the result is stored on
+// each practitioner row for fast, indexable filtering.
+const PROFESSION_RULES = [
+  // Qualification-based, most specific first (council fallbacks below).
+  [/\bMBCHB\b|\bMBBS\b|\bMD\b|DOCTOR OF MEDICINE|BACHELOR OF MEDICINE|MEDICINE AND BACHELOR|SURGERY \(/, "Doctor"],
+  [/DENT|BDS\b/, "Dentist"],
+  [/PHARMACY|PHARMACEUTICAL|PHARMACIST|DISPENS/, "Pharmacist"],
+  [/CLINICAL MEDICINE/, "Clinical Officer"],
+  [/LABORATOR/, "Laboratory"],
+  [/ENVIRONMENTAL HEALTH/, "Environmental Health"],
+  [/RADIOGRAPH|MEDICAL IMAGING|IMAGING/, "Radiography / Imaging"],
+  [/THEATRE|THEATER|ANAESTHESIA|ANESTHESIA/, "Theatre / Anaesthesia"],
+  [/PHYSIOTHERAP|PHYSICAL THERAPY|OCCUPATIONAL THERAPY|ORTHOPEDIC|ORTHOPAEDIC/, "Physiotherapy / Occupational"],
+  [/OPHTHALM|OPTOMETR|EYE/, "Ophthalmology / Optometry"],
+  [/NUTRITION|DIETETIC/, "Nutrition / Dietetics"],
+  [/PUBLIC HEALTH/, "Public Health"],
+  [/PSYCHIATR|MENTAL HEALTH/, "Mental Health"],
+  [/MIDWIF|NURSING|NURSE\b|BSN\b/, "Nurse / Midwife"],
+  [/ENT\b|EAR, NOSE/, "Other Allied Health"],
+];
+
+function classifyProfession(council, qualifications) {
+  const q = (qualifications || "").toUpperCase();
+  const c = (council || "").toUpperCase();
+  if (c.includes("NURSES")) return "Nurse / Midwife";
+  if (c.includes("MEDICAL") && c.includes("DENTAL")) {
+    return /DENT|BDS\b/.test(q) ? "Dentist" : "Doctor";
+  }
+  for (const [re, prof] of PROFESSION_RULES) {
+    if (re.test(q)) return prof;
+  }
+  return c.includes("ALLIED") ? "Other Allied Health" : null;
+}
+
 // --- load + group ---------------------------------------------------------
 const records = readFileSync(JSONL, "utf8")
   .split("\n")
@@ -89,6 +125,7 @@ for (const recs of groups.values()) {
       main.image_url || null,
       recs.length,
       main.name.toLowerCase(),
+      classifyProfession(main.council, quals),
     ]);
   }
   for (const r of recs) {
@@ -118,7 +155,7 @@ console.log(
 const PRACT_COLS = [
   "id", "name", "council", "registration_status", "registration_no",
   "registration_date", "license_number", "license_expiry_date", "licence_status",
-  "qualifications", "image_url", "record_count", "search_name",
+  "qualifications", "image_url", "record_count", "search_name", "profession",
 ];
 const PRACT_CONFLICT = `on conflict (id) do update set
   name = excluded.name, council = excluded.council,
@@ -132,6 +169,7 @@ const PRACT_CONFLICT = `on conflict (id) do update set
   image_url = excluded.image_url,
   record_count = excluded.record_count,
   search_name = excluded.search_name,
+  profession = excluded.profession,
   updated_at = now()`;
 
 const LIC_COLS = [

@@ -2,6 +2,7 @@ export interface Practitioner {
   id: number;
   name: string;
   council: string | null;
+  profession: string | null;
   registrationStatus: string | null;
   registrationNo: string | null;
   registrationDate: string | null;
@@ -45,4 +46,5 @@ export interface SearchResult {
   page: number;
   pageSize: number;
   councils: string[];
+  professions: string[];
 }

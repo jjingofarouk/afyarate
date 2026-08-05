@@ -25,9 +25,12 @@ create table if not exists public.practitioners (
   image_url text,
   record_count integer not null default 1,
   search_name text not null default '', -- lowercased name, for ILIKE search
+  profession text,                       -- derived cadre, set at import time
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+-- Keep existing tables up to date on re-runs (create table if not exists won't alter).
+alter table public.practitioners add column if not exists profession text;
 
 -- ----------------------------------------------------------------------------
 -- 2. Licenses — full licence history per practitioner (portal stores one row
@@ -65,6 +68,7 @@ create table if not exists public.ratings (
 -- ----------------------------------------------------------------------------
 create index if not exists practitioners_search_trgm on public.practitioners using gin (search_name gin_trgm_ops);
 create index if not exists practitioners_council on public.practitioners (council);
+create index if not exists practitioners_profession on public.practitioners (profession);
 create index if not exists practitioners_status on public.practitioners (licence_status);
 create index if not exists practitioners_regno on public.practitioners (registration_no);
 create index if not exists practitioners_licno on public.practitioners (license_number);
@@ -96,19 +100,29 @@ from public.practitioners
 where council is not null and council <> ''
 order by council;
 
+-- Distinct professions (derived cadres), for the filter dropdown.
+drop view if exists public.professions;
+create view public.professions as
+select distinct profession
+from public.practitioners
+where profession is not null and profession <> ''
+order by profession;
+
 -- Randomised browsing (used by the "Random" sort in the search UI).
 -- Returns a random slice of the registry so browsing shows a mix of
 -- specialties instead of one council at a time. Applies the same filters
 -- (search text, council, licence status) as the regular search.
 drop function if exists public.search_random(integer, integer) cascade;
 drop function if exists public.search_random(integer, integer, text, text, text) cascade;
+drop function if exists public.search_random(integer, integer, text, text, text, text) cascade;
 
 create or replace function public.search_random(
   p_limit integer,
   p_offset integer,
   p_q text default '',
   p_council text default '',
-  p_status text default 'all'
+  p_status text default 'all',
+  p_profession text default ''
 )
 returns setof public.practitioners_overview
 language sql
@@ -119,6 +133,7 @@ as $$
          or registration_no ilike '%' || p_q || '%'
          or license_number ilike '%' || p_q || '%')
     and (p_council = '' or council = p_council)
+    and (p_profession = '' or profession = p_profession)
     and (p_status = 'all'
          or (p_status = 'active' and licence_status = 'Active')
          or (p_status = 'inactive'
@@ -157,7 +172,7 @@ create policy "anyone can add a rating"
 -- ----------------------------------------------------------------------------
 grant usage on schema public to anon, authenticated;
 grant select on public.practitioners, public.licenses, public.ratings,
-              public.practitioners_overview, public.councils to anon, authenticated;
+              public.practitioners_overview, public.councils, public.professions to anon, authenticated;
 grant insert on public.ratings to anon, authenticated;
 grant usage on all sequences in schema public to anon, authenticated;
-grant execute on function public.search_random(integer, integer, text, text, text) to anon, authenticated;
+grant execute on function public.search_random(integer, integer, text, text, text, text) to anon, authenticated;

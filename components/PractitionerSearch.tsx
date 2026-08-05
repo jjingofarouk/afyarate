@@ -10,6 +10,7 @@ import { PAGE_SIZE } from "@/lib/site";
 interface Filters {
   q: string;
   council: string;
+  profession: string;
   status: "all" | "active" | "inactive";
   sort: "name" | "rating" | "random";
   page: number;
@@ -18,6 +19,7 @@ interface Filters {
 const baseFilters: Filters = {
   q: "",
   council: "",
+  profession: "",
   status: "all",
   sort: "random",
   page: 1,
@@ -57,6 +59,7 @@ export default function PractitionerSearch({
     });
     if (f.q.trim()) params.set("q", f.q.trim());
     if (f.council) params.set("council", f.council);
+    if (f.profession) params.set("profession", f.profession);
     params.set("status", f.status);
     params.set("sort", f.sort);
     try {
@@ -146,6 +149,18 @@ export default function PractitionerSearch({
               </option>
             ))}
           </select>
+          <select
+            value={filters.profession}
+            onChange={(e) => update({ profession: e.target.value })}
+            className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          >
+            <option value="">All professions</option>
+            {data?.professions.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
           <div className="flex rounded-xl border border-slate-300 p-0.5 text-sm dark:border-slate-700">
             {(["all", "active", "inactive"] as const).map((s) => (
               <button
@@ -201,7 +216,7 @@ export default function PractitionerSearch({
         </div>
       ) : (
         <motion.div
-          key={`${filters.page}-${filters.q}-${filters.council}-${filters.status}-${filters.sort}`}
+          key={`${filters.page}-${filters.q}-${filters.council}-${filters.profession}-${filters.status}-${filters.sort}`}
           variants={gridVariants}
           initial="hidden"
           animate="show"
@@ -217,7 +232,7 @@ export default function PractitionerSearch({
 
       {data && data.items.length === 0 && !loading && (
         <div className="mt-10 rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
-          No practitioners matched your search. Try a different name or council.
+          No practitioners matched your search. Try a different name, council or profession.
         </div>
       )}
 

@@ -18,6 +18,7 @@ function mapPractitioner(row: Row): Practitioner {
     id: Number(row.id),
     name: String(row.name ?? ""),
     council: asString(row.council),
+    profession: asString(row.profession),
     registrationStatus: asString(row.registration_status),
     registrationNo: asString(row.registration_no),
     registrationDate: asString(row.registration_date),
@@ -35,6 +36,7 @@ function mapPractitioner(row: Row): Practitioner {
 export interface SearchOptions {
   q?: string;
   council?: string;
+  profession?: string;
   status?: "all" | "active" | "inactive";
   sort?: "name" | "rating" | "random";
   page?: number;
@@ -67,6 +69,7 @@ export async function searchPractitioners(
   const supabase = createServerClient();
   const q = (opts.q ?? "").trim();
   const council = (opts.council ?? "").trim();
+  const profession = (opts.profession ?? "").trim();
   const status = opts.status ?? "all";
   const sort = opts.sort ?? "random";
   const page = Math.max(1, Number.isFinite(opts.page) ? (opts.page as number) : 1);
@@ -86,6 +89,7 @@ export async function searchPractitioners(
       );
     }
     if (council) qb = qb.eq("council", council);
+    if (profession) qb = qb.eq("profession", profession);
     if (status === "active") qb = qb.eq("licence_status", "Active");
     else if (status === "inactive")
       qb = qb.or("licence_status.neq.Active,licence_status.is.null");
@@ -103,6 +107,7 @@ export async function searchPractitioners(
       p_q: q,
       p_council: council,
       p_status: status,
+      p_profession: profession,
     });
     if (error) throw new Error(error.message);
     // Defensive: enforce the page size regardless of what the RPC returns.
@@ -141,6 +146,7 @@ export async function searchPractitioners(
     page,
     pageSize,
     councils: await getCouncils(),
+    professions: await getProfessions(),
   };
 }
 
@@ -233,6 +239,21 @@ export async function getCouncils(): Promise<string[]> {
   const councils = (data ?? []).map((r) => String(r.council)).filter(Boolean);
   councilsCache = { data: councils, expires: Date.now() + COUNCILS_TTL_MS };
   return councils;
+}
+
+// Profession list changes even less often than councils — same cache approach.
+let professionsCache: { data: string[]; expires: number } | null = null;
+
+export async function getProfessions(): Promise<string[]> {
+  if (professionsCache && professionsCache.expires > Date.now()) {
+    return professionsCache.data;
+  }
+  const supabase = createServerClient();
+  const { data, error } = await supabase.from("professions").select("profession");
+  if (error) return professionsCache?.data ?? [];
+  const professions = (data ?? []).map((r) => String(r.profession)).filter(Boolean);
+  professionsCache = { data: professions, expires: Date.now() + COUNCILS_TTL_MS };
+  return professions;
 }
 
 const STATS_TTL_MS = 5 * 60 * 1000;
