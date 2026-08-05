@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Star } from "./StarIcon";
 
 /** Interactive 1–5 star picker for the rating form. */
@@ -17,7 +18,7 @@ export default function StarInput({
   return (
     <div className="flex items-center gap-1" role="radiogroup" aria-label="Rating">
       {[1, 2, 3, 4, 5].map((n) => (
-        <button
+        <motion.button
           key={n}
           type="button"
           role="radio"
@@ -26,12 +27,14 @@ export default function StarInput({
           onMouseEnter={() => setHover(n)}
           onMouseLeave={() => setHover(0)}
           onClick={() => onChange(n)}
-          className={`transition-transform hover:scale-110 ${
-            n <= shown ? "text-amber-400" : "text-slate-300"
-          }`}
+          whileHover={{ scale: 1.2, rotate: -6 }}
+          whileTap={{ scale: 0.85, rotate: 0 }}
+          animate={{ scale: value === n ? [1, 1.3, 1] : 1 }}
+          transition={{ duration: 0.25 }}
+          className={n <= shown ? "text-amber-400" : "text-slate-300"}
         >
           <Star size={30} filled={n <= shown} />
-        </button>
+        </motion.button>
       ))}
       <span className="ml-2 text-sm font-medium text-slate-600">
         {shown ? `${shown} / 5` : "Tap to rate"}

@@ -6,10 +6,12 @@ import {
   getPractitioner,
   getRatings,
 } from "@/lib/practitioners";
+import { SITE_URL } from "@/lib/site";
 import { InitialsAvatar } from "@/components/PractitionerCard";
 import { Stars } from "@/components/Stars";
 import RatingForm from "@/components/RatingForm";
 import { Star } from "@/components/StarIcon";
+import { FadeIn } from "@/components/motion/FadeIn";
 
 export const dynamic = "force-dynamic";
 
@@ -21,9 +23,35 @@ export async function generateMetadata({
   const { id } = await params;
   const p = await getPractitioner(Number(id));
   if (!p) return { title: "Not found" };
+  const title = `${p.name} — ${p.council ?? "Health professional"}`;
+  const description = `${p.name} (${p.council ?? "registered in Uganda"}). ${
+    p.ratingCount > 0
+      ? `Rated ${p.avgRating?.toFixed(1)}/5 from ${p.ratingCount} patient rating${p.ratingCount > 1 ? "s" : ""}.`
+      : "Patient ratings and licence information."
+  } Licence ${p.licenceStatus ?? "status"} — registration no. ${p.registrationNo ?? "n/a"}.`;
+  const url = `${SITE_URL}/practitioners/${p.id}`;
+  const image = p.imageUrl || `${SITE_URL}/logo.png`;
+
   return {
-    title: `${p.name} — ${p.council ?? "Health professional"}`,
-    description: `${p.name} (${p.council ?? "registered in Uganda"}). Patient ratings and licence information.`,
+    title,
+    description,
+    keywords: [p.name, p.council, "Uganda", "health worker rating", "licensed practitioner"].filter(
+      (v): v is string => Boolean(v),
+    ),
+    alternates: { canonical: url },
+    openGraph: {
+      type: "profile",
+      url,
+      title,
+      description,
+      images: [{ url: image }],
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+      images: [image],
+    },
   };
 }
 
@@ -35,6 +63,23 @@ function Field({ label, value }: { label: string; value: string | null }) {
       <dd className="text-right font-medium text-slate-800">{value}</dd>
     </div>
   );
+}
+
+/** Postgres returns timestamptz with an explicit UTC offset already — parse as-is. */
+function formatRatingDate(iso: string): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+/** Escape "<" so user-submitted text can't break out of the JSON-LD <script> tag. */
+function safeJsonLd(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
 export default async function PractitionerPage({
@@ -50,8 +95,49 @@ export default async function PractitionerPage({
   const ratings = await getRatings(practitioner.id);
   const active = practitioner.licenceStatus === "Active";
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Physician",
+    name: practitioner.name,
+    url: `${SITE_URL}/practitioners/${practitioner.id}`,
+    image: practitioner.imageUrl || `${SITE_URL}/logo.png`,
+    ...(practitioner.council ? { medicalSpecialty: practitioner.council } : {}),
+    ...(practitioner.ratingCount > 0 && practitioner.avgRating
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: practitioner.avgRating,
+            reviewCount: practitioner.ratingCount,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
+    ...(ratings.length > 0
+      ? {
+          review: ratings.slice(0, 20).map((r) => ({
+            "@type": "Review",
+            reviewRating: {
+              "@type": "Rating",
+              ratingValue: r.rating,
+              bestRating: 5,
+              worstRating: 1,
+            },
+            author: { "@type": "Person", name: r.reviewerName || "Anonymous" },
+            ...(r.comment ? { reviewBody: r.comment } : {}),
+            ...(formatRatingDate(r.createdAt) ? { datePublished: r.createdAt } : {}),
+          })),
+        }
+      : {}),
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
+      />
+
       <Link
         href="/"
         className="mb-6 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-emerald-700"
@@ -61,7 +147,7 @@ export default async function PractitionerPage({
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left: photo + summary */}
-        <div className="lg:col-span-1">
+        <FadeIn className="lg:col-span-1">
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div className="aspect-[3/4] w-full overflow-hidden bg-slate-100">
               {practitioner.imageUrl ? (
@@ -115,10 +201,10 @@ export default async function PractitionerPage({
               </div>
             </div>
           </div>
-        </div>
+        </FadeIn>
 
         {/* Right: details */}
-        <div className="lg:col-span-2">
+        <FadeIn delay={0.1} className="lg:col-span-2">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
               {practitioner.name}
@@ -215,36 +301,35 @@ export default async function PractitionerPage({
                 </p>
               ) : (
                 <ul className="space-y-3">
-                  {ratings.map((r) => (
-                    <li
-                      key={r.id}
-                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
-                    >
-                      <div className="flex items-center justify-between">
-                        <Stars value={r.rating} size={14} />
-                        <span className="text-xs text-slate-400">
-                          {new Date(r.createdAt + "Z").toLocaleDateString("en-GB", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </span>
-                      </div>
-                      {r.comment && (
-                        <p className="mt-2 text-sm leading-relaxed text-slate-700">
-                          {r.comment}
+                  {ratings.map((r) => {
+                    const dateLabel = formatRatingDate(r.createdAt);
+                    return (
+                      <li
+                        key={r.id}
+                        className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                      >
+                        <div className="flex items-center justify-between">
+                          <Stars value={r.rating} size={14} />
+                          {dateLabel && (
+                            <span className="text-xs text-slate-400">{dateLabel}</span>
+                          )}
+                        </div>
+                        {r.comment && (
+                          <p className="mt-2 text-sm leading-relaxed text-slate-700">
+                            {r.comment}
+                          </p>
+                        )}
+                        <p className="mt-2 text-xs font-medium text-slate-500">
+                          {r.reviewerName ?? "Anonymous"}
                         </p>
-                      )}
-                      <p className="mt-2 text-xs font-medium text-slate-500">
-                        {r.reviewerName ?? "Anonymous"}
-                      </p>
-                    </li>
-                  ))}
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </div>
           </div>
-        </div>
+        </FadeIn>
       </div>
     </div>
   );

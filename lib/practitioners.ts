@@ -196,6 +196,24 @@ export async function getRatings(practitionerId: number): Promise<Rating[]> {
   }));
 }
 
+/** Lightweight id + last-modified page, for sitemap generation. */
+export async function getPractitionerIdsPage(
+  offset: number,
+  limit: number,
+): Promise<{ id: number; updatedAt: string | null }[]> {
+  const supabase = createServerClient();
+  const { data, error } = await supabase
+    .from("practitioners")
+    .select("id, updated_at")
+    .order("id", { ascending: true })
+    .range(offset, offset + limit - 1);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r: Row) => ({
+    id: Number(r.id),
+    updatedAt: asString(r.updated_at),
+  }));
+}
+
 export async function getCouncils(): Promise<string[]> {
   const supabase = createServerClient();
   const { data, error } = await supabase.from("councils").select("council");

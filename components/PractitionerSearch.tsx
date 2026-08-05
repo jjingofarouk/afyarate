@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { motion, type Variants } from "framer-motion";
 import type { SearchResult } from "@/lib/types";
 import PractitionerCard from "./PractitionerCard";
 
@@ -14,7 +15,7 @@ interface Filters {
   page: number;
 }
 
-const initialFilters: Filters = {
+const baseFilters: Filters = {
   q: "",
   council: "",
   status: "active",
@@ -22,7 +23,22 @@ const initialFilters: Filters = {
   page: 1,
 };
 
-export default function PractitionerSearch() {
+const gridVariants: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.03 } },
+};
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.25, ease: "easeOut" } },
+};
+
+export default function PractitionerSearch({
+  initialQuery = "",
+}: {
+  initialQuery?: string;
+}) {
+  const initialFilters: Filters = { ...baseFilters, q: initialQuery };
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [data, setData] = useState<SearchResult | null>(null);
   const [loading, setLoading] = useState(true);
@@ -164,11 +180,19 @@ export default function PractitionerSearch() {
       )}
 
       {/* Grid */}
-      <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+      <motion.div
+        key={`${filters.page}-${filters.q}-${filters.council}-${filters.status}-${filters.sort}`}
+        variants={gridVariants}
+        initial="hidden"
+        animate="show"
+        className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
+      >
         {(data?.items ?? []).map((p) => (
-          <PractitionerCard key={p.id} p={p} />
+          <motion.div key={p.id} variants={cardVariants}>
+            <PractitionerCard p={p} />
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {data && data.items.length === 0 && !loading && (
         <div className="mt-10 rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">
