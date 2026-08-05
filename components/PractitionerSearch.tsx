@@ -18,7 +18,7 @@ interface Filters {
 const baseFilters: Filters = {
   q: "",
   council: "",
-  status: "active",
+  status: "all",
   sort: "random",
   page: 1,
 };
@@ -131,7 +131,7 @@ export default function PractitionerSearch({
               value={filters.q}
               onChange={(e) => update({ q: e.target.value })}
               placeholder="Search by name, registration or licence number…"
-              className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/40"
+              className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-base outline-none transition placeholder:text-base placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/40"
             />
           </div>
           <select

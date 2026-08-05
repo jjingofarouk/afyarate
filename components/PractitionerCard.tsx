@@ -40,7 +40,7 @@ export default function PractitionerCard({ p }: { p: Practitioner }) {
       href={`/practitioners/${p.id}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
     >
-      <div className="relative h-44 overflow-hidden bg-slate-100 dark:bg-slate-800">
+      <div className="relative aspect-[4/5] overflow-hidden bg-slate-100 dark:bg-slate-800">
         {p.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img

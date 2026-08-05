@@ -22,7 +22,7 @@ export default async function HomePage({
   // same query) — one request at a time is reliable.
   const stats = ready ? await getStats() : null;
   const initialResults = ready
-    ? await searchPractitioners({ q, status: "active", sort: "random", page: 1, pageSize: PAGE_SIZE })
+    ? await searchPractitioners({ q, status: "all", sort: "random", page: 1, pageSize: PAGE_SIZE })
     : undefined;
 
   return (
