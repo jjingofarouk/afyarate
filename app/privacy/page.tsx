@@ -200,10 +200,10 @@ export default function PrivacyPage() {
       <S n="11" title="Contact">
         <p>
           Questions about this Privacy Policy, or requests relating to your information, can be
-          sent to{" "}
-          <a className="text-emerald-700 underline dark:text-emerald-400" href="mailto:jjingofaroukk@gmail.com">
-            jjingofaroukk@gmail.com
-          </a>{" "}
+          sent via our{" "}
+          <Link href="/contact" className="text-emerald-700 underline dark:text-emerald-400">
+            contact form
+          </Link>{" "}
           or{" "}
           <a className="text-emerald-700 underline dark:text-emerald-400" href="tel:+256751360385">
             +256 751 360 385

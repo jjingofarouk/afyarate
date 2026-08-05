@@ -5,6 +5,7 @@ import Script from "next/script";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import ThemeToggle, { ThemeInitScript } from "@/components/ThemeToggle";
 import MobileNav from "@/components/MobileNav";
+import DesktopNav from "@/components/DesktopNav";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -107,11 +108,7 @@ export default function RootLayout({
               <span className="text-lg font-semibold tracking-tight">{SITE_NAME}</span>
             </Link>
             <div className="flex items-center gap-1 sm:gap-3">
-              <nav className="hidden text-sm font-medium text-slate-600 sm:flex sm:items-center sm:gap-5 dark:text-slate-300">
-                <Link href="/about" className="hover:text-emerald-700 dark:hover:text-emerald-400">
-                  About
-                </Link>
-              </nav>
+              <DesktopNav />
               <ThemeToggle />
               <MobileNav />
             </div>
@@ -132,13 +129,10 @@ export default function RootLayout({
               the portal directly.
             </p>
             <p className="mt-3">
-              Questions or corrections? Contact{" "}
-              <a
-                className="text-emerald-700 underline dark:text-emerald-400"
-                href="mailto:jjingofaroukk@gmail.com"
-              >
-                jjingofaroukk@gmail.com
-              </a>{" "}
+              Questions or corrections?{" "}
+              <Link className="text-emerald-700 underline dark:text-emerald-400" href="/contact">
+                Contact us
+              </Link>{" "}
               or call{" "}
               <a className="text-emerald-700 underline dark:text-emerald-400" href="tel:+256751360385">
                 +256 751 360 385

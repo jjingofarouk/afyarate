@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "About",
@@ -66,12 +67,12 @@ export default function AboutPage() {
               <a className="text-emerald-700 underline dark:text-emerald-400" href="tel:+256751360385">
                 +256 751 360 385
               </a>
-              <a
+              <Link
                 className="text-emerald-700 underline dark:text-emerald-400"
-                href="mailto:jjingofaroukk@gmail.com"
+                href="/contact"
               >
-                jjingofaroukk@gmail.com
-              </a>
+                Contact us
+              </Link>
             </div>
           </div>
         </div>

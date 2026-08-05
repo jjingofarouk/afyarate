@@ -54,7 +54,7 @@ try {
   }
   const check = await client.query(
     `select table_name from information_schema.tables
-     where table_schema='public' and table_name in ('practitioners','licenses','ratings')
+     where table_schema='public' and table_name in ('practitioners','licenses','ratings','posts')
      order by table_name`,
   );
   console.log("Tables present:", check.rows.map((r) => r.table_name).join(", "));

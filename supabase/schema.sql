@@ -64,8 +64,59 @@ create table if not exists public.ratings (
 );
 
 -- ----------------------------------------------------------------------------
+-- 3b. Posts — curated listings board (jobs, opportunities, grants,
+--     scholarships, fellowships…). One table for all listing kinds; a new
+--     listing kind is just a new `type` value, no schema change.
+-- ----------------------------------------------------------------------------
+create table if not exists public.posts (
+  id bigint generated always as identity primary key,
+  slug text not null unique,           -- SEO-friendly URL, set at upload time
+  type text not null default 'job'
+    check (type in ('job','internship','scholarship','grant','fellowship',
+                    'conference','opportunity','other')),
+  title text not null,
+  organization text not null,
+  category text,                        -- broad field, e.g. 'Health', 'Education'
+  profession text,                      -- target cadre; matches practitioners.profession
+  location text,                        -- 'Kampala, Uganda' or 'Remote'
+  country text not null default 'Uganda',
+  employment_type text,                 -- Full-time / Part-time / Contract / Volunteer / Remote
+  experience_level text,                -- Entry / Graduate / Mid / Senior
+  qualification text,                   -- required education & credentials
+  eligibility text,                     -- who may apply (esp. grants/scholarships)
+  salary text,                          -- free-text range (UGX or USD)
+  description text not null,            -- main body, markdown
+  summary text,                         -- one-line blurb for cards
+  how_to_apply text,
+  application_url text,
+  application_email text,
+  deadline date,                        -- null = rolling / none
+  source_name text,                     -- e.g. 'Ministry of Health', 'WHO Uganda'
+  source_url text,
+  tags text[] not null default '{}',
+  featured boolean not null default false,
+  status text not null default 'draft'
+    check (status in ('draft','published','expired','archived')),
+  published_at timestamptz,
+  views integer not null default 0,
+  search_text text not null default '', -- lowercased title+org+summary+description
+  image_url text,                       -- photo of the role/organisation (Supabase Storage)
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+-- Keep existing tables up to date on re-runs (create table if not exists won't alter).
+alter table public.posts add column if not exists image_url text;
+
+-- ----------------------------------------------------------------------------
 -- Indexes
 -- ----------------------------------------------------------------------------
+create index if not exists posts_search_trgm on public.posts using gin (search_text gin_trgm_ops);
+create index if not exists posts_type_status on public.posts (type, status);
+create index if not exists posts_profession on public.posts (profession);
+create index if not exists posts_deadline on public.posts (deadline);
+create index if not exists posts_published on public.posts (published_at desc);
+create index if not exists posts_tags on public.posts using gin (tags);
+
 create index if not exists practitioners_search_trgm on public.practitioners using gin (search_name gin_trgm_ops);
 create index if not exists practitioners_council on public.practitioners (council);
 create index if not exists practitioners_profession on public.practitioners (profession);
@@ -146,10 +197,13 @@ $$;
 -- 5. Row Level Security
 --    The public registry is readable by everyone; anyone may add a rating;
 --    only the service role (or direct SQL) can write to the registry tables.
+--    Only published posts are visible to visitors; drafts/archived listings are
+--    visible only to the service role (dashboard/admin).
 -- ----------------------------------------------------------------------------
 alter table public.practitioners enable row level security;
 alter table public.licenses enable row level security;
 alter table public.ratings enable row level security;
+alter table public.posts enable row level security;
 
 drop policy if exists "practitioners are publicly readable" on public.practitioners;
 create policy "practitioners are publicly readable"
@@ -167,12 +221,44 @@ drop policy if exists "anyone can add a rating" on public.ratings;
 create policy "anyone can add a rating"
   on public.ratings for insert with check (true);
 
+drop policy if exists "published posts are publicly readable" on public.posts;
+create policy "published posts are publicly readable"
+  on public.posts for select
+  using (status = 'published');
+
+-- Anyone may submit a listing, but only as a draft (featured/views locked at
+-- defaults) — nothing goes live until an admin reviews and publishes it.
+drop policy if exists "anyone can submit a listing as draft" on public.posts;
+create policy "anyone can submit a listing as draft"
+  on public.posts for insert
+  with check (status = 'draft' and featured = false and views = 0);
+
+-- ----------------------------------------------------------------------------
+-- 5b. Storage — public bucket for listing photos. Public read (photos render
+--     once a listing is published); anyone may upload (the moderation queue
+--     keeps unmoderated images off the live board).
+-- ----------------------------------------------------------------------------
+insert into storage.buckets (id, name, public)
+values ('post-images', 'post-images', true)
+on conflict (id) do nothing;
+
+drop policy if exists "post images are publicly readable" on storage.objects;
+create policy "post images are publicly readable"
+  on storage.objects for select
+  using (bucket_id = 'post-images');
+
+drop policy if exists "anyone can upload post images" on storage.objects;
+create policy "anyone can upload post images"
+  on storage.objects for insert
+  with check (bucket_id = 'post-images');
+
 -- ----------------------------------------------------------------------------
 -- 6. Grants for the anon/authenticated roles used by the publishable key
 -- ----------------------------------------------------------------------------
 grant usage on schema public to anon, authenticated;
-grant select on public.practitioners, public.licenses, public.ratings,
+grant select on public.practitioners, public.licenses, public.ratings, public.posts,
               public.practitioners_overview, public.councils, public.professions to anon, authenticated;
 grant insert on public.ratings to anon, authenticated;
+grant insert on public.posts to anon, authenticated;
 grant usage on all sequences in schema public to anon, authenticated;
 grant execute on function public.search_random(integer, integer, text, text, text, text) to anon, authenticated;

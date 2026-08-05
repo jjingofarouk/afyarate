@@ -1,0 +1,139 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@/lib/supabase/server";
+import { isDbReady } from "@/lib/practitioners";
+import { POST_TYPES } from "@/lib/types";
+
+export const dynamic = "force-dynamic";
+
+// Simple in-memory rate limiter, same approach as the ratings API.
+const RATE_LIMIT = 5;
+const WINDOW_MS = 60 * 60 * 1000;
+const buckets = new Map<string, number[]>();
+
+function limited(ip: string): boolean {
+  const now = Date.now();
+  const hits = (buckets.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
+  if (hits.length >= RATE_LIMIT) {
+    buckets.set(ip, hits);
+    return true;
+  }
+  hits.push(now);
+  buckets.set(ip, hits);
+  return false;
+}
+
+function clientIp(req: NextRequest): string {
+  const fwd = req.headers.get("x-forwarded-for");
+  return (fwd ?? "unknown").split(",")[0].trim();
+}
+
+// Deterministic slug from title (+ deadline, so a re-post of the same job in a
+// later cycle gets its own URL rather than silently overwriting the old one).
+function slugify(title: string, deadline: string | null): string {
+  const base = title
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+  return deadline ? `${base}-${deadline}` : base;
+}
+
+const str = (v: unknown, max: number): string =>
+  typeof v === "string" ? v.trim().slice(0, max) : "";
+
+export async function POST(req: NextRequest) {
+  if (!(await isDbReady())) {
+    return NextResponse.json({ error: "Database not ready" }, { status: 503 });
+  }
+
+  const ip = clientIp(req);
+  if (limited(ip)) {
+    return NextResponse.json(
+      { error: "Too many submissions from this device. Please try again later." },
+      { status: 429 },
+    );
+  }
+
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const b = body as Record<string, unknown>;
+  const title = str(b.title, 200);
+  const organization = str(b.organization, 200);
+  const type = str(b.type, 30);
+  const description = str(b.description, 20000);
+  const deadline = str(b.deadline, 10);
+
+  if (!title) return NextResponse.json({ error: "Title is required" }, { status: 400 });
+  if (!organization)
+    return NextResponse.json({ error: "Organisation is required" }, { status: 400 });
+  if (!POST_TYPES.includes(type as (typeof POST_TYPES)[number]))
+    return NextResponse.json({ error: "Invalid listing type" }, { status: 400 });
+  if (!description)
+    return NextResponse.json({ error: "Description is required" }, { status: 400 });
+  if (deadline && !/^\d{4}-\d{2}-\d{2}$/.test(deadline))
+    return NextResponse.json({ error: "Deadline must be a YYYY-MM-DD date" }, { status: 400 });
+
+  const slug = slugify(title, deadline || null);
+
+  const supabase = createServerClient();
+
+  // Reject duplicates: same slug already in the queue or live.
+  const { data: existing } = await supabase.from("posts").select("id").eq("slug", slug).maybeSingle();
+  if (existing) {
+    return NextResponse.json(
+      { error: "This listing has already been submitted." },
+      { status: 409 },
+    );
+  }
+
+  const fields = [
+    "type", "title", "organization", "category", "profession", "location",
+    "employment_type", "experience_level", "salary", "summary", "description",
+    "how_to_apply", "application_url", "application_email", "deadline",
+    "source_name", "source_url", "image_url",
+  ];
+  const insert: Record<string, unknown> = {
+    slug,
+    type,
+    title,
+    organization,
+    description,
+    search_text: [
+      title, organization, b.category, b.profession, b.location, b.summary,
+      description, b.salary,
+    ]
+      .filter((v) => typeof v === "string" && v.trim())
+      .join(" ")
+      .toLowerCase(),
+  };
+  for (const f of fields) {
+    if (f === "type" || f === "title" || f === "organization" || f === "description") continue;
+    const v = b[f] ?? b[f.replace(/_/g, "")];
+    if (typeof v === "string" && v.trim()) insert[f] = v.trim().slice(0, 2000);
+  }
+  if (b.tags && Array.isArray(b.tags)) {
+    insert.tags = (b.tags as unknown[]).filter((t) => typeof t === "string").slice(0, 10);
+  }
+
+  const { data, error } = await supabase
+    .from("posts")
+    .insert({ ...insert, status: "draft" })
+    .select("id, slug, status")
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json(
+    { post: data, message: "Thanks! Your listing is submitted for review." },
+    { status: 201 },
+  );
+}

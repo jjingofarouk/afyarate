@@ -255,10 +255,10 @@ export default function TermsPage() {
       <S n="15" title="Contact and reports">
         <p>
           Questions about these Terms, correction requests, or reports of content that
-          violates them can be sent to{" "}
-          <a className="text-emerald-700 underline dark:text-emerald-400" href="mailto:jjingofaroukk@gmail.com">
-            jjingofaroukk@gmail.com
-          </a>{" "}
+          violates them can be sent via our{" "}
+          <Link href="/contact" className="text-emerald-700 underline dark:text-emerald-400">
+            contact form
+          </Link>{" "}
           or{" "}
           <a className="text-emerald-700 underline dark:text-emerald-400" href="tel:+256751360385">
             +256 751 360 385
