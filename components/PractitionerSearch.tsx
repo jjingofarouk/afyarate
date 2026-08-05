@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import type { SearchResult } from "@/lib/types";
 import PractitionerCard from "./PractitionerCard";
-
-const PAGE_SIZE = 12;
+import PractitionerCardSkeleton from "./PractitionerCardSkeleton";
+import { PAGE_SIZE } from "@/lib/site";
 
 interface Filters {
   q: string;
@@ -35,15 +35,18 @@ const cardVariants: Variants = {
 
 export default function PractitionerSearch({
   initialQuery = "",
+  initialData,
 }: {
   initialQuery?: string;
+  initialData?: SearchResult;
 }) {
   const initialFilters: Filters = { ...baseFilters, q: initialQuery };
   const [filters, setFilters] = useState<Filters>(initialFilters);
-  const [data, setData] = useState<SearchResult | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<SearchResult | null>(initialData ?? null);
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFirstRender = useRef(true);
 
   const runSearch = useCallback(async (f: Filters, signal?: AbortSignal) => {
     setLoading(true);
@@ -71,15 +74,24 @@ export default function PractitionerSearch({
     }
   }, []);
 
-  // Initial load
+  // Initial load — skipped when the server already sent first-page results,
+  // so there's no client round-trip before anything appears.
   useEffect(() => {
+    if (initialData) return;
     const ctrl = new AbortController();
     runSearch(initialFilters, ctrl.signal);
     return () => ctrl.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runSearch]);
 
-  // Debounced search on text change
+  // Debounced search on filter change — skipped on mount itself, since either
+  // the "initial load" effect above or the server-provided initialData
+  // already covers the first render.
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       runSearch(filters);
@@ -98,7 +110,7 @@ export default function PractitionerSearch({
   return (
     <section className="pb-8">
       {/* Controls */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
           <div className="relative flex-1">
             <svg
@@ -119,13 +131,13 @@ export default function PractitionerSearch({
               value={filters.q}
               onChange={(e) => update({ q: e.target.value })}
               placeholder="Search by name, registration or licence number…"
-              className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+              className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/40"
             />
           </div>
           <select
             value={filters.council}
             onChange={(e) => update({ council: e.target.value })}
-            className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500"
+            className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             <option value="">All councils</option>
             {data?.councils.map((c) => (
@@ -134,7 +146,7 @@ export default function PractitionerSearch({
               </option>
             ))}
           </select>
-          <div className="flex rounded-xl border border-slate-300 p-0.5 text-sm">
+          <div className="flex rounded-xl border border-slate-300 p-0.5 text-sm dark:border-slate-700">
             {(["all", "active", "inactive"] as const).map((s) => (
               <button
                 key={s}
@@ -142,7 +154,7 @@ export default function PractitionerSearch({
                 className={`rounded-lg px-3 py-1.5 font-medium capitalize transition ${
                   filters.status === s
                     ? "bg-emerald-600 text-white"
-                    : "text-slate-600 hover:bg-slate-100"
+                    : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                 }`}
               >
                 {s === "active" ? "Active" : s === "inactive" ? "Inactive" : "All"}
@@ -152,7 +164,7 @@ export default function PractitionerSearch({
           <select
             value={filters.sort}
             onChange={(e) => update({ sort: e.target.value as Filters["sort"] })}
-            className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500"
+            className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             <option value="random">Random mix</option>
             <option value="rating">Top rated</option>
@@ -162,40 +174,49 @@ export default function PractitionerSearch({
       </div>
 
       {/* Results header */}
-      <div className="mt-4 flex items-center justify-between px-1 text-sm text-slate-600">
-        <span>
-          {data
-            ? `Showing ${data.items.length ? (data.page - 1) * PAGE_SIZE + 1 : 0}–${
-                (data.page - 1) * PAGE_SIZE + data.items.length
-              } of ${data.total.toLocaleString()}`
-            : "Loading…"}
-        </span>
-        {loading && <span className="animate-pulse text-emerald-600">Searching…</span>}
+      <div className="mt-4 px-1 text-sm text-slate-600 dark:text-slate-400">
+        {loading ? (
+          "Loading…"
+        ) : data ? (
+          `Showing ${data.items.length ? (data.page - 1) * PAGE_SIZE + 1 : 0}–${
+            (data.page - 1) * PAGE_SIZE + data.items.length
+          } of ${data.total.toLocaleString()}`
+        ) : (
+          "Loading…"
+        )}
       </div>
 
       {error && (
-        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-400">
           {error}
         </div>
       )}
 
-      {/* Grid */}
-      <motion.div
-        key={`${filters.page}-${filters.q}-${filters.council}-${filters.status}-${filters.sort}`}
-        variants={gridVariants}
-        initial="hidden"
-        animate="show"
-        className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
-      >
-        {(data?.items ?? []).map((p) => (
-          <motion.div key={p.id} variants={cardVariants}>
-            <PractitionerCard p={p} />
-          </motion.div>
-        ))}
-      </motion.div>
+      {/* Grid — one card per row on mobile for spaciousness, scaling up from there */}
+      {loading ? (
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+            <PractitionerCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : (
+        <motion.div
+          key={`${filters.page}-${filters.q}-${filters.council}-${filters.status}-${filters.sort}`}
+          variants={gridVariants}
+          initial="hidden"
+          animate="show"
+          className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+        >
+          {(data?.items ?? []).map((p) => (
+            <motion.div key={p.id} variants={cardVariants}>
+              <PractitionerCard p={p} />
+            </motion.div>
+          ))}
+        </motion.div>
+      )}
 
       {data && data.items.length === 0 && !loading && (
-        <div className="mt-10 rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">
+        <div className="mt-10 rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
           No practitioners matched your search. Try a different name or council.
         </div>
       )}
@@ -206,17 +227,17 @@ export default function PractitionerSearch({
           <button
             disabled={filters.page <= 1}
             onClick={() => update({ page: filters.page - 1 })}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm disabled:opacity-40"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm disabled:opacity-40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
           >
             ← Prev
           </button>
-          <span className="px-2 text-sm text-slate-600">
+          <span className="px-2 text-sm text-slate-600 dark:text-slate-400">
             Page {filters.page} of {totalPages}
           </span>
           <button
             disabled={filters.page >= totalPages}
             onClick={() => update({ page: filters.page + 1 })}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm disabled:opacity-40"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm disabled:opacity-40 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
           >
             Next →
           </button>

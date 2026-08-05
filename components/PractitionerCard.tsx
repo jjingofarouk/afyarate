@@ -8,8 +8,8 @@ function StatusBadge({ status }: { status: string | null }) {
     <span
       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
         active
-          ? "bg-emerald-100 text-emerald-800"
-          : "bg-slate-200 text-slate-600"
+          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300"
+          : "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
       }`}
     >
       <span
@@ -38,9 +38,9 @@ export default function PractitionerCard({ p }: { p: Practitioner }) {
   return (
     <Link
       href={`/practitioners/${p.id}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
     >
-      <div className="relative h-44 overflow-hidden bg-slate-100">
+      <div className="relative h-44 overflow-hidden bg-slate-100 dark:bg-slate-800">
         {p.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -58,14 +58,14 @@ export default function PractitionerCard({ p }: { p: Practitioner }) {
       </div>
 
       <div className="flex flex-1 flex-col gap-1.5 p-4">
-        <h3 className="text-base font-semibold text-slate-900 group-hover:text-emerald-700">
+        <h3 className="text-base font-semibold text-slate-900 group-hover:text-emerald-700 dark:text-slate-100 dark:group-hover:text-emerald-400">
           {p.name}
         </h3>
-        <p className="text-xs text-slate-500">{p.council}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">{p.council}</p>
         <div className="mt-auto flex items-center justify-between pt-2">
           <Stars value={p.avgRating} count={p.ratingCount} size={14} />
           {p.licenseExpiryDate && (
-            <span className="text-[11px] text-slate-400">
+            <span className="text-[11px] text-slate-400 dark:text-slate-500">
               Exp {p.licenseExpiryDate}
             </span>
           )}

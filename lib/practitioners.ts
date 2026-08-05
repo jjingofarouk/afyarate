@@ -44,7 +44,6 @@ export interface SearchOptions {
 export interface Stats {
   practitioners: number;
   active: number;
-  withPhoto: number;
   totalRatings: number;
 }
 
@@ -70,8 +69,11 @@ export async function searchPractitioners(
   const council = (opts.council ?? "").trim();
   const status = opts.status ?? "all";
   const sort = opts.sort ?? "random";
-  const page = Math.max(1, opts.page ?? 1);
-  const pageSize = Math.min(50, Math.max(1, opts.pageSize ?? 12));
+  const page = Math.max(1, Number.isFinite(opts.page) ? (opts.page as number) : 1);
+  const pageSize = Math.min(
+    50,
+    Math.max(1, Number.isFinite(opts.pageSize) ? (opts.pageSize as number) : 12),
+  );
   const offset = (page - 1) * pageSize;
 
   // Shared filter builder (used for both the count and the result queries).
@@ -103,7 +105,8 @@ export async function searchPractitioners(
       p_status: status,
     });
     if (error) throw new Error(error.message);
-    items = (data ?? []) as Row[];
+    // Defensive: enforce the page size regardless of what the RPC returns.
+    items = ((data ?? []) as Row[]).slice(0, pageSize);
     const { count: c, error: cErr } = await buildFilters(
       supabase
         .from("practitioners_overview")
@@ -214,16 +217,33 @@ export async function getPractitionerIdsPage(
   }));
 }
 
+// Module-scoped: survives for the lifetime of a warm Worker isolate, so
+// repeat requests it handles skip Supabase entirely. Resets on cold start —
+// that's fine, this is a best-effort cut in query volume, not a guarantee.
+const COUNCILS_TTL_MS = 15 * 60 * 1000; // council list changes essentially never
+let councilsCache: { data: string[]; expires: number } | null = null;
+
 export async function getCouncils(): Promise<string[]> {
+  if (councilsCache && councilsCache.expires > Date.now()) {
+    return councilsCache.data;
+  }
   const supabase = createServerClient();
   const { data, error } = await supabase.from("councils").select("council");
-  if (error) return [];
-  return (data ?? []).map((r) => String(r.council)).filter(Boolean);
+  if (error) return councilsCache?.data ?? [];
+  const councils = (data ?? []).map((r) => String(r.council)).filter(Boolean);
+  councilsCache = { data: councils, expires: Date.now() + COUNCILS_TTL_MS };
+  return councils;
 }
 
+const STATS_TTL_MS = 5 * 60 * 1000;
+let statsCache: { data: Stats; expires: number } | null = null;
+
 export async function getStats(): Promise<Stats> {
+  if (statsCache && statsCache.expires > Date.now()) {
+    return statsCache.data;
+  }
   const supabase = createServerClient();
-  const [p, a, ph, rt] = await Promise.all([
+  const [p, a, rt] = await Promise.all([
     supabase
       .from("practitioners")
       .select("id", { count: "exact", head: true }),
@@ -231,16 +251,13 @@ export async function getStats(): Promise<Stats> {
       .from("practitioners")
       .select("id", { count: "exact", head: true })
       .eq("licence_status", "Active"),
-    supabase
-      .from("practitioners")
-      .select("id", { count: "exact", head: true })
-      .not("image_url", "is", null),
     supabase.from("ratings").select("id", { count: "exact", head: true }),
   ]);
-  return {
+  const stats: Stats = {
     practitioners: p.count ?? 0,
     active: a.count ?? 0,
-    withPhoto: ph.count ?? 0,
     totalRatings: rt.count ?? 0,
   };
+  statsCache = { data: stats, expires: Date.now() + STATS_TTL_MS };
+  return stats;
 }

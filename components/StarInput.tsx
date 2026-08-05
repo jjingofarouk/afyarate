@@ -31,12 +31,12 @@ export default function StarInput({
           whileTap={{ scale: 0.85, rotate: 0 }}
           animate={{ scale: value === n ? [1, 1.3, 1] : 1 }}
           transition={{ duration: 0.25 }}
-          className={n <= shown ? "text-amber-400" : "text-slate-300"}
+          className={n <= shown ? "text-amber-400" : "text-slate-300 dark:text-slate-700"}
         >
           <Star size={30} filled={n <= shown} />
         </motion.button>
       ))}
-      <span className="ml-2 text-sm font-medium text-slate-600">
+      <span className="ml-2 text-sm font-medium text-slate-600 dark:text-slate-400">
         {shown ? `${shown} / 5` : "Tap to rate"}
       </span>
     </div>

@@ -56,12 +56,12 @@ export default function RatingForm({ practitionerId }: { practitionerId: number 
   return (
     <form
       onSubmit={onSubmit}
-      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+      className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"
     >
-      <h3 className="text-base font-semibold text-slate-900">
+      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
         Rate this health worker
       </h3>
-      <p className="mt-1 text-xs text-slate-500">
+      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
         Public, patient-to-patient feedback. Keep it respectful and factual.
       </p>
 
@@ -70,7 +70,7 @@ export default function RatingForm({ practitionerId }: { practitionerId: number 
       </div>
 
       <div className="mt-4">
-        <label className="mb-1 block text-xs font-medium text-slate-600">
+        <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
           Your name (optional)
         </label>
         <input
@@ -78,12 +78,12 @@ export default function RatingForm({ practitionerId }: { practitionerId: number 
           onChange={(e) => setReviewerName(e.target.value)}
           maxLength={80}
           placeholder="e.g. Patient, Kampala"
-          className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+          className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-emerald-900/40"
         />
       </div>
 
       <div className="mt-3">
-        <label className="mb-1 block text-xs font-medium text-slate-600">
+        <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
           Comment (optional)
         </label>
         <textarea
@@ -92,7 +92,7 @@ export default function RatingForm({ practitionerId }: { practitionerId: number 
           maxLength={1000}
           rows={3}
           placeholder="Share your experience — professionalism, communication, wait times…"
-          className="w-full resize-y rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+          className="w-full resize-y rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-emerald-900/40"
         />
       </div>
 
@@ -100,8 +100,8 @@ export default function RatingForm({ practitionerId }: { practitionerId: number 
         <p
           className={`mt-3 rounded-lg px-3 py-2 text-sm ${
             message.kind === "ok"
-              ? "bg-emerald-50 text-emerald-800"
-              : "bg-red-50 text-red-700"
+              ? "bg-emerald-50 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300"
+              : "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-400"
           }`}
         >
           {message.text}

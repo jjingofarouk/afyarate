@@ -15,7 +15,7 @@ export function Stars({
   return (
     <span className="inline-flex items-center gap-1">
       <span className="relative inline-block" style={{ width: size * 5, height: size }}>
-        <span className="absolute inset-0 flex text-slate-300">
+        <span className="absolute inset-0 flex text-slate-300 dark:text-slate-700">
           {[0, 1, 2, 3, 4].map((i) => (
             <Star key={i} size={size} filled={false} />
           ))}
@@ -30,7 +30,7 @@ export function Stars({
         </span>
       </span>
       {count !== undefined && (
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-slate-500 dark:text-slate-400">
           {value ? value.toFixed(1) : "—"} ({count})
         </span>
       )}
