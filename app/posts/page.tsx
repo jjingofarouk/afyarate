@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getPosts } from "@/lib/posts";
-import PostCard from "@/components/PostCard";
+import PostBoard from "@/components/PostBoard";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { SITE_NAME } from "@/lib/site";
+
+const INITIAL_COUNT = 12;
 
 export const dynamic = "force-dynamic";
 
@@ -87,10 +89,8 @@ export default async function PostsPage({
         </div>
       ) : (
         <FadeIn delay={0.05}>
-          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {posts.map((p) => (
-              <PostCard key={p.id} post={p} />
-            ))}
+          <div className="mt-8">
+            <PostBoard initialPosts={posts.slice(0, INITIAL_COUNT)} total={posts.length} type={type} />
           </div>
         </FadeIn>
       )}

@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getPosts } from "@/lib/posts";
 import { POST_TYPE_LABELS, POST_TYPES, type PostType } from "@/lib/types";
-import PostGrid from "@/components/PostGrid";
+import PostBoard from "@/components/PostBoard";
 import { SITE_NAME } from "@/lib/site";
+
+const INITIAL_COUNT = 12;
 
 export const dynamic = "force-dynamic";
 
@@ -120,7 +122,7 @@ export default async function TypePage({
         </p>
       ) : (
         <div className="mt-8">
-          <PostGrid posts={posts} />
+          <PostBoard initialPosts={posts.slice(0, INITIAL_COUNT)} total={posts.length} type={t} />
         </div>
       )}
 

@@ -121,8 +121,8 @@ const postCache = new Map<string, { data: Post | null; expires: number }>();
 // Selecting just this set keeps the cached array — and every page's payload —
 // a fraction of the size of a full `select("*")`.
 const LIST_COLUMNS =
-  "id,slug,type,title,organization,category,profession,location,country," +
-  "deadline,salary,featured,status,published_at,image_url";
+  "id, slug, type, title, organization, category, profession, location, country, " +
+  "deadline, salary, featured, status, published_at, image_url";
 
 /** All published listings, including ones whose deadline has passed (the card
  *  marks those as "Closed"). Cached in the worker; filtered by type in memory. */
@@ -138,7 +138,7 @@ export async function getPosts(opts: PostSearchOptions = {}): Promise<Post[]> {
       .order("featured", { ascending: false })
       .order("published_at", { ascending: false, nullsFirst: false });
     if (error) throw new Error(error.message);
-    posts = ((data ?? []) as Row[]).map(mapPost);
+    posts = ((data ?? []) as unknown as Row[]).map(mapPost);
     postsCache = { data: posts, expires: Date.now() + POSTS_TTL_MS };
   }
   if (type && POST_TYPES.has(type)) posts = posts.filter((p) => p.type === type);
