@@ -15,10 +15,15 @@ Each record captures: id (data-key), name, registration status, council,
 registration no/date, licence number/expiry/status, qualifications and, when the
 portal publishes one, the practitioner's photo URL (image_url).
 
-The script is polite: it uses a small pool of concurrent workers (default 6)
+The script is polite: it uses a small pool of concurrent workers (default 4)
 because the portal is slow to respond, waits briefly between requests, and
 retries failed pages with exponential backoff. It only uses the public,
 unauthenticated search endpoint.
+
+Memory is bounded: only a handful of pages are in flight at a time and each
+completed future is dropped as soon as it is written, so RSS stays flat at a
+few MB regardless of how many pages have been scraped (it never accumulates
+all 121k records in RAM — they stream to disk).
 
 Usage:
     python3 scripts/scrape.py                     # full run (resumes)
@@ -254,6 +259,7 @@ def main():
     written = count_lines(OUT_FILE)
     done = len(completed)
     t0 = time.time()
+    failed = []
 
     def handle(page, recs):
         nonlocal written, done
@@ -266,7 +272,7 @@ def main():
             done += 1
             if done % 25 == 0:
                 save_checkpoint({"total": total, "completed_pages": sorted(completed),
-                                 "written": written})
+                                 "written": written, "failed_pages": sorted(failed)})
 
     def process(page):
         html = fetch_page(page)
@@ -274,10 +280,36 @@ def main():
 
     try:
         with ThreadPoolExecutor(max_workers=args.workers) as ex:
-            futures = {ex.submit(process, p): p for p in pending}
-            for fut in as_completed(futures):
-                page, recs = fut.result()
-                handle(page, recs)
+            # Bounded in-flight window: only a handful of futures exist at a
+            # time, so memory stays flat (a few MB) no matter how far along we
+            # are, instead of accumulating thousands of completed results.
+            it = iter(pending)
+            inflight = {}
+            for _ in range(min(args.workers * 2, len(pending))):
+                try:
+                    p = next(it)
+                except StopIteration:
+                    break
+                inflight[ex.submit(process, p)] = p
+
+            while inflight:
+                done_fut = next(as_completed(inflight))
+                page = inflight.pop(done_fut)  # drop the future -> frees its result
+                try:
+                    _, recs = done_fut.result()
+                except Exception as err:  # noqa: BLE001 - keep going on bad pages
+                    failed.append(page)
+                    print(f"  ! page {page} failed after retries: {err}", file=sys.stderr)
+                else:
+                    handle(page, recs)
+
+                try:
+                    nxt = next(it)
+                except StopIteration:
+                    pass
+                else:
+                    inflight[ex.submit(process, nxt)] = nxt
+
                 elapsed = time.time() - t0
                 rate = done / elapsed if elapsed else 0
                 remaining = last_page - done
@@ -291,10 +323,13 @@ def main():
                 time.sleep(DELAY)
     finally:
         save_checkpoint({"total": total, "completed_pages": sorted(completed),
-                         "written": written})
+                         "written": written, "failed_pages": sorted(failed)})
         out.close()
 
     print(f"Done. Wrote {written} records to {OUT_FILE}")
+    if failed:
+        print(f"WARNING: {len(failed)} page(s) could not be fetched: "
+              f"{', '.join(map(str, sorted(failed)))}", file=sys.stderr)
 
 
 if __name__ == "__main__":

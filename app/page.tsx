@@ -4,9 +4,9 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-export default function HomePage() {
-  const ready = isDbReady();
-  const stats = ready ? getStats() : null;
+export default async function HomePage() {
+  const ready = await isDbReady();
+  const stats = ready ? await getStats() : null;
 
   return (
     <div className="mx-auto max-w-6xl px-4">
@@ -51,13 +51,16 @@ export default function HomePage() {
       {!ready ? (
         <div className="mx-auto max-w-xl rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center">
           <h2 className="text-lg font-semibold text-amber-900">
-            Database not loaded yet
+            Database not set up yet
           </h2>
           <p className="mt-2 text-sm text-amber-800">
-            The scraped registry hasn&apos;t been imported. Once{" "}
-            <code className="rounded bg-amber-100 px-1">npm run scrape</code> finishes,
-            run <code className="rounded bg-amber-100 px-1">npm run import</code> to
-            build the database. <Link href="/about" className="underline">Learn more</Link>
+            Run{" "}
+            <code className="rounded bg-amber-100 px-1">node scripts/setup_supabase.mjs</code>{" "}
+            (with <code className="rounded bg-amber-100 px-1">SUPABASE_DB_URL</code> in{" "}
+            <code className="rounded bg-amber-100 px-1">.env.local</code>) to create the
+            tables, then{" "}
+            <code className="rounded bg-amber-100 px-1">npm run import</code> to load the
+            scraped registry. <Link href="/about" className="underline">Learn more</Link>
           </p>
         </div>
       ) : (

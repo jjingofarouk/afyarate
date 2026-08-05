@@ -19,7 +19,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const p = getPractitioner(Number(id));
+  const p = await getPractitioner(Number(id));
   if (!p) return { title: "Not found" };
   return {
     title: `${p.name} — ${p.council ?? "Health professional"}`,
@@ -43,11 +43,11 @@ export default async function PractitionerPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const practitioner = getPractitioner(Number(id));
+  const practitioner = await getPractitioner(Number(id));
   if (!practitioner) notFound();
 
-  const licenses = getLicenses(practitioner.id);
-  const ratings = getRatings(practitioner.id);
+  const licenses = await getLicenses(practitioner.id);
+  const ratings = await getRatings(practitioner.id);
   const active = practitioner.licenceStatus === "Active";
 
   return (

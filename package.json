@@ -4,23 +4,33 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "opennextjs-cloudflare build",
+    "build:next": "next build",
     "start": "next start",
-    "import": "node scripts/import.mjs",
+    "preview": "wrangler dev",
+    "deploy": "opennextjs-cloudflare deploy",
+    "db:setup": "node scripts/setup_supabase.mjs",
+    "import": "node scripts/import_supabase.mjs",
     "scrape": "python3 scripts/scrape.py"
   },
   "dependencies": {
+    "@opennextjs/cloudflare": "^1.20.2",
+    "@supabase/supabase-js": "^2.112.0",
     "next": "^15.5.4",
+    "pg": "^8.22.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@esbuild/darwin-arm64": "^0.28.1",
     "@tailwindcss/postcss": "^4.1.4",
     "@types/node": "^24.0.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
+    "esbuild": "^0.28.1",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.4",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "wrangler": "^4.118.0"
   }
 }

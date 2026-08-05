@@ -10,7 +10,7 @@ interface Filters {
   q: string;
   council: string;
   status: "all" | "active" | "inactive";
-  sort: "name" | "rating";
+  sort: "name" | "rating" | "random";
   page: number;
 }
 
@@ -18,7 +18,7 @@ const initialFilters: Filters = {
   q: "",
   council: "",
   status: "active",
-  sort: "rating",
+  sort: "random",
   page: 1,
 };
 
@@ -138,6 +138,7 @@ export default function PractitionerSearch() {
             onChange={(e) => update({ sort: e.target.value as Filters["sort"] })}
             className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500"
           >
+            <option value="random">Random mix</option>
             <option value="rating">Top rated</option>
             <option value="name">Name A–Z</option>
           </select>

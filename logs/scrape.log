@@ -1,0 +1,22 @@
+  pages done 700/6055  records=14380/121089  (15.50 pgs/s, ~6 min left)
+  pages done 750/6055  records=15380/121089  (8.02 pgs/s, ~11 min left)
+  pages done 800/6055  records=16380/121089  (5.81 pgs/s, ~15 min left)
+  pages done 850/6055  records=17380/121089  (4.64 pgs/s, ~19 min left)
+  pages done 900/6055  records=18380/121089  (3.92 pgs/s, ~22 min left)
+  pages done 950/6055  records=19380/121089  (3.46 pgs/s, ~25 min left)
+  pages done 1000/6055  records=20380/121089  (3.13 pgs/s, ~27 min left)
+  pages done 1050/6055  records=21380/121089  (2.85 pgs/s, ~29 min left)
+    page 1098: HTTP Error 500: Internal Server Error — retry in 1s
+  pages done 1100/6055  records=22380/121089  (2.62 pgs/s, ~31 min left)
+    page 1098: HTTP Error 500: Internal Server Error — retry in 2s
+    page 1098: HTTP Error 500: Internal Server Error — retry in 4s
+    page 1098: HTTP Error 500: Internal Server Error — retry in 8s
+    page 1098: HTTP Error 500: Internal Server Error — retry in 16s
+    page 1098: HTTP Error 500: Internal Server Error — retry in 32s
+  pages done 1150/6055  records=23380/121089  (2.39 pgs/s, ~34 min left)
+    page 1263: HTTP Error 500: Internal Server Error — retry in 1s
+    page 1263: HTTP Error 500: Internal Server Error — retry in 2s
+    page 1263: HTTP Error 500: Internal Server Error — retry in 4s
+    page 1263: HTTP Error 500: Internal Server Error — retry in 8s
+    page 1263: HTTP Error 500: Internal Server Error — retry in 16s
+    page 1263: HTTP Error 500: Internal Server Error — retry in 32s

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
+import { createServerClient } from "@/lib/supabase/server";
 import { isDbReady } from "@/lib/practitioners";
 
 export const dynamic = "force-dynamic";
 
 // Simple in-memory rate limiter: allow a handful of submissions per IP per hour.
-// (In a production deploy you would use a real store.)
+// (In a production deploy you would use a real store, e.g. Redis.)
 const RATE_LIMIT = 5;
 const WINDOW_MS = 60 * 60 * 1000;
 const buckets = new Map<string, number[]>();
@@ -28,7 +28,7 @@ function clientIp(req: NextRequest): string {
 }
 
 export async function POST(req: NextRequest) {
-  if (!isDbReady()) {
+  if (!(await isDbReady())) {
     return NextResponse.json({ error: "Database not ready" }, { status: 503 });
   }
 
@@ -69,27 +69,32 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const db = getDb();
-  const exists = db
-    .prepare("SELECT id FROM practitioners WHERE id = ?")
-    .get(practitionerId);
-  if (!exists) {
+  const supabase = createServerClient();
+
+  // Make sure the practitioner exists.
+  const { data: exists, error: checkErr } = await supabase
+    .from("practitioners")
+    .select("id")
+    .eq("id", practitionerId)
+    .maybeSingle();
+  if (checkErr || !exists) {
     return NextResponse.json({ error: "Practitioner not found" }, { status: 404 });
   }
 
-  const info = db
-    .prepare(
-      "INSERT INTO ratings (practitioner_id, rating, comment, reviewer_name) VALUES (?, ?, ?, ?)",
-    )
-    .run(practitionerId, rating, comment || null, reviewerName || null);
+  const { data, error } = await supabase
+    .from("ratings")
+    .insert({
+      practitioner_id: practitionerId,
+      rating,
+      comment: comment || null,
+      reviewer_name: reviewerName || null,
+    })
+    .select("*")
+    .single();
 
-  const row = db
-    .prepare(
-      `SELECT id, practitioner_id AS practitionerId, rating, comment,
-              reviewer_name AS reviewerName, created_at AS createdAt, verified
-       FROM ratings WHERE id = ?`,
-    )
-    .get(Number(info.lastInsertRowid));
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
-  return NextResponse.json({ rating: row }, { status: 201 });
+  return NextResponse.json({ rating: data }, { status: 201 });
 }

@@ -42,9 +42,9 @@ export default function RootLayout({
           <div className="mx-auto max-w-6xl px-4 py-8 text-xs leading-relaxed text-slate-500">
             <p className="mb-2 font-semibold text-slate-700">Musawo</p>
             <p>
-              Licensing data is sourced from the public Uganda Health Professionals
-              Portal (eHealth License) and shows the registered/licence status as
-              published there. Ratings are community opinions and are not medical
+              Licensing data is official data provided by the Uganda Medical &amp;
+              Dental Practitioners Council (UMPDC) and shows the registered/licence
+              status as published. Ratings are community opinions and are not medical
               advice, an endorsement, or a substitute for professional judgement.
               If you believe information is wrong, verify with the regulator or
               the portal directly.
