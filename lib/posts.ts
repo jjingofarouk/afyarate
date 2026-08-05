@@ -56,26 +56,39 @@ const POST_TYPES = new Set([
   "other",
 ]);
 
+// Module-scoped caches: survive for the lifetime of a warm Worker isolate, so
+// the board and detail pages stop hitting Supabase on every request. Reset on
+// cold start — fine, this is a best-effort cut in query volume, not a
+// guarantee. New/edited listings appear once the TTL elapses.
+const POSTS_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const POST_TTL_MS = 10 * 60 * 1000; // 10 minutes
+let postsCache: { data: Post[]; expires: number } | null = null;
+const postCache = new Map<string, { data: Post | null; expires: number }>();
+
 /** All published listings, including ones whose deadline has passed (the card
- *  marks those as "Closed"). */
+ *  marks those as "Closed"). Cached in the worker; filtered by type in memory. */
 export async function getPosts(opts: PostSearchOptions = {}): Promise<Post[]> {
-  const supabase = createServerClient();
-  let query = supabase
-    .from("posts")
-    .select("*")
-    .eq("status", "published");
-  if (opts.type && POST_TYPES.has(opts.type)) {
-    query = query.eq("type", opts.type);
+  const { type } = opts;
+  let posts = postsCache && postsCache.expires > Date.now() ? postsCache.data : null;
+  if (!posts) {
+    const supabase = createServerClient();
+    const { data, error } = await supabase
+      .from("posts")
+      .select("*")
+      .eq("status", "published")
+      .order("featured", { ascending: false })
+      .order("published_at", { ascending: false, nullsFirst: false });
+    if (error) throw new Error(error.message);
+    posts = ((data ?? []) as Row[]).map(mapPost);
+    postsCache = { data: posts, expires: Date.now() + POSTS_TTL_MS };
   }
-  query = query
-    .order("featured", { ascending: false })
-    .order("published_at", { ascending: false, nullsFirst: false });
-  const { data, error } = await query;
-  if (error) throw new Error(error.message);
-  return ((data ?? []) as Row[]).map(mapPost);
+  if (type && POST_TYPES.has(type)) return posts.filter((p) => p.type === type);
+  return posts;
 }
 
 export async function getPost(slug: string): Promise<Post | null> {
+  const hit = postCache.get(slug);
+  if (hit && hit.expires > Date.now()) return hit.data;
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("posts")
@@ -84,5 +97,8 @@ export async function getPost(slug: string): Promise<Post | null> {
     .eq("slug", slug)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  return data ? mapPost(data as Row) : null;
+  const post: Post | null = data ? mapPost(data as Row) : null;
+  // Cache misses briefly too, so a missing slug isn't re-queried on every hit.
+  postCache.set(slug, { data: post, expires: Date.now() + POST_TTL_MS });
+  return post;
 }
