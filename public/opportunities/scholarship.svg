@@ -1,0 +1,20 @@
+<svg width="800" height="500" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gscholarship" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+    <pattern id="dotsscholarship" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.6" fill="#ffffff" fill-opacity="0.12"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="500" fill="url(#gscholarship)"/>
+  <rect width="800" height="500" fill="url(#dotsscholarship)"/>
+  <g transform="translate(400, 250)" stroke="#ffffff" stroke-opacity="0.92" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    
+    <path d="M -85 -10 L 0 -55 L 85 -10 L 0 35 Z"/>
+    <path d="M -45 8 L -45 45 A 45 20 0 0 0 45 45 L 45 8"/>
+    <line x1="72" y1="-3" x2="72" y2="50"/>
+  
+  </g>
+</svg>

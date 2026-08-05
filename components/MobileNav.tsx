@@ -87,7 +87,7 @@ export default function MobileNav() {
                   All listings
                 </Link>
                 {POST_TYPES.map((t) => (
-                  <Link key={t} href={`/posts?type=${t}`} onClick={close} className={linkClass}>
+                  <Link key={t} href={`/${POST_TYPE_LABELS[t].plural.toLowerCase()}`} onClick={close} className={linkClass}>
                     {typeIcon}
                     {POST_TYPE_LABELS[t].plural}
                   </Link>

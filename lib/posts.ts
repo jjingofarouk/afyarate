@@ -43,6 +43,57 @@ function mapPost(row: Row): Post {
 
 export interface PostSearchOptions {
   type?: string;
+  profession?: string; // profession slug
+  location?: string; // location slug
+  organization?: string; // organization slug
+}
+
+/** Slugify for facet URLs (/professions/medical-officer etc.). */
+export function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+export interface FacetItem {
+  slug: string;
+  label: string;
+  count: number;
+}
+
+function buildFacet(posts: Post[], pick: (p: Post) => string | null): FacetItem[] {
+  const map = new Map<string, FacetItem>();
+  for (const p of posts) {
+    const raw = pick(p);
+    if (!raw) continue;
+    const label = raw.trim();
+    if (!label) continue;
+    const slug = slugify(label);
+    const item = map.get(slug);
+    if (item) item.count++;
+    else map.set(slug, { slug, label, count: 1 });
+  }
+  return [...map.values()].sort((a, b) => b.count - a.count);
+}
+
+export async function getProfessions(): Promise<FacetItem[]> {
+  return buildFacet(await getPosts(), (p) => p.profession);
+}
+
+export async function getLocations(): Promise<FacetItem[]> {
+  return buildFacet(await getPosts(), (p) => p.location);
+}
+
+export async function getOrganizations(): Promise<FacetItem[]> {
+  return buildFacet(await getPosts(), (p) => p.organization);
+}
+
+function slugMatches(slug: string | undefined, value: string | null): boolean {
+  return !!slug && !!value && slugify(value) === slug;
 }
 
 const POST_TYPES = new Set([
@@ -65,16 +116,24 @@ const POST_TTL_MS = 10 * 60 * 1000; // 10 minutes
 let postsCache: { data: Post[]; expires: number } | null = null;
 const postCache = new Map<string, { data: Post | null; expires: number }>();
 
+// Card/list views (and the facet builders above) only ever read these fields —
+// never the long detail-only ones (description, eligibility, howToApply...).
+// Selecting just this set keeps the cached array — and every page's payload —
+// a fraction of the size of a full `select("*")`.
+const LIST_COLUMNS =
+  "id,slug,type,title,organization,category,profession,location,country," +
+  "deadline,salary,featured,status,published_at,image_url";
+
 /** All published listings, including ones whose deadline has passed (the card
  *  marks those as "Closed"). Cached in the worker; filtered by type in memory. */
 export async function getPosts(opts: PostSearchOptions = {}): Promise<Post[]> {
-  const { type } = opts;
+  const { type, profession, location, organization } = opts;
   let posts = postsCache && postsCache.expires > Date.now() ? postsCache.data : null;
   if (!posts) {
     const supabase = createServerClient();
     const { data, error } = await supabase
       .from("posts")
-      .select("*")
+      .select(LIST_COLUMNS)
       .eq("status", "published")
       .order("featured", { ascending: false })
       .order("published_at", { ascending: false, nullsFirst: false });
@@ -82,8 +141,26 @@ export async function getPosts(opts: PostSearchOptions = {}): Promise<Post[]> {
     posts = ((data ?? []) as Row[]).map(mapPost);
     postsCache = { data: posts, expires: Date.now() + POSTS_TTL_MS };
   }
-  if (type && POST_TYPES.has(type)) return posts.filter((p) => p.type === type);
+  if (type && POST_TYPES.has(type)) posts = posts.filter((p) => p.type === type);
+  if (profession) posts = posts.filter((p) => slugMatches(profession, p.profession));
+  if (location) posts = posts.filter((p) => slugMatches(location, p.location));
+  if (organization) posts = posts.filter((p) => slugMatches(organization, p.organization));
   return posts;
+}
+
+export interface PagedPosts {
+  items: Post[];
+  total: number;
+}
+
+/** Same filtering as getPosts, sliced server-side for "load more" pagination. */
+export async function getPostsPage(
+  opts: PostSearchOptions & { offset?: number; limit?: number },
+): Promise<PagedPosts> {
+  const all = await getPosts(opts);
+  const offset = Math.max(0, opts.offset ?? 0);
+  const limit = Math.min(50, Math.max(1, opts.limit ?? 12));
+  return { items: all.slice(offset, offset + limit), total: all.length };
 }
 
 export async function getPost(slug: string): Promise<Post | null> {

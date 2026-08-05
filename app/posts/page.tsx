@@ -13,16 +13,16 @@ export const metadata: Metadata = {
   alternates: { canonical: "/posts" },
 };
 
-const TYPE_TABS: { value: string; label: string }[] = [
-  { value: "", label: "All" },
-  { value: "job", label: "Jobs" },
-  { value: "internship", label: "Internships" },
-  { value: "scholarship", label: "Scholarships" },
-  { value: "grant", label: "Grants" },
-  { value: "fellowship", label: "Fellowships" },
-  { value: "conference", label: "Conferences" },
-  { value: "opportunity", label: "Opportunities" },
-  { value: "other", label: "Other" },
+const TYPE_TABS: { value: string; label: string; href: string }[] = [
+  { value: "", label: "All", href: "/posts" },
+  { value: "job", label: "Jobs", href: "/jobs" },
+  { value: "internship", label: "Internships", href: "/internships" },
+  { value: "scholarship", label: "Scholarships", href: "/scholarships" },
+  { value: "grant", label: "Grants", href: "/grants" },
+  { value: "fellowship", label: "Fellowships", href: "/fellowships" },
+  { value: "conference", label: "Conferences", href: "/conferences" },
+  { value: "opportunity", label: "Opportunities", href: "/opportunities" },
+  { value: "other", label: "Other", href: "/other" },
 ];
 
 export default async function PostsPage({
@@ -61,11 +61,10 @@ export default async function PostsPage({
       <div className="mt-6 flex flex-wrap gap-2">
         {TYPE_TABS.map((tab) => {
           const active = (type ?? "") === tab.value;
-          const href = tab.value ? `/posts?type=${tab.value}` : "/posts";
           return (
             <Link
               key={tab.value}
-              href={href}
+              href={tab.href}
               className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
                 active
                   ? "bg-emerald-600 text-white"

@@ -1,0 +1,22 @@
+<svg width="800" height="500" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ggrant" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+    <pattern id="dotsgrant" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.6" fill="#ffffff" fill-opacity="0.12"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="500" fill="url(#ggrant)"/>
+  <rect width="800" height="500" fill="url(#dotsgrant)"/>
+  <g transform="translate(400, 250)" stroke="#ffffff" stroke-opacity="0.92" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    
+    <rect x="-70" y="-15" width="140" height="90" rx="8"/>
+    <line x1="-70" y1="20" x2="70" y2="20"/>
+    <line x1="0" y1="-15" x2="0" y2="75"/>
+    <path d="M 0 -15 C -20 -15 -34 -30 -34 -44 C -34 -54 -20 -54 -12 -44 C -6 -37 0 -25 0 -15 Z"/>
+    <path d="M 0 -15 C 20 -15 34 -30 34 -44 C 34 -54 20 -54 12 -44 C 6 -37 0 -25 0 -15 Z"/>
+  
+  </g>
+</svg>

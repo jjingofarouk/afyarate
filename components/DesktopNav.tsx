@@ -51,7 +51,7 @@ export default function DesktopNav() {
             {POST_TYPES.map((t) => (
               <Link
                 key={t}
-                href={`/posts?type=${t}`}
+                href={`/${POST_TYPE_LABELS[t].plural.toLowerCase()}`}
                 onClick={close}
                 className={itemClass}
               >

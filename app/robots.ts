@@ -13,8 +13,9 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     practitionerChunks = 0;
   }
 
+  // Chunk 0 = static + type pages, chunk 1 = posts-derived, 2+ = practitioners.
   const sitemap = Array.from(
-    { length: practitionerChunks + 1 },
+    { length: 2 + practitionerChunks },
     (_, i) => `${SITE_URL}/sitemap/${i}.xml`,
   );
 

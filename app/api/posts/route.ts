@@ -1,9 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { isDbReady } from "@/lib/practitioners";
+import { getPostsPage } from "@/lib/posts";
 import { POST_TYPES } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+
+// "Load more" pagination for the boards on /posts, /[type], /professions/[slug],
+// /locations/[slug] and /organizations/[slug] — reuses getPosts' in-memory
+// cache under the hood, so this doesn't add new Supabase load per click.
+export async function GET(req: NextRequest) {
+  const sp = req.nextUrl.searchParams;
+  const page = await getPostsPage({
+    type: sp.get("type") ?? undefined,
+    profession: sp.get("profession") ?? undefined,
+    location: sp.get("location") ?? undefined,
+    organization: sp.get("organization") ?? undefined,
+    offset: Number(sp.get("offset") ?? 0) || 0,
+    limit: Number(sp.get("limit") ?? 12) || 12,
+  });
+  return NextResponse.json(page);
+}
 
 // Simple in-memory rate limiter, same approach as the ratings API.
 const RATE_LIMIT = 5;
