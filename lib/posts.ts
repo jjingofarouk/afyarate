@@ -56,15 +56,14 @@ const POST_TYPES = new Set([
   "other",
 ]);
 
-/** Published listings that are still open (deadline in the future or none). */
+/** All published listings, including ones whose deadline has passed (the card
+ *  marks those as "Closed"). */
 export async function getPosts(opts: PostSearchOptions = {}): Promise<Post[]> {
   const supabase = createServerClient();
-  const today = new Date().toISOString().slice(0, 10);
   let query = supabase
     .from("posts")
     .select("*")
-    .eq("status", "published")
-    .or(`deadline.is.null,deadline.gte.${today}`);
+    .eq("status", "published");
   if (opts.type && POST_TYPES.has(opts.type)) {
     query = query.eq("type", opts.type);
   }

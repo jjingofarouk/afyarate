@@ -122,32 +122,25 @@ for (const row of rows) {
   seen.add(row.slug);
 }
 
+// Only include columns that appear in at least one record, so absent columns
+// fall back to their database defaults (e.g. featured=false, views=0).
+const presentCols = new Set();
+for (const row of rows) {
+  for (const k of Object.keys(row)) {
+    if (row[k] !== null && row[k] !== undefined) presentCols.add(k);
+  }
+}
 const COLS = [
   "slug", "type", "title", "organization", "category", "profession", "location",
   "country", "employment_type", "experience_level", "qualification", "eligibility",
   "salary", "description", "summary", "how_to_apply", "application_url",
   "application_email", "deadline", "source_name", "source_url", "tags", "featured",
-  "status", "published_at", "views", "search_text",
-];
+  "status", "published_at", "views", "search_text", "image_url",
+].filter((c) => presentCols.has(c));
 
-const CONFLICT = `on conflict (slug) do update set
-  type = excluded.type, title = excluded.title, organization = excluded.organization,
-  category = excluded.category, profession = excluded.profession,
-  location = excluded.location, country = excluded.country,
-  employment_type = excluded.employment_type,
-  experience_level = excluded.experience_level,
-  qualification = excluded.qualification, eligibility = excluded.eligibility,
-  salary = excluded.salary, description = excluded.description,
-  summary = excluded.summary, how_to_apply = excluded.how_to_apply,
-  application_url = excluded.application_url,
-  application_email = excluded.application_email, deadline = excluded.deadline,
-  source_name = excluded.source_name, source_url = excluded.source_url,
-  tags = excluded.tags, featured = excluded.featured, status = excluded.status,
-  published_at = coalesce(excluded.published_at, public.posts.published_at),
-  views = public.posts.views,
-  search_text = excluded.search_text,
-  updated_at = now()`;
-
+const conflictSets = COLS.filter((c) => c !== "slug").map((c) => `${c} = excluded.${c}`);
+conflictSets.push("updated_at = now()");
+const CONFLICT = `on conflict (slug) do update set\n  ${conflictSets.join(",\n  ")}`;
 const client = new Client({
   connectionString: process.env.SUPABASE_DB_URL,
   ssl: { rejectUnauthorized: false },
@@ -161,8 +154,8 @@ try {
     const start = params.length;
     for (const col of COLS) {
       const v = row[col];
-      if (Array.isArray(v)) params.push(JSON.stringify(v));
-      else params.push(v ?? null);
+      // Pass JS arrays through so node-pg serialises them as Postgres array literals.
+      params.push(Array.isArray(v) ? v : (v ?? null));
     }
     return `(${COLS.map((_, i) => `$${start + i + 1}`).join(",")})`;
   });
