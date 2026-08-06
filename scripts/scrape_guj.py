@@ -38,7 +38,7 @@ import time
 import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from urllib.parse import urljoin
 
 # ---------------------------------------------------------------------------
@@ -74,6 +74,8 @@ MONTHS = {
 # ---------------------------------------------------------------------------
 def fetch(url, data=None):
     """GET (or POST when data given) and return the decoded body."""
+    # Some job URLs contain literal non-ASCII chars (e.g. an en dash) — encode them.
+    url = urllib.parse.quote(url, safe="/:?=&%-._~#+")
     req = urllib.request.Request(
         url,
         data=urllib.parse.urlencode(data).encode() if data else None,
@@ -122,6 +124,15 @@ def parse_date(s):
                 return date(int(m.group(3)), mon, int(m.group(2))).isoformat()
             except ValueError:
                 pass
+    # "11 March 2025" (day month year, no weekday)
+    m = re.search(r"(\d{1,2})\s+([A-Za-z]{3,9})\s+(\d{4})", s)
+    if m:
+        mon = MONTHS.get(m.group(2).lower()[:3])
+        if mon:
+            try:
+                return date(int(m.group(3)), mon, int(m.group(1))).isoformat()
+            except ValueError:
+                pass
     # "30-07-2026" or "30/07/2026" (d-m-y)
     m = re.search(r"(\d{1,2})[/-](\d{1,2})[/-](\d{4})", s)
     if m:
@@ -130,6 +141,29 @@ def parse_date(s):
             return date(y, mo, d).isoformat()
         except ValueError:
             pass
+    return None
+
+
+def posted_ago_date(posted_text):
+    """Approximate absolute date from relative 'N Days/Weeks/Months Ago' text."""
+    t = (posted_text or "").lower()
+    today = date.today()
+    m = re.search(r"(\d+)\s+day", t)
+    if m:
+        return today - timedelta(days=int(m.group(1)))
+    m = re.search(r"(\d+)\s+week", t)
+    if m:
+        return today - timedelta(weeks=int(m.group(1)))
+    m = re.search(r"(\d+)\s+month", t)
+    if m:
+        return today - timedelta(days=30 * int(m.group(1)))
+    m = re.search(r"(\d+)\s+year", t)
+    if m:
+        return today - timedelta(days=365 * int(m.group(1)))
+    if "yesterday" in t:
+        return today - timedelta(days=1)
+    if "today" in t:
+        return today
     return None
 
 
@@ -166,23 +200,34 @@ def clean_description(desc):
     """Strip the leading metadata blob and the trailing application section."""
     if not desc:
         return ""
-    # Most listings start the real body at "Job Summary".
-    m = re.search(r"\bJob Summary\b", desc, re.I)
+    # Metadata prefix always ends at "<deadline ISO> <positions> " — cut there.
+    m = re.search(r"\d{4}-\d{2}-\d{2}T[^ ]+\s+\d+\s", desc)
     if m:
-        desc = desc[m.start():]
+        desc = desc[m.end():]
     else:
-        # Fallback: drop leading metadata-ish lines (urls, iso dates, all-caps).
-        lines = desc.splitlines()
-        start = 0
-        for i, line in enumerate(lines):
-            l = line.strip()
-            if (not l or re.match(r"^https?://", l, re.I)
-                    or re.match(r"^\d{4}-\d{2}-\d{2}T", l)
-                    or re.fullmatch(r"[A-Z_ ]{2,40}", l)):
-                start = i + 1
-            else:
-                break
-        desc = "\n".join(lines[start:]).strip()
+        # Fallback: the real body starts at one of these section headings.
+        markers = [
+            "Job Summary", "Job Description", "Job Details", "Job Overview",
+            "Main Purpose", "Role Summary", "About the Role", "About the Job",
+            "Overall Purpose", "Position Summary", "Key Responsibilities",
+            "Duties and Responsibilities", "Summary", "Description",
+        ]
+        best = None
+        for mk in markers:
+            i = desc.find(mk)
+            if i != -1 and (best is None or i < best):
+                best = i
+        if best is not None:
+            desc = desc[best:]
+            m = re.match(
+                r"^(?:Job Summary|Job Description|Job Details|Job Overview|Main Purpose|"
+                r"Role Summary|About the Role|About the Job|Overall Purpose|Position Summary|"
+                r"Key Responsibilities|Duties and Responsibilities|Summary|Description)[\s:\-]*",
+                desc,
+                re.I,
+            )
+            if m:
+                desc = desc[m.end():]
     # The application procedure is captured separately; trim it from the body.
     m = re.search(r"\bJob application procedure\b", desc, re.I)
     if m:
@@ -284,17 +329,21 @@ def parse_detail(html, listing):
     if dl:
         d["deadline"] = dl
 
-    # description body (skip CSS inside <style>)
-    no_style = re.sub(r"<style[^>]*>.*?</style>", "", html, flags=re.S)
-    desc = div_content(no_style, "jsjobs_description_data")
-    desc = extract_text(desc) if desc else ""
+    # description: prefer og:description (clean single body), else the body div
+    ogm = re.search(r'<meta property="og:description" content="(.*?)"', html, re.S)
+    if ogm:
+        raw_desc = extract_text(ogm.group(1))
+    else:
+        no_style = re.sub(r"<style[^>]*>.*?</style>", "", html, flags=re.S)
+        desc_div = div_content(no_style, "jsjobs_description_data")
+        raw_desc = extract_text(desc_div) if desc_div else ""
 
     # Capture the application procedure before the body is trimmed.
-    m = re.search(r"Job application procedure\s*(.*?)(?:All Jobs|QUICK ALERT|$)", desc, re.I | re.S)
+    m = re.search(r"Job application procedure\s*(.*?)(?:All Jobs|QUICK ALERT|$)", raw_desc, re.I | re.S)
     if m:
         d["howToApply"] = clean(m.group(1))
 
-    desc = clean_description(desc)
+    desc = clean_description(raw_desc)
     d["description"] = desc
 
     # experience / education live inside the description
@@ -442,8 +491,13 @@ def fetch_details(args):
     if args.all:
         todo = listings
     else:
-        todo = [l for l in listings
-                if not l.get("deadline") or l["deadline"] >= today]
+        todo = [
+            l for l in listings
+            if (l.get("deadline") and l["deadline"] >= today)
+            or (not l.get("deadline")
+                and posted_ago_date(l.get("postedText")) is not None
+                and posted_ago_date(l.get("postedText")) >= date.today() - timedelta(days=90))
+        ]
     print(f"{len(listings)} listings, {len(todo)} to fetch (open jobs)", flush=True)
 
     ck = {}

@@ -52,7 +52,6 @@ function postSchema(post: Post): Record<string, unknown> {
       hiringOrganization: {
         "@type": "Organization",
         name: post.organization,
-        sameAs: post.sourceUrl ?? undefined,
       },
       jobLocation: {
         "@type": "Place",
@@ -307,24 +306,6 @@ export default async function PostDetailPage({
                 </span>
               ))}
             </div>
-          )}
-
-          {post.sourceName && (
-            <p className="mt-6 border-t border-slate-100 pt-4 text-xs text-slate-400 dark:border-slate-800 dark:text-slate-500">
-              Source:{" "}
-              {post.sourceUrl ? (
-                <a
-                  href={post.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-emerald-700 underline dark:text-emerald-400"
-                >
-                  {post.sourceName}
-                </a>
-              ) : (
-                post.sourceName
-              )}
-            </p>
           )}
         </div>
       </div>

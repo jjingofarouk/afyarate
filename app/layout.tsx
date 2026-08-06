@@ -6,6 +6,7 @@ import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import ThemeToggle, { ThemeInitScript } from "@/components/ThemeToggle";
 import MobileNav from "@/components/MobileNav";
 import DesktopNav from "@/components/DesktopNav";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -117,40 +118,7 @@ export default function RootLayout({
 
         <main>{children}</main>
 
-        <footer className="mt-16 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-          <div className="mx-auto max-w-6xl px-4 py-8 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-            <p className="mb-2 font-semibold text-slate-700 dark:text-slate-300">{SITE_NAME}</p>
-            <p>
-              Licensing data is official data provided by the Uganda Medical &amp;
-              Dental Practitioners Council (UMPDC) and shows the registered/licence
-              status as published. Ratings are community opinions and are not medical
-              advice, an endorsement, or a substitute for professional judgement.
-              If you believe information is wrong, verify with the regulator or
-              the portal directly.
-            </p>
-            <p className="mt-3">
-              Questions or corrections?{" "}
-              <Link className="text-emerald-700 underline dark:text-emerald-400" href="/contact">
-                Contact us
-              </Link>{" "}
-              or call{" "}
-              <a className="text-emerald-700 underline dark:text-emerald-400" href="tel:+256751360385">
-                +256 751 360 385
-              </a>.
-            </p>
-            <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
-              <Link href="/terms" className="text-emerald-700 underline dark:text-emerald-400">
-                Terms of Use
-              </Link>
-              <Link href="/privacy" className="text-emerald-700 underline dark:text-emerald-400">
-                Privacy Policy
-              </Link>
-            </p>
-            <p className="mt-4 border-t border-slate-200 pt-3 dark:border-slate-800">
-              © 2026 {SITE_NAME}. All rights reserved.
-            </p>
-          </div>
-        </footer>
+        <Footer />
       </body>
     </html>
   );

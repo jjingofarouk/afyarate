@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getPosts, getProfessions, getLocations, getOrganizations } from "@/lib/posts";
 import { getPractitionerIdsPage, getStats } from "@/lib/practitioners";
+import { HELP_ARTICLES } from "@/data/help";
 import { POST_TYPE_LABELS, POST_TYPES } from "@/lib/types";
 import { SITE_URL } from "@/lib/site";
 
@@ -42,6 +43,12 @@ export default async function sitemap({
       { url: `${SITE_URL}/contact`, changeFrequency: "monthly", priority: 0.3 },
       { url: `${SITE_URL}/terms`, changeFrequency: "yearly", priority: 0.2 },
       { url: `${SITE_URL}/privacy`, changeFrequency: "yearly", priority: 0.2 },
+      { url: `${SITE_URL}/help`, changeFrequency: "monthly", priority: 0.5 },
+      ...HELP_ARTICLES.map((a) => ({
+        url: `${SITE_URL}/help/${a.slug}`,
+        changeFrequency: "monthly" as const,
+        priority: 0.4,
+      })),
     ];
   }
 
