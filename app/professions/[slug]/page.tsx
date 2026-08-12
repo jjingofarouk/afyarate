@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getPosts, getProfessions } from "@/lib/posts";
+import { getPosts, getProfessions, slugify } from "@/lib/posts";
 import PostBoard from "@/components/PostBoard";
-import { SITE_NAME } from "@/lib/site";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 const INITIAL_COUNT = 12;
 
@@ -40,6 +40,37 @@ export default async function ProfessionPage({
   if (!facet) notFound();
   const posts = await getPosts({ profession: slug });
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Jobs & Opportunities",
+        item: `${SITE_URL}/posts`,
+      },
+      { "@type": "ListItem", position: 3, name: `${facet.label} jobs` },
+    ],
+  };
+
+  const collectionLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `${facet.label} Jobs & Opportunities in Uganda`,
+    description: `${facet.count} open ${facet.label} jobs and opportunities in Uganda.`,
+    url: `${SITE_URL}/professions/${facet.slug}`,
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: posts.slice(0, 20).map((p, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        url: `${SITE_URL}/posts/${p.slug}`,
+      })),
+    },
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <nav className="mb-6 text-xs text-slate-400 dark:text-slate-500">
@@ -61,6 +92,13 @@ export default async function ProfessionPage({
         </p>
       </header>
 
+      <a
+        href={`/practitioners/profession/${facet.slug}`}
+        className="mt-5 inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-800 transition hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/60"
+      >
+        Looking for a registered {facet.label}? Browse {facet.label}s in Uganda →
+      </a>
+
       <div className="mt-8">
         <PostBoard initialPosts={posts.slice(0, INITIAL_COUNT)} total={posts.length} profession={slug} />
       </div>
@@ -79,6 +117,11 @@ export default async function ProfessionPage({
             </span>
           ))}
       </p>
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbLd, collectionLd]) }}
+      />
     </div>
   );
 }

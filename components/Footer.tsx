@@ -94,6 +94,21 @@ export default function Footer() {
                   All listings
                 </Link>
               </li>
+              <li>
+                <Link href="/professions" className={linkClass}>
+                  By profession
+                </Link>
+              </li>
+              <li>
+                <Link href="/locations" className={linkClass}>
+                  By location
+                </Link>
+              </li>
+              <li>
+                <Link href="/organizations" className={linkClass}>
+                  By organization
+                </Link>
+              </li>
               {POST_TYPES.map((t) => (
                 <li key={t}>
                   <Link
@@ -110,6 +125,26 @@ export default function Footer() {
           <div>
             <h3 className={sectionClass}>For health workers</h3>
             <ul className="mt-4 space-y-2.5">
+              <li>
+                <Link href="/practitioners" className={linkClass}>
+                  Browse practitioners
+                </Link>
+              </li>
+              <li>
+                <Link href="/practitioners/profession/doctor" className={linkClass}>
+                  Doctors in Uganda
+                </Link>
+              </li>
+              <li>
+                <Link href="/practitioners/profession/nurse-midwife" className={linkClass}>
+                  Nurses in Uganda
+                </Link>
+              </li>
+              <li>
+                <Link href="/practitioners/profession/clinical-officer" className={linkClass}>
+                  Clinical Officers
+                </Link>
+              </li>
               <li>
                 <Link href="/contact" className={linkClass}>
                   List your practice

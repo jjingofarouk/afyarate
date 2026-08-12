@@ -38,35 +38,40 @@ export default function DesktopNav() {
         </button>
 
         {open && (
-          <div className="absolute left-0 top-full mt-2 w-60 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-lg dark:border-slate-700 dark:bg-slate-900">
-            <Link href="/posts" onClick={close} className={itemClass}>
-              <span className="grid size-7 place-items-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                </svg>
-              </span>
-              All listings
-            </Link>
-            <div className="mx-2 my-1 border-t border-slate-100 dark:border-slate-800" />
-            {POST_TYPES.map((t) => (
-              <Link
-                key={t}
-                href={`/${POST_TYPE_LABELS[t].plural.toLowerCase()}`}
-                onClick={close}
-                className={itemClass}
-              >
-                <span className="grid size-7 place-items-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+          <div className="absolute left-0 top-full pt-2">
+            <div className="w-60 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+              <Link href="/posts" onClick={close} className={itemClass}>
+                <span className="grid size-7 place-items-center rounded-lg bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                   <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2-8H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                   </svg>
                 </span>
-                {POST_TYPE_LABELS[t].plural}
+                All listings
               </Link>
-            ))}
+              <div className="mx-2 my-1 border-t border-slate-100 dark:border-slate-800" />
+              {POST_TYPES.map((t) => (
+                <Link
+                  key={t}
+                  href={`/${POST_TYPE_LABELS[t].plural.toLowerCase()}`}
+                  onClick={close}
+                  className={itemClass}
+                >
+                  <span className="grid size-7 place-items-center rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2-8H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2z" />
+                    </svg>
+                  </span>
+                  {POST_TYPE_LABELS[t].plural}
+                </Link>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
+      <Link href="/practitioners" className="rounded-lg px-1 py-1 transition hover:text-emerald-700 dark:hover:text-emerald-400">
+        Practitioners
+      </Link>
       <Link href="/about" className="rounded-lg px-1 py-1 transition hover:text-emerald-700 dark:hover:text-emerald-400">
         About
       </Link>

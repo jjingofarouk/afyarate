@@ -159,6 +159,16 @@ from public.practitioners
 where profession is not null and profession <> ''
 order by profession;
 
+-- Registered-practitioner counts per profession, for the SEO landing pages
+-- ("Doctors in Uganda", "Nurses in Uganda", …). Cheap, ordered by size.
+drop view if exists public.profession_counts;
+create view public.profession_counts as
+select profession, count(*) as practitioner_count
+from public.practitioners
+where profession is not null and profession <> ''
+group by profession
+order by practitioner_count desc;
+
 -- Randomised browsing (used by the "Random" sort in the search UI).
 -- Returns a random slice of the registry so browsing shows a mix of
 -- specialties instead of one council at a time. Applies the same filters
@@ -257,7 +267,8 @@ create policy "anyone can upload post images"
 -- ----------------------------------------------------------------------------
 grant usage on schema public to anon, authenticated;
 grant select on public.practitioners, public.licenses, public.ratings, public.posts,
-              public.practitioners_overview, public.councils, public.professions to anon, authenticated;
+              public.practitioners_overview, public.councils, public.professions,
+              public.profession_counts to anon, authenticated;
 grant insert on public.ratings to anon, authenticated;
 grant insert on public.posts to anon, authenticated;
 grant usage on all sequences in schema public to anon, authenticated;

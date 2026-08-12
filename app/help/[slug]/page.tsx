@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getHelpArticle, getRelatedArticles } from "@/data/help";
-import { SITE_NAME } from "@/lib/site";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -67,8 +67,44 @@ export default async function HelpArticlePage({ params }: Props) {
 
   const related = getRelatedArticles(slug);
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: SITE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Help Center",
+        item: `${SITE_URL}/help`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: article.collection,
+        item: `${SITE_URL}/help#${article.collection.toLowerCase().replace(/\s+/g, "-")}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 4,
+        name: article.title,
+        item: `${SITE_URL}/help/${article.slug}`,
+      },
+    ],
+  };
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
+
       <nav className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
         <Link href="/help" className="transition hover:text-emerald-700 dark:hover:text-emerald-400">
           Help Center

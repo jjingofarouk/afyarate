@@ -26,6 +26,26 @@ function employmentSchemaType(raw: string | null): string | undefined {
   return undefined;
 }
 
+/**
+ * Parse a salary string ("UGX 2M", "600K", "1,500,000") into a numeric
+ * MonetaryAmount Google can use for Job rich results. Returns undefined for
+ * vague values like "Negotiable" so the field is simply omitted.
+ */
+function parseBaseSalary(
+  raw: string | null,
+): { "@type": "MonetaryAmount"; value: number; currency: string } | undefined {
+  if (!raw) return undefined;
+  const s = raw.replace(/,/g, "").toLowerCase();
+  const m = s.match(/(\d+(?:\.\d+)?)\s*(m|k|million)?/);
+  if (!m) return undefined;
+  let value = parseFloat(m[1]);
+  const unit = m[2];
+  if (unit === "m" || unit === "million") value *= 1_000_000;
+  else if (unit === "k") value *= 1_000;
+  if (!Number.isFinite(value) || value <= 0) return undefined;
+  return { "@type": "MonetaryAmount", value, currency: "UGX" };
+}
+
 /** Schema.org entity for a listing — different types get the most relevant schema. */
 function postSchema(post: Post): Record<string, unknown> {
   const location = post.location ?? "Uganda";
@@ -42,28 +62,33 @@ function postSchema(post: Post): Record<string, unknown> {
   };
 
   if (post.type === "job" || post.type === "internship") {
+    const baseSalary = parseBaseSalary(post.salary);
     return {
       "@type": "JobPosting",
       title: post.title,
-      description: post.summary ?? post.description.slice(0, 500),
+      description: post.description || post.summary || post.title,
       datePosted: post.publishedAt ?? new Date().toISOString().slice(0, 10),
       validThrough: deadlineIso(post),
       employmentType: employmentSchemaType(post.employmentType) ?? "OTHER",
       hiringOrganization: {
         "@type": "Organization",
         name: post.organization,
+        ...(post.sourceUrl ? { sameAs: post.sourceUrl } : {}),
       },
       jobLocation: {
         "@type": "Place",
         address: {
           "@type": "PostalAddress",
           addressLocality: post.location ?? undefined,
-          addressRegion: "UG",
-          addressCountry: post.country ?? "UG",
+          addressCountry: "UG",
         },
       },
+      url: `${SITE_URL}/posts/${post.slug}`,
+      directApply: false,
       ...(post.qualification ? { qualifications: post.qualification } : {}),
-      ...(post.salary ? { baseSalary: { "@type": "MonetaryAmount", value: post.salary } } : {}),
+      ...(baseSalary
+        ? { baseSalary: { ...baseSalary, currency: "UGX" } }
+        : {}),
     };
   }
   if (post.type === "grant") {
@@ -135,11 +160,58 @@ export async function generateMetadata({
 function MetaItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-[11px] font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
+      <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         {label}
       </dt>
-      <dd className="mt-0.5 text-sm font-medium text-slate-800 dark:text-slate-200">{value}</dd>
+      <dd className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</dd>
     </div>
+  );
+}
+
+function isHeadingLine(line: string): boolean {
+  const t = line.trim();
+  if (!t || t.length > 80) return false;
+  if (/[.!?;:]$/.test(t)) return false;
+  if (/^[-*#\d•·]/.test(t)) return false;
+  if (t.includes("\n")) return false;
+  const words = t.split(/\s+/);
+  return words.some((w) => /^[A-Z]/.test(w));
+}
+
+function renderDescription(text: string) {
+  const blocks: { kind: "h" | "p"; content: string }[] = [];
+  let buf: string[] = [];
+  const flush = () => {
+    if (buf.length) {
+      const joined = buf.join("\n");
+      blocks.push({ kind: isHeadingLine(joined) ? "h" : "p", content: joined });
+      buf = [];
+    }
+  };
+  for (const line of text.split("\n")) {
+    if (line.trim() === "") {
+      flush();
+    } else {
+      buf.push(line);
+    }
+  }
+  flush();
+  return blocks.map((b, i) =>
+    b.kind === "h" ? (
+      <h2
+        key={i}
+        className="mt-7 text-base font-bold tracking-tight text-slate-900 first:mt-0 dark:text-slate-100"
+      >
+        {b.content}
+      </h2>
+    ) : (
+      <p
+        key={i}
+        className="mt-4 whitespace-pre-line text-[15px] leading-relaxed text-slate-700 first:mt-0 dark:text-slate-300"
+      >
+        {b.content}
+      </p>
+    )
   );
 }
 
@@ -204,7 +276,7 @@ export default async function PostDetailPage({
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
+    <div className="mx-auto max-w-3xl px-4 py-10 lg:max-w-4xl">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -218,9 +290,9 @@ export default async function PostDetailPage({
         <span className="text-slate-600 dark:text-slate-400">{post.title}</span>
       </nav>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div>
         {post.imageUrl && (
-          <div className="aspect-[16/7] overflow-hidden bg-slate-100 dark:bg-slate-800">
+          <div className="mb-8 aspect-[16/7] overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={post.imageUrl}
@@ -230,7 +302,7 @@ export default async function PostDetailPage({
           </div>
         )}
 
-        <div className="p-6 sm:p-8">
+        <div>
           <div className="flex flex-wrap items-center gap-2">
             <TypeBadge type={post.type as PostType} />
             {post.profession && (
@@ -250,7 +322,7 @@ export default async function PostDetailPage({
           </h1>
           <p className="mt-1 text-base text-slate-600 dark:text-slate-400">{post.organization}</p>
 
-          <dl className="mt-6 grid grid-cols-2 gap-4 rounded-xl bg-slate-50 p-4 sm:grid-cols-4 dark:bg-slate-950/50">
+          <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-5 border-y border-slate-200 py-5 sm:grid-cols-4 dark:border-slate-800">
             {post.location && <MetaItem label="Location" value={post.location} />}
             {post.employmentType && <MetaItem label="Type" value={post.employmentType} />}
             {post.experienceLevel && <MetaItem label="Level" value={post.experienceLevel} />}
@@ -259,23 +331,21 @@ export default async function PostDetailPage({
           </dl>
 
           {post.summary && (
-            <p className="mt-6 text-base font-medium leading-relaxed text-slate-700 dark:text-slate-200">
+            <p className="mt-6 text-lg font-medium leading-relaxed text-slate-800 dark:text-slate-100">
               {post.summary}
             </p>
           )}
 
-          <div className="mt-4 whitespace-pre-line text-[15px] leading-relaxed text-slate-700 dark:text-slate-300">
-            {post.description}
-          </div>
+          <div className="mt-4">{renderDescription(post.description)}</div>
 
           <RelatedLinks post={post} />
 
           {post.howToApply && (
-            <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950/50">
-              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            <div className="mt-8 rounded-2xl bg-emerald-50/70 p-5 dark:bg-emerald-900/20">
+              <h2 className="text-sm font-bold uppercase tracking-wide text-emerald-800 dark:text-emerald-300">
                 How to apply
               </h2>
-              <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+              <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                 {post.howToApply}
               </p>
             </div>

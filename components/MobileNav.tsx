@@ -80,6 +80,12 @@ export default function MobileNav() {
                 </Link>
 
                 <p className={sectionLabelClass}>Explore</p>
+                <Link href="/practitioners" onClick={close} className={linkClass}>
+                  <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Practitioners
+                </Link>
                 <Link href="/posts" onClick={close} className={linkClass}>
                   <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />

@@ -256,6 +256,33 @@ export async function getProfessions(): Promise<string[]> {
   return professions;
 }
 
+export interface ProfessionCount {
+  profession: string;
+  count: number;
+}
+
+// Registered-practitioner counts per profession, used to build the SEO
+// landing pages ("Doctors in Uganda", "Nurses in Uganda", …). Read from the
+// profession_counts view; cached like the council list.
+let professionCountsCache: { data: ProfessionCount[]; expires: number } | null = null;
+
+export async function getProfessionCounts(): Promise<ProfessionCount[]> {
+  if (professionCountsCache && professionCountsCache.expires > Date.now()) {
+    return professionCountsCache.data;
+  }
+  const supabase = createServerClient();
+  const { data, error } = await supabase
+    .from("profession_counts")
+    .select("profession, practitioner_count");
+  if (error) return professionCountsCache?.data ?? [];
+  const counts = (data ?? []).map((r) => ({
+    profession: String(r.profession),
+    count: Number(r.practitioner_count ?? 0),
+  }));
+  professionCountsCache = { data: counts, expires: Date.now() + COUNCILS_TTL_MS };
+  return counts;
+}
+
 const STATS_TTL_MS = 5 * 60 * 1000;
 let statsCache: { data: Stats; expires: number } | null = null;
 

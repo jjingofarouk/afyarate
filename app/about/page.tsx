@@ -45,15 +45,14 @@ export default function AboutPage() {
         <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
           <img
             src="/faroukjjingo.jpg"
-            alt="Dr. Jjingofarouk"
+            alt="Dr. Jjingo Farouk"
             className="size-20 rounded-full object-cover"
           />
           <div>
             <p>
               Rate Musawo was developed by{" "}
-              <strong className="text-slate-900 dark:text-slate-100">Dr. Jjingofarouk</strong>, a doctor
-              committed to helping patients in Uganda find and verify licensed
-              health professionals before seeking care.
+              <strong className="text-slate-900 dark:text-slate-100">Dr. Jjingo Farouk</strong>, a doctor
+              committed to improving quality patient care in Uganda
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
               <a
