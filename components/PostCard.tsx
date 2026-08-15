@@ -52,7 +52,7 @@ export default function PostCard({ post }: { post: Post }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={post.imageUrl}
-            alt={post.title}
+            alt={`${post.title} — ${post.organization}`}
             loading="lazy"
             className="h-full w-full object-cover object-top"
           />
@@ -85,7 +85,7 @@ export default function PostCard({ post }: { post: Post }) {
         <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-2 text-[11px] text-slate-500 dark:text-slate-400">
           {post.location && (
             <span className="inline-flex items-center gap-1">
-              <svg className="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <svg aria-hidden="true" className="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

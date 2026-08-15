@@ -47,11 +47,15 @@ export function mapPost(row: Row): Post {
   };
 }
 
+export type PostSort = "featured" | "newest" | "closingSoon";
+
 export interface PostSearchOptions {
   type?: string;
   profession?: string; // profession slug
   location?: string; // location slug
   organization?: string; // organization slug
+  q?: string; // free-text match against title/organization/location/profession/category
+  sort?: PostSort;
 }
 
 /** Slugify for facet URLs (/professions/medical-officer etc.). */
@@ -109,6 +113,33 @@ function slugMatches(slug: string | undefined, value: string | null): boolean {
   return !!slug && !!value && slugify(value) === slug;
 }
 
+/** Sort key for "closing soon": open listings first (soonest deadline first),
+ *  then rolling (no deadline), then closed — most recently closed first. Never
+ *  drops closed listings, just moves them to the back. */
+function closingSoonKey(p: Post): [number, number] {
+  if (!p.deadline) return [1, 0];
+  const days = Math.floor(
+    (new Date(`${p.deadline}T00:00:00`).getTime() - Date.now()) / 86400000,
+  );
+  return days >= 0 ? [0, days] : [2, -days];
+}
+
+function bySort(sort: PostSort | undefined, posts: Post[]): Post[] {
+  if (sort === "newest") {
+    return [...posts].sort(
+      (a, b) => new Date(b.publishedAt ?? 0).getTime() - new Date(a.publishedAt ?? 0).getTime(),
+    );
+  }
+  if (sort === "closingSoon") {
+    return [...posts].sort((a, b) => {
+      const [ta, da] = closingSoonKey(a);
+      const [tb, db] = closingSoonKey(b);
+      return ta - tb || da - db;
+    });
+  }
+  return posts; // "featured" (default): keep the cache's featured+published_at order
+}
+
 const POST_TYPES = new Set([
   "job",
   "internship",
@@ -140,7 +171,7 @@ const LIST_COLUMNS =
 /** All published listings, including ones whose deadline has passed (the card
  *  marks those as "Closed"). Cached in the worker; filtered by type in memory. */
 export async function getPosts(opts: PostSearchOptions = {}): Promise<Post[]> {
-  const { type, profession, location, organization } = opts;
+  const { type, profession, location, organization, q, sort } = opts;
   let posts = postsCache && postsCache.expires > Date.now() ? postsCache.data : null;
   if (!posts) {
     const supabase = createServerClient();
@@ -158,7 +189,15 @@ export async function getPosts(opts: PostSearchOptions = {}): Promise<Post[]> {
   if (profession) posts = posts.filter((p) => slugMatches(profession, p.profession));
   if (location) posts = posts.filter((p) => slugMatches(location, p.location));
   if (organization) posts = posts.filter((p) => slugMatches(organization, p.organization));
-  return posts;
+  if (q && q.trim()) {
+    const needle = q.trim().toLowerCase();
+    posts = posts.filter((p) =>
+      [p.title, p.organization, p.location, p.profession, p.category].some((f) =>
+        f?.toLowerCase().includes(needle),
+      ),
+    );
+  }
+  return bySort(sort, posts);
 }
 
 export interface PagedPosts {

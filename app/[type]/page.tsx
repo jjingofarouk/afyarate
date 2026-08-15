@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getPosts } from "@/lib/posts";
 import { POST_TYPE_LABELS, POST_TYPES, type PostType } from "@/lib/types";
 import PostBoard from "@/components/PostBoard";
+import PostTypeTabs from "@/components/PostTypeTabs";
 import { SITE_NAME } from "@/lib/site";
 
 const INITIAL_COUNT = 12;
@@ -114,6 +115,10 @@ export default async function TypePage({
           we&apos;ve found. Check back soon — we update daily.
         </p>
       </header>
+
+      <div className="mt-6">
+        <PostTypeTabs active={t} />
+      </div>
 
       {count === 0 ? (
         <p className="mt-10 text-sm text-slate-500 dark:text-slate-400">

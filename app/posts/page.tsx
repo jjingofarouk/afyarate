@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getPosts } from "@/lib/posts";
 import PostBoard from "@/components/PostBoard";
+import PostTypeTabs from "@/components/PostTypeTabs";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
@@ -23,18 +24,6 @@ export const metadata: Metadata = {
     type: "website",
   },
 };
-
-const TYPE_TABS: { value: string; label: string; href: string }[] = [
-  { value: "", label: "All", href: "/posts" },
-  { value: "job", label: "Jobs", href: "/jobs" },
-  { value: "internship", label: "Internships", href: "/internships" },
-  { value: "scholarship", label: "Scholarships", href: "/scholarships" },
-  { value: "grant", label: "Grants", href: "/grants" },
-  { value: "fellowship", label: "Fellowships", href: "/fellowships" },
-  { value: "conference", label: "Conferences", href: "/conferences" },
-  { value: "opportunity", label: "Opportunities", href: "/opportunities" },
-  { value: "other", label: "Other", href: "/other" },
-];
 
 export default async function PostsPage({
   searchParams,
@@ -97,23 +86,8 @@ export default async function PostsPage({
         </div>
       </FadeIn>
 
-      <div className="mt-6 flex flex-wrap gap-2">
-        {TYPE_TABS.map((tab) => {
-          const active = (type ?? "") === tab.value;
-          return (
-            <Link
-              key={tab.value}
-              href={tab.href}
-              className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
-                active
-                  ? "bg-emerald-600 text-white"
-                  : "border border-slate-300 text-slate-600 hover:border-emerald-500 hover:text-emerald-700 dark:border-slate-700 dark:text-slate-300 dark:hover:text-emerald-400"
-              }`}
-            >
-              {tab.label}
-            </Link>
-          );
-        })}
+      <div className="mt-6">
+        <PostTypeTabs active={type ?? ""} />
       </div>
 
       {posts.length === 0 ? (
