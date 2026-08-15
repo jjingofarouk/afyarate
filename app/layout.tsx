@@ -7,6 +7,8 @@ import ThemeToggle, { ThemeInitScript } from "@/components/ThemeToggle";
 import MobileNav from "@/components/MobileNav";
 import DesktopNav from "@/components/DesktopNav";
 import Footer from "@/components/Footer";
+import NoCopyScript from "@/components/NoCopy";
+import CopyNotice from "@/components/CopyNotice";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -79,6 +81,7 @@ export default function RootLayout({
           content="ca-pub-3215272580656507"
         />
         <ThemeInitScript />
+        <NoCopyScript />
         <Script
           async
           src="https://www.googletagmanager.com/gtag/js?id=G-YFWL8BL1F8"
@@ -123,6 +126,8 @@ export default function RootLayout({
         <main>{children}</main>
 
         <Footer />
+
+        <CopyNotice />
       </body>
     </html>
   );
