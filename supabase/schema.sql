@@ -97,6 +97,9 @@ create table if not exists public.posts (
   source_name text,                     -- e.g. 'Ministry of Health', 'WHO Uganda'
   source_url text,
   tags text[] not null default '{}',
+  benefits text,                        -- what's on offer (pay, stipend, funding, perks)
+  required_documents text,              -- what applicants must submit
+  key_dates text,                       -- application timeline / key dates
   featured boolean not null default false,
   status text not null default 'draft'
     check (status in ('draft','published','expired','archived','rejected')),
@@ -112,6 +115,9 @@ alter table public.posts add column if not exists image_url text;
 alter table public.posts add column if not exists submitter_name text;
 alter table public.posts add column if not exists submitter_email text;
 alter table public.posts add column if not exists rejection_reason text;
+alter table public.posts add column if not exists benefits text;
+alter table public.posts add column if not exists required_documents text;
+alter table public.posts add column if not exists key_dates text;
 -- Widen the status check constraint to include the moderation 'rejected' state
 -- (drop-then-add is idempotent and safe to re-run).
 alter table public.posts drop constraint if exists posts_status_check;

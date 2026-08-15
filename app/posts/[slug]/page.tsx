@@ -171,47 +171,148 @@ function MetaItem({ label, value }: { label: string; value: string }) {
 function isHeadingLine(line: string): boolean {
   const t = line.trim();
   if (!t || t.length > 80) return false;
-  if (/[.!?;:]$/.test(t)) return false;
-  if (/^[-*#\d•·]/.test(t)) return false;
   if (t.includes("\n")) return false;
+  if (/^[-*#\d•·]/.test(t)) return false;
+  // Short label ending in a colon, e.g. "Key responsibilities:"
+  if (t.length <= 40 && /^[A-Z][A-Za-z0-9 &/()-]+:$/.test(t)) return true;
+  if (/[.!?;]$/.test(t)) return false;
   const words = t.split(/\s+/);
   return words.some((w) => /^[A-Z]/.test(w));
 }
 
-function renderDescription(text: string) {
-  const blocks: { kind: "h" | "p"; content: string }[] = [];
-  let buf: string[] = [];
-  const flush = () => {
-    if (buf.length) {
-      const joined = buf.join("\n");
-      blocks.push({ kind: isHeadingLine(joined) ? "h" : "p", content: joined });
-      buf = [];
-    }
-  };
-  for (const line of text.split("\n")) {
-    if (line.trim() === "") {
-      flush();
+/** Minimal inline markdown: **bold** and [link](url). */
+function inlineFormat(text: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  const re = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)\s]+\))/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  let key = 0;
+  while ((m = re.exec(text))) {
+    if (m.index > last) parts.push(text.slice(last, m.index));
+    const token = m[0];
+    if (token.startsWith("**")) {
+      parts.push(<strong key={key++}>{token.slice(2, -2)}</strong>);
     } else {
-      buf.push(line);
+      const lm = token.match(/^\[([^\]]+)\]\(([^)\s]+)\)$/);
+      if (lm) {
+        parts.push(
+          <a
+            key={key++}
+            href={lm[2]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-emerald-700 underline dark:text-emerald-400"
+          >
+            {lm[1]}
+          </a>,
+        );
+      } else {
+        parts.push(token);
+      }
     }
+    last = m.index + token.length;
   }
-  flush();
-  return blocks.map((b, i) =>
-    b.kind === "h" ? (
-      <h2
-        key={i}
-        className="mt-7 text-base font-bold tracking-tight text-slate-900 first:mt-0 dark:text-slate-100"
-      >
-        {b.content}
-      </h2>
-    ) : (
-      <p
-        key={i}
-        className="mt-4 whitespace-pre-line text-[15px] leading-relaxed text-slate-700 first:mt-0 dark:text-slate-300"
-      >
-        {b.content}
-      </p>
-    )
+  if (last < text.length) parts.push(text.slice(last));
+  return parts;
+}
+
+function renderDescription(text: string) {
+  const blocks = text.split(/\n\s*\n/);
+  return blocks
+    .map((block) => block.trim())
+    .filter(Boolean)
+    .map((block, i) => {
+      const lines = block
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+      const all = (re: RegExp) => lines.length > 0 && lines.every((l) => re.test(l));
+
+      const h = block.match(/^#{1,3}\s+(.+)$/);
+      if (h) {
+        return (
+          <h2
+            key={i}
+            className="mt-7 text-lg font-bold tracking-tight text-slate-900 first:mt-0 dark:text-slate-100"
+          >
+            {inlineFormat(h[1])}
+          </h2>
+        );
+      }
+      if (all(/^[-*•]\s+/)) {
+        return (
+          <ul
+            key={i}
+            className="mt-4 list-disc space-y-1.5 pl-6 text-[15px] leading-relaxed text-slate-700 first:mt-0 dark:text-slate-300"
+          >
+            {lines.map((l, j) => (
+              <li key={j}>{inlineFormat(l.replace(/^[-*•]\s+/, ""))}</li>
+            ))}
+          </ul>
+        );
+      }
+      if (all(/^\d+[.)]\s+/)) {
+        return (
+          <ol
+            key={i}
+            className="mt-4 list-decimal space-y-1.5 pl-6 text-[15px] leading-relaxed text-slate-700 first:mt-0 dark:text-slate-300"
+          >
+            {lines.map((l, j) => (
+              <li key={j}>{inlineFormat(l.replace(/^\d+[.)]\s+/, ""))}</li>
+            ))}
+          </ol>
+        );
+      }
+      if (isHeadingLine(block)) {
+        return (
+          <h2
+            key={i}
+            className="mt-7 text-lg font-bold tracking-tight text-slate-900 first:mt-0 dark:text-slate-100"
+          >
+            {inlineFormat(block)}
+          </h2>
+        );
+      }
+      return (
+        <p
+          key={i}
+          className="mt-4 whitespace-pre-line text-[15px] leading-relaxed text-slate-700 first:mt-0 dark:text-slate-300"
+        >
+          {inlineFormat(block)}
+        </p>
+      );
+    });
+}
+
+const segmentIcon = (
+  <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+function Segment({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex items-center gap-2.5">
+        <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+          {icon ?? segmentIcon}
+        </span>
+        <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          {title}
+        </h2>
+      </div>
+      <div className="mt-3 whitespace-pre-line text-[15px] leading-relaxed text-slate-700 dark:text-slate-300">
+        {children}
+      </div>
+    </section>
   );
 }
 
@@ -337,6 +438,71 @@ export default async function PostDetailPage({
           )}
 
           <div className="mt-4">{renderDescription(post.description)}</div>
+
+          {post.qualification && (
+            <Segment
+              title="Qualifications"
+              icon={
+                <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0v6m6-3.5V14" />
+                </svg>
+              }
+            >
+              {post.qualification}
+            </Segment>
+          )}
+
+          {post.eligibility && (
+            <Segment
+              title="Eligibility"
+              icon={
+                <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.36-1.86M17 20H7m10 0v-2c0-.79-.25-1.53-.68-2.13M7 20H2v-2a3 3 0 015.36-1.86M7 20v-2c0-.79.25-1.53.68-2.13m0 0C9.26 14.67 10.58 14 12 14s2.74.67 3.82 1.87M16 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              }
+            >
+              {post.eligibility}
+            </Segment>
+          )}
+
+          {post.benefits && (
+            <Segment
+              title="Benefits & what's on offer"
+              icon={
+                <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11.05 3.05a1 1 0 011.9 0l1.54 4.78a1 1 0 00.95.69h5.02a1 1 0 01.59 1.8l-4.06 2.95a1 1 0 00-.36 1.12l1.55 4.78a1 1 0 01-1.54 1.12L12.6 16.9a1 1 0 00-1.18 0l-4.06 2.95a1 1 0 01-1.54-1.12l1.55-4.78a1 1 0 00-.36-1.12L2.95 10.32a1 1 0 01.59-1.8h5.02a1 1 0 00.95-.69l1.54-4.78z" />
+                </svg>
+              }
+            >
+              {post.benefits}
+            </Segment>
+          )}
+
+          {post.requiredDocuments && (
+            <Segment
+              title="What to submit"
+              icon={
+                <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                </svg>
+              }
+            >
+              {post.requiredDocuments}
+            </Segment>
+          )}
+
+          {post.keyDates && (
+            <Segment
+              title="Key dates"
+              icon={
+                <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              }
+            >
+              {post.keyDates}
+            </Segment>
+          )}
 
           <RelatedLinks post={post} />
 

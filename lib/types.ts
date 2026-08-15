@@ -97,6 +97,9 @@ export interface Post {
   applicationUrl: string | null;
   applicationEmail: string | null;
   deadline: string | null;
+  benefits: string | null;
+  requiredDocuments: string | null;
+  keyDates: string | null;
   sourceName: string | null;
   sourceUrl: string | null;
   tags: string[];

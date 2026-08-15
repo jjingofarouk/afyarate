@@ -111,6 +111,7 @@ export async function POST(req: NextRequest) {
     "type", "title", "organization", "category", "profession", "location",
     "employment_type", "experience_level", "salary", "summary", "description",
     "how_to_apply", "application_url", "application_email", "deadline",
+    "benefits", "required_documents", "key_dates",
     "source_name", "source_url", "image_url",
     "submitter_name", "submitter_email",
   ];

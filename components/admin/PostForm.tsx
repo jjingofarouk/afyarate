@@ -51,6 +51,9 @@ export default function PostForm({ post }: { post?: Post }) {
       init.deadline = post.deadline ?? "";
       init.source_name = post.sourceName ?? "";
       init.source_url = post.sourceUrl ?? "";
+      init.benefits = post.benefits ?? "";
+      init.required_documents = post.requiredDocuments ?? "";
+      init.key_dates = post.keyDates ?? "";
       init.submitter_name = post.submitterName ?? "";
       init.submitter_email = post.submitterEmail ?? "";
     }
@@ -359,6 +362,48 @@ export default function PostForm({ post }: { post?: Post }) {
             Tags
           </label>
           <input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="Comma separated, e.g. nursing, kampala, fresh-graduate" className={`mt-1.5 ${inputClass}`} />
+        </div>
+
+        <div className="sm:col-span-2">
+          <label className={labelClass} htmlFor="benefits">
+            Benefits / what's on offer
+          </label>
+          <textarea
+            id="benefits"
+            rows={3}
+            value={form.benefits ?? ""}
+            onChange={set("benefits")}
+            placeholder="Pay, stipend, funding, allowances, training, growth…"
+            className={`mt-1.5 ${inputClass} resize-y`}
+          />
+        </div>
+
+        <div className="sm:col-span-2">
+          <label className={labelClass} htmlFor="required_documents">
+            Required documents
+          </label>
+          <textarea
+            id="required_documents"
+            rows={3}
+            value={form.required_documents ?? ""}
+            onChange={set("required_documents")}
+            placeholder="What applicants must submit (CV, cover letter, certificates…) — one per line"
+            className={`mt-1.5 ${inputClass} resize-y`}
+          />
+        </div>
+
+        <div className="sm:col-span-2">
+          <label className={labelClass} htmlFor="key_dates">
+            Key dates / timeline
+          </label>
+          <textarea
+            id="key_dates"
+            rows={3}
+            value={form.key_dates ?? ""}
+            onChange={set("key_dates")}
+            placeholder="Application window, shortlisting, interviews, start date…"
+            className={`mt-1.5 ${inputClass} resize-y`}
+          />
         </div>
 
         <div className="sm:col-span-2">

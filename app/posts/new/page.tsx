@@ -347,6 +347,48 @@ export default function NewPostPage() {
             />
           </div>
 
+          <div className="sm:col-span-2">
+            <label className={labelClass} htmlFor="benefits">
+              Benefits / what's on offer <span className="font-normal text-slate-400">(optional)</span>
+            </label>
+            <textarea
+              id="benefits"
+              rows={2}
+              value={form.benefits ?? ""}
+              onChange={set("benefits")}
+              placeholder="Pay, stipend, funding, allowances, training…"
+              className={`mt-1.5 ${inputClass} resize-y`}
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className={labelClass} htmlFor="required_documents">
+              Required documents <span className="font-normal text-slate-400">(optional)</span>
+            </label>
+            <textarea
+              id="required_documents"
+              rows={2}
+              value={form.required_documents ?? ""}
+              onChange={set("required_documents")}
+              placeholder="CV, cover letter, certificates…"
+              className={`mt-1.5 ${inputClass} resize-y`}
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className={labelClass} htmlFor="key_dates">
+              Key dates / timeline <span className="font-normal text-slate-400">(optional)</span>
+            </label>
+            <textarea
+              id="key_dates"
+              rows={2}
+              value={form.key_dates ?? ""}
+              onChange={set("key_dates")}
+              placeholder="Application window, shortlisting, interviews, start date…"
+              className={`mt-1.5 ${inputClass} resize-y`}
+            />
+          </div>
+
           <div>
             <label className={labelClass} htmlFor="application_url">
               Application link
