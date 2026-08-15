@@ -11,7 +11,7 @@ function daysUntil(date: string): number {
 function Deadline({ date }: { date: string | null }) {
   if (!date) {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
         <span className="size-1.5 rounded-full bg-emerald-500" />
         Rolling
       </span>
@@ -21,7 +21,7 @@ function Deadline({ date }: { date: string | null }) {
   const closed = days < 0;
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
         closed
           ? "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400"
           : days <= 7
@@ -53,8 +53,10 @@ export default function PostCard({ post }: { post: Post }) {
           <img
             src={post.imageUrl}
             alt={`${post.title} — ${post.organization}`}
+            width={1200}
+            height={750}
             loading="lazy"
-            className="h-full w-full object-cover object-top"
+            className="h-full w-full object-cover object-center"
           />
           <div className="absolute left-2 top-2">
             <TypeBadge type={post.type} />
@@ -73,7 +75,7 @@ export default function PostCard({ post }: { post: Post }) {
         <div className="flex items-center justify-between gap-2">
           <Deadline date={post.deadline} />
           {post.featured && (
-            <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+            <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
               ★ Featured
             </span>
           )}
@@ -82,7 +84,7 @@ export default function PostCard({ post }: { post: Post }) {
           {post.title}
         </h3>
         <p className="text-xs text-slate-500 dark:text-slate-400">{post.organization}</p>
-        <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-2 text-[11px] text-slate-500 dark:text-slate-400">
+        <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-2 text-xs text-slate-500 dark:text-slate-400">
           {post.location && (
             <span className="inline-flex items-center gap-1">
               <svg aria-hidden="true" className="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -110,7 +112,7 @@ export default function PostCard({ post }: { post: Post }) {
 
 export function TypeBadge({ type }: { type: PostType }) {
   return (
-    <span className="rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur">
+    <span className="rounded-full bg-black/60 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur">
       {POST_TYPE_LABELS[type].label}
     </span>
   );

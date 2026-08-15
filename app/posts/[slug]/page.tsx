@@ -161,7 +161,7 @@ export async function generateMetadata({
 function MetaItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+      <dt className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         {label}
       </dt>
       <dd className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</dd>
@@ -395,12 +395,14 @@ export default async function PostDetailPage({
 
       <div>
         {post.imageUrl && (
-          <div className="mb-8 aspect-[16/7] overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
+          <div className="mb-8 aspect-[16/9] overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={post.imageUrl}
               alt={`${post.title} at ${post.organization}`}
-              className="h-full w-full object-cover object-top"
+              width={1200}
+              height={675}
+              className="h-full w-full object-cover object-center"
             />
           </div>
         )}
@@ -409,12 +411,12 @@ export default async function PostDetailPage({
           <div className="flex flex-wrap items-center gap-2">
             <TypeBadge type={post.type as PostType} />
             {post.profession && (
-              <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+              <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                 {post.profession}
               </span>
             )}
             {post.featured && (
-              <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
                 ★ Featured
               </span>
             )}
