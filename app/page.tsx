@@ -68,7 +68,7 @@ export default async function HomePage({
         <section className="relative flex min-h-[420px] items-center overflow-hidden sm:min-h-[480px] lg:min-h-[600px]">
           <MotionImg
             src="/dr-jjingo-hero.jpg"
-            alt="Dr. Jjingo farouk, founder of Rate Musawo"
+            alt="Licensed health professionals in Uganda"
             className="absolute inset-0 h-full w-full object-cover"
             loading="eager"
             width={1200}
