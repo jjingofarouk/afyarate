@@ -6,7 +6,7 @@ function StatusBadge({ status }: { status: string | null }) {
   const active = status === "Active";
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
         active
           ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300"
           : "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
@@ -65,7 +65,7 @@ export default function PractitionerCard({ p }: { p: Practitioner }) {
         <div className="mt-auto flex items-center justify-between pt-2">
           <Stars value={p.avgRating} count={p.ratingCount} size={14} />
           {p.licenseExpiryDate && (
-            <span className="text-[11px] text-slate-400 dark:text-slate-500">
+            <span className="text-xs text-slate-400 dark:text-slate-500">
               Exp {p.licenseExpiryDate}
             </span>
           )}

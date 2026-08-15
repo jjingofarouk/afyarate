@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { POST_TYPES, POST_TYPE_LABELS } from "@/lib/types";
 
 const sectionLabelClass =
-  "px-3 pt-5 pb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500";
+  "px-3 pt-5 pb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500";
 
 const linkClass =
   "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800";

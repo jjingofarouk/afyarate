@@ -4,7 +4,7 @@ import { POST_TYPES, POST_TYPE_LABELS } from "@/lib/types";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 
 const sectionClass =
-  "text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500";
+  "text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500";
 
 const linkClass =
   "text-sm text-slate-500 transition hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400";

@@ -6,7 +6,7 @@ import { Stars } from "./Stars";
 export function FacilityKindBadge({ kind }: { kind: FacilityKind }) {
   const label = FACILITY_KIND_LABELS[kind].label;
   return (
-    <span className="rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur">
+    <span className="rounded-full bg-black/60 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur">
       {label}
     </span>
   );
@@ -59,7 +59,7 @@ export default function FacilityCard({ facility: f }: { facility: Facility }) {
         <div className="mt-auto flex items-center justify-between gap-2 pt-2">
           <Stars value={f.avgRating} count={f.ratingCount} size={14} />
           {f.phone && (
-            <span className="truncate text-[11px] text-slate-400 dark:text-slate-500">
+            <span className="truncate text-xs text-slate-400 dark:text-slate-500">
               {f.phone}
             </span>
           )}

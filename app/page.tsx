@@ -81,7 +81,7 @@ export default async function HomePage({
 
           <div className="relative z-10 w-full px-4 py-10 text-center sm:px-10 sm:py-16">
             <p className="mx-auto mb-3 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-              🇺🇬 The home for Uganda&apos;s health workers. Verified, rated and hiring
+              🇺🇬 The home for Uganda&apos;s health workers. Verified, rated and hiring.
             </p>
             <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-5xl">
               <AnimatedWords text="Find the right care in Uganda." startDelay={0.15} />{" "}
@@ -123,7 +123,7 @@ export default async function HomePage({
                     <div className="truncate text-lg font-bold text-emerald-700 sm:text-2xl dark:text-emerald-400">
                       {s.value}
                     </div>
-                    <div className="mt-0.5 text-[10px] font-medium uppercase leading-tight tracking-wide text-slate-500 sm:text-xs dark:text-slate-400">
+                    <div className="mt-0.5 text-xs font-medium uppercase leading-tight tracking-wide text-slate-500 dark:text-slate-400">
                       {s.label}
                     </div>
                   </div>

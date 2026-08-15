@@ -68,7 +68,7 @@ export default function HelpSearch() {
             if (articles.length === 0) return null;
             return (
               <section key={collection}>
-                <h2 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                   {collection}
                 </h2>
                 <div className="mt-3 grid gap-3 sm:grid-cols-2">

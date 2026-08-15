@@ -339,7 +339,7 @@ export default async function PractitionerPage({
                         </td>
                         <td className="py-2 pr-3">
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                            className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                               l.licenceStatus === "Active"
                                 ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300"
                                 : "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300"
