@@ -44,6 +44,7 @@ export interface FacilitySearchOptions {
 export interface FacilityStats {
   hospitals: number;
   pharmacies: number;
+  total: number;
 }
 
 /** True when the facilities schema has been created (run scripts/setup_supabase.mjs). */
@@ -173,6 +174,7 @@ export async function getFacilityStats(): Promise<FacilityStats> {
   const stats: FacilityStats = {
     hospitals: h.count ?? 0,
     pharmacies: p.count ?? 0,
+    total: (h.count ?? 0) + (p.count ?? 0),
   };
   statsCache = { data: stats, expires: Date.now() + STATS_TTL_MS };
   return stats;

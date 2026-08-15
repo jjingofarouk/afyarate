@@ -4,12 +4,35 @@ import { getPosts } from "@/lib/posts";
 import PractitionerSearch from "@/components/PractitionerSearch";
 import FacilityCard from "@/components/FacilityCard";
 import PostCard from "@/components/PostCard";
-import { PAGE_SIZE } from "@/lib/site";
+import { PAGE_SIZE, SITE_URL } from "@/lib/site";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { AnimatedWords } from "@/components/motion/AnimatedWords";
 import { MotionImg } from "@/components/motion/MotionImg";
 import { slugify } from "@/lib/posts";
 import Link from "next/link";
+
+const FAQS = [
+  {
+    q: "Is Rate Musawo free to use?",
+    a: "Yes. Searching the registry and reading or leaving ratings is completely free — for patients and health workers.",
+  },
+  {
+    q: "Where does the licensing data come from?",
+    a: "We use the official public register published by the Uganda Medical and Dental Practitioners Council (UMDPC), which lists every practitioner with a current licence.",
+  },
+  {
+    q: "Who can leave a rating?",
+    a: "Anyone who has seen a health worker can rate them — patients, their families, or colleagues. Each rating is reviewed and clearly marked as verified or unverified.",
+  },
+  {
+    q: "Can I find a doctor near me?",
+    a: "Yes — search by name, profession, council or licence number. Every practitioner page shows their council, registration and licence status so you can check they are currently licensed.",
+  },
+  {
+    q: "How do I correct or update a listing?",
+    a: "If you see outdated or incorrect licensing details, contact us and we will verify it against the official registry and fix it.",
+  },
+];
 
 export const dynamic = "force-dynamic";
 
@@ -225,28 +248,7 @@ export default async function HomePage({
             Frequently asked questions
           </h2>
           <div className="mt-6 space-y-3">
-            {[
-              {
-                q: "Is Rate Musawo free to use?",
-                a: "Yes. Searching the registry and reading or leaving ratings is completely free — for patients and health workers.",
-              },
-              {
-                q: "Where does the licensing data come from?",
-                a: "We use the official public register published by the Uganda Medical and Dental Practitioners Council (UMDPC), which lists every practitioner with a current licence.",
-              },
-              {
-                q: "Who can leave a rating?",
-                a: "Anyone who has seen a health worker can rate them — patients, their families, or colleagues. Each rating is reviewed and clearly marked as verified or unverified.",
-              },
-              {
-                q: "Can I find a doctor near me?",
-                a: "Yes — search by name, profession, council or licence number. Every practitioner page shows their council, registration and licence status so you can check they are currently licensed.",
-              },
-              {
-                q: "How do I correct or update a listing?",
-                a: "If you see outdated or incorrect licensing details, contact us and we will verify it against the official registry and fix it.",
-              },
-            ].map((f) => (
+            {FAQS.map((f) => (
               <details
                 key={f.q}
                 className="group rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
@@ -280,49 +282,36 @@ export default async function HomePage({
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: [
+            "@graph": [
               {
-                "@type": "Question",
-                name: "Is Rate Musawo free to use?",
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: "Yes. Searching the registry and reading or leaving ratings is completely free — for patients and health workers.",
-                },
+                "@type": "FAQPage",
+                mainEntity: FAQS.map((f) => ({
+                  "@type": "Question",
+                  name: f.q,
+                  acceptedAnswer: { "@type": "Answer", text: f.a },
+                })),
               },
-              {
-                "@type": "Question",
-                name: "Where does the licensing data come from?",
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: "We use the official public register published by the Uganda Medical and Dental Practitioners Council (UMDPC), which lists every practitioner with a current licence.",
-                },
+              recentPosts.length > 0 && {
+                "@type": "ItemList",
+                name: "Latest health jobs & opportunities in Uganda",
+                itemListElement: recentPosts.map((p, i) => ({
+                  "@type": "ListItem",
+                  position: i + 1,
+                  name: p.title,
+                  url: `${SITE_URL}/posts/${p.slug}`,
+                })),
               },
-              {
-                "@type": "Question",
-                name: "Who can leave a rating?",
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: "Anyone who has seen a health worker can rate them — patients, their families, or colleagues. Each rating is reviewed and clearly marked as verified or unverified.",
-                },
+              topFacilities && topFacilities.items.length > 0 && {
+                "@type": "ItemList",
+                name: "Hospitals & pharmacies in Uganda",
+                itemListElement: topFacilities.items.slice(0, 6).map((f, i) => ({
+                  "@type": "ListItem",
+                  position: i + 1,
+                  name: f.name,
+                  url: `${SITE_URL}/facilities/${f.slug}`,
+                })),
               },
-              {
-                "@type": "Question",
-                name: "Can I find a doctor near me?",
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: "Yes — search by name, profession, council or licence number. Every practitioner page shows their council, registration and licence status so you can check they are currently licensed.",
-                },
-              },
-              {
-                "@type": "Question",
-                name: "How do I correct or update a listing?",
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: "If you see outdated or incorrect licensing details, contact us and we will verify it against the official registry and fix it.",
-                },
-              },
-            ],
+            ].filter(Boolean),
           }),
         }}
       />

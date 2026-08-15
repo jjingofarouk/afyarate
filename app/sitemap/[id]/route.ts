@@ -1,13 +1,17 @@
 import { getPosts, getProfessions, getLocations, getOrganizations, slugify } from "@/lib/posts";
 import { getPractitionerIdsPage, getProfessionCounts, getStats } from "@/lib/practitioners";
+import { getFacilityIdsPage, getFacilityStats } from "@/lib/facilities";
 import { HELP_ARTICLES } from "@/data/help";
 import { POST_TYPE_LABELS, POST_TYPES } from "@/lib/types";
 import { SITE_URL } from "@/lib/site";
 
-// Keep chunks under Supabase's 1,000-row response cap so every practitioner
-// makes it into the sitemap (a 50k request silently returns only the first
-// 1,000 rows). The index (/sitemap.xml) lists 2 + ceil(practitioners/1000)
-// chunks; offsets below match that layout.
+// Keep chunks under Supabase's 1,000-row response cap so every URL makes it
+// into the sitemap (a 50k request silently returns only the first 1,000 rows).
+// Chunk layout:
+//   0                                     -> static + type landing + help pages
+//   1                                     -> posts (detail + facet) + practitioner-profession
+//   2 .. 1+facilityChunks                 -> facilities detail pages
+//   (2+facilityChunks) ..                 -> practitioners
 export const dynamic = "force-static";
 export const dynamicParams = false;
 export const revalidate = 3600;
@@ -16,13 +20,20 @@ const CHUNK = 1000;
 
 export async function generateStaticParams() {
   let practitionerChunks = 0;
+  let facilityChunks = 0;
   try {
     const stats = await getStats();
     practitionerChunks = Math.max(0, Math.ceil(stats.practitioners / CHUNK));
   } catch {
     practitionerChunks = 0;
   }
-  return Array.from({ length: 2 + practitionerChunks }, (_, i) => ({
+  try {
+    const fstats = await getFacilityStats();
+    facilityChunks = Math.max(0, Math.ceil(fstats.total / CHUNK));
+  } catch {
+    facilityChunks = 0;
+  }
+  return Array.from({ length: 2 + facilityChunks + practitionerChunks }, (_, i) => ({
     id: String(i),
   }));
 }
@@ -63,16 +74,21 @@ ${lastmod ? `    <lastmod>${lastmod}</lastmod>\n` : ""}${e.priority != null ? ` 
 </urlset>`;
 }
 
-// Chunk layout:
-//   id 0  -> static + type landing + help pages
-//   id 1  -> posts (detail + profession + location + organization pages)
-//   id 2+ -> practitioners
 export async function GET(
   _req: Request,
   ctx: { params: Promise<{ id: string }> },
 ): Promise<Response> {
   const { id } = await ctx.params;
   const chunkId = Number(id) || 0;
+
+  let facilityChunks = 0;
+  try {
+    const fstats = await getFacilityStats();
+    facilityChunks = Math.max(0, Math.ceil(fstats.total / CHUNK));
+  } catch {
+    facilityChunks = 0;
+  }
+  const PRACTITIONER_START = 2 + facilityChunks;
 
   let entries: Entry[] = [];
 
@@ -139,8 +155,18 @@ export async function GET(
         freq: "weekly",
       });
     }
-  } else {
+  } else if (chunkId < PRACTITIONER_START) {
+    // Facilities detail pages (hospitals & pharmacies).
     const offset = (chunkId - 2) * CHUNK;
+    const rows = await getFacilityIdsPage(offset, CHUNK);
+    entries = rows.map((r) => ({
+      url: `${SITE_URL}/facilities/${r.slug}`,
+      lastmod: r.updatedAt ?? undefined,
+      priority: 0.6,
+      freq: "weekly",
+    }));
+  } else {
+    const offset = (chunkId - PRACTITIONER_START) * CHUNK;
     const rows = await getPractitionerIdsPage(offset, CHUNK);
     entries = rows.map((r) => ({
       url: `${SITE_URL}/practitioners/${r.id}`,

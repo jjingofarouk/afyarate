@@ -69,7 +69,10 @@ export async function generateMetadata({
   return {
     title: `${t === "job" ? "Medical & Health Jobs in Uganda" : `${meta.short} in Uganda`} (${new Date().getFullYear()})`,
     description: `Browse the latest ${meta.short.toLowerCase()} in Uganda on ${SITE_NAME}. ${meta.blurb}`,
-    alternates: { canonical: `/${type}` },
+    alternates: {
+      canonical: `/${type}`,
+      types: { "application/rss+xml": "/posts/feed.xml" },
+    },
     openGraph: {
       title: `${t === "job" ? "Medical & Health Jobs in Uganda" : `${meta.short} in Uganda`} · ${SITE_NAME}`,
       description: meta.blurb,

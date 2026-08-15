@@ -3,16 +3,25 @@ import Link from "next/link";
 import { getPosts } from "@/lib/posts";
 import PostBoard from "@/components/PostBoard";
 import { FadeIn } from "@/components/motion/FadeIn";
-import { SITE_NAME } from "@/lib/site";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 const INITIAL_COUNT = 12;
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Jobs & Opportunities",
-  description: `${SITE_NAME} job board — jobs, internships, scholarships, grants and opportunities for healthcare professionals in Uganda.`,
-  alternates: { canonical: "/posts" },
+  title: "Jobs & Opportunities for Health Workers in Uganda",
+  description: `${SITE_NAME} job board — jobs, internships, scholarships, grants, fellowships and opportunities for doctors, nurses, midwives, clinical officers and allied health professionals in Uganda. Updated daily.`,
+  alternates: {
+    canonical: "/posts",
+    types: { "application/rss+xml": "/posts/feed.xml" },
+  },
+  openGraph: {
+    title: "Jobs & Opportunities for Health Workers in Uganda · Rate Musawo",
+    description:
+      "Jobs, internships, scholarships, grants and fellowships for healthcare professionals in Uganda — updated daily.",
+    type: "website",
+  },
 };
 
 const TYPE_TABS: { value: string; label: string; href: string }[] = [
@@ -34,6 +43,34 @@ export default async function PostsPage({
 }) {
   const { type } = await searchParams;
   const posts = await getPosts({ type });
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+          { "@type": "ListItem", position: 2, name: "Jobs & Opportunities" },
+        ],
+      },
+      {
+        "@type": "CollectionPage",
+        name: "Jobs & Opportunities for Health Workers in Uganda",
+        description: metadata.description,
+        url: `${SITE_URL}/posts`,
+        mainEntity: {
+          "@type": "ItemList",
+          itemListElement: posts.slice(0, 30).map((p, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: p.title,
+            url: `${SITE_URL}/posts/${p.slug}`,
+          })),
+        },
+      },
+    ],
+  };
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -94,6 +131,11 @@ export default async function PostsPage({
           </div>
         </FadeIn>
       )}
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
     </div>
   );
 }
