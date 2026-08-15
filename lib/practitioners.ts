@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createServerClient } from "./supabase/server";
 import type {
   LicenseRecord,
@@ -101,22 +102,25 @@ export async function searchPractitioners(
 
   if (sort === "random") {
     // Randomised slice so browsing shows a mix of councils/specialties.
-    const { data, error } = await supabase.rpc("search_random", {
-      p_limit: pageSize,
-      p_offset: offset,
-      p_q: q,
-      p_council: council,
-      p_status: status,
-      p_profession: profession,
-    });
+    // The row RPC and the count query are independent — run together.
+    const [{ data, error }, { count: c, error: cErr }] = await Promise.all([
+      supabase.rpc("search_random", {
+        p_limit: pageSize,
+        p_offset: offset,
+        p_q: q,
+        p_council: council,
+        p_status: status,
+        p_profession: profession,
+      }),
+      buildFilters(
+        supabase
+          .from("practitioners_overview")
+          .select("id", { count: "exact", head: true }),
+      ),
+    ]);
     if (error) throw new Error(error.message);
     // Defensive: enforce the page size regardless of what the RPC returns.
     items = ((data ?? []) as Row[]).slice(0, pageSize);
-    const { count: c, error: cErr } = await buildFilters(
-      supabase
-        .from("practitioners_overview")
-        .select("id", { count: "exact", head: true }),
-    );
     if (cErr) throw new Error(cErr.message);
     count = c ?? 0;
   } else {
@@ -143,17 +147,22 @@ export async function searchPractitioners(
     count = c ?? 0;
   }
 
+  const [councils, professions] = await Promise.all([getCouncils(), getProfessions()]);
   return {
     items: items.map(mapPractitioner),
     total: count,
     page,
     pageSize,
-    councils: await getCouncils(),
-    professions: await getProfessions(),
+    councils,
+    professions,
   };
 }
 
-export async function getPractitioner(id: number): Promise<Practitioner | null> {
+// cache(): dedupes within a single request — generateMetadata() and the page
+// body both look up the same practitioner, and this collapses that back to
+// one Supabase call. Scoped per-request only, so a rating submitted via
+// router.refresh() still shows up immediately (unlike a cross-request cache).
+export const getPractitioner = cache(async (id: number): Promise<Practitioner | null> => {
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("practitioners_overview")
@@ -162,7 +171,7 @@ export async function getPractitioner(id: number): Promise<Practitioner | null> 
     .maybeSingle();
   if (error) throw new Error(error.message);
   return data ? mapPractitioner(data) : null;
-}
+});
 
 export async function getLicenses(
   practitionerId: number,

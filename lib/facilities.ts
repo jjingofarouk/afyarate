@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createServerClient } from "./supabase/server";
 import type {
   Facility,
@@ -99,11 +100,9 @@ export async function searchFacilities(
     query = query.order("name", { ascending: true });
   }
 
-  const { data, count, error } = await query;
-  if (error) throw new Error(error.message);
-
   const citiesQuery = buildFilters(supabase.from("facilities_overview").select("city"));
-  const { data: cityRows } = await citiesQuery;
+  const [{ data, count, error }, { data: cityRows }] = await Promise.all([query, citiesQuery]);
+  if (error) throw new Error(error.message);
 
   return {
     items: ((data ?? []) as Row[]).map(mapFacility),
@@ -121,7 +120,11 @@ export async function searchFacilities(
   };
 }
 
-export async function getFacility(slug: string): Promise<Facility | null> {
+// cache(): dedupes within a single request — generateMetadata() and the page
+// body both look up the same facility, and this collapses that back to one
+// Supabase call. Scoped per-request only, so a rating submitted via
+// router.refresh() still shows up immediately (unlike a cross-request cache).
+export const getFacility = cache(async (slug: string): Promise<Facility | null> => {
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("facilities_overview")
@@ -130,7 +133,7 @@ export async function getFacility(slug: string): Promise<Facility | null> {
     .maybeSingle();
   if (error) throw new Error(error.message);
   return data ? mapFacility(data as Row) : null;
-}
+});
 
 export async function getFacilityRatings(
   facilityId: number,

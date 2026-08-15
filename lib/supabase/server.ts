@@ -6,13 +6,14 @@ import { createClient, SupabaseClient } from "@supabase/supabase-js";
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
 
-let _client: SupabaseClient | null = null;
-
+// A fresh client per call, not a module-level singleton: Cloudflare Workers
+// can reuse one JS isolate (and its globals) across concurrent requests, so a
+// shared client was being hit by overlapping requests at once — the cause of
+// the "garbled results" that used to force sequential (not parallel) queries
+// everywhere. supabase-js is just a thin fetch wrapper (no persistent
+// connection to open), so this is cheap.
 export function createServerClient(): SupabaseClient {
-  if (!_client) {
-    _client = createClient(url, key, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
-  }
-  return _client;
+  return createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }

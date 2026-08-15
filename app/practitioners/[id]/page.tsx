@@ -6,6 +6,7 @@ import {
   getPractitioner,
   getRatings,
 } from "@/lib/practitioners";
+import { slugify } from "@/lib/posts";
 import { SITE_URL } from "@/lib/site";
 import { InitialsAvatar } from "@/components/PractitionerCard";
 import { Stars } from "@/components/Stars";
@@ -82,26 +83,81 @@ function safeJsonLd(data: unknown): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
+/** Doctors and dentists get schema.org's dedicated person types; every other
+ *  cadre (nurse, pharmacist, clinical officer, allied health...) has no
+ *  matching schema.org type, so it falls back to Person + jobTitle rather
+ *  than the inaccurate "everyone is a Physician" markup this used to emit. */
+function practitionerSchemaType(profession: string | null): string {
+  if (profession === "Doctor") return "Physician";
+  if (profession === "Dentist") return "Dentist";
+  return "Person";
+}
+
 export default async function PractitionerPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const practitioner = await getPractitioner(Number(id));
+  const numId = Number(id);
+  // All three are keyed off the same id (no need to wait for practitioner to
+  // resolve before starting the other two) — fetch in parallel.
+  const [practitioner, licenses, ratings] = await Promise.all([
+    getPractitioner(numId),
+    getLicenses(numId),
+    getRatings(numId),
+  ]);
   if (!practitioner) notFound();
 
-  const licenses = await getLicenses(practitioner.id);
-  const ratings = await getRatings(practitioner.id);
   const active = practitioner.licenceStatus === "Active";
+
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "Practitioners", item: `${SITE_URL}/practitioners` },
+      ...(practitioner.profession
+        ? [
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: `${practitioner.profession}s`,
+              item: `${SITE_URL}/practitioners/profession/${slugify(practitioner.profession)}`,
+            },
+          ]
+        : []),
+      { "@type": "ListItem", position: practitioner.profession ? 4 : 3, name: practitioner.name },
+    ],
+  };
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Physician",
+    "@type": practitionerSchemaType(practitioner.profession),
     name: practitioner.name,
     url: `${SITE_URL}/practitioners/${practitioner.id}`,
     image: practitioner.imageUrl || `${SITE_URL}/logo.png`,
-    ...(practitioner.council ? { medicalSpecialty: practitioner.council } : {}),
+    ...(practitioner.profession ? { jobTitle: practitioner.profession } : {}),
+    ...(practitioner.council
+      ? { memberOf: { "@type": "MedicalOrganization", name: practitioner.council } }
+      : {}),
+    ...(practitioner.registrationNo
+      ? {
+          identifier: {
+            "@type": "PropertyValue",
+            name: "Registration No.",
+            value: practitioner.registrationNo,
+          },
+        }
+      : {}),
+    ...(practitioner.qualifications
+      ? {
+          hasCredential: {
+            "@type": "EducationalOccupationalCredential",
+            credentialCategory: practitioner.qualifications,
+          },
+        }
+      : {}),
     ...(practitioner.ratingCount > 0 && practitioner.avgRating
       ? {
           aggregateRating: {
@@ -135,15 +191,29 @@ export default async function PractitionerPage({
     <div className="mx-auto max-w-6xl px-4 py-8">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd([breadcrumbLd, jsonLd]) }}
       />
 
-      <Link
-        href="/"
-        className="mb-6 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400"
-      >
-        ← Back to search
-      </Link>
+      <nav className="mb-6 text-xs text-slate-400 dark:text-slate-500">
+        <Link href="/" className="hover:text-emerald-700 dark:hover:text-emerald-400">Home</Link>
+        <span className="mx-1.5">/</span>
+        <Link href="/practitioners" className="hover:text-emerald-700 dark:hover:text-emerald-400">
+          Practitioners
+        </Link>
+        {practitioner.profession && (
+          <>
+            <span className="mx-1.5">/</span>
+            <Link
+              href={`/practitioners/profession/${slugify(practitioner.profession)}`}
+              className="hover:text-emerald-700 dark:hover:text-emerald-400"
+            >
+              {practitioner.profession}s
+            </Link>
+          </>
+        )}
+        <span className="mx-1.5">/</span>
+        <span className="text-slate-600 dark:text-slate-400">{practitioner.name}</span>
+      </nav>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left: photo + summary */}

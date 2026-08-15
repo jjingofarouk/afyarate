@@ -37,10 +37,14 @@ export async function GET() {
     { length: total },
     (_, i) => `${SITE_URL}/sitemap/${i}`,
   );
+  // This index itself is regenerated hourly (see `revalidate` above), so
+  // "now" is an accurate-enough lastmod for every shard without an extra
+  // query per shard to find its true max(updated_at).
+  const lastmod = new Date().toISOString().slice(0, 10);
 
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map((u) => `  <sitemap><loc>${u}</loc></sitemap>`).join("\n")}
+${urls.map((u) => `  <sitemap><loc>${u}</loc><lastmod>${lastmod}</lastmod></sitemap>`).join("\n")}
 </sitemapindex>`;
 
   return new Response(body, {

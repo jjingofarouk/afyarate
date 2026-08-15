@@ -42,24 +42,27 @@ export default async function HomePage({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
-  const ready = await isDbReady();
   // Fetched here (not just client-side) so the first page of results is
   // already in the initial HTML — no client round-trip before anything shows.
-  // Sequential, not Promise.all: concurrent calls on the shared Supabase
-  // client produced garbled results (seen: 1000 items, then 0, for the
-  // same query) — one request at a time is reliable.
-  const stats = ready ? await getStats() : null;
-  const initialResults = ready
-    ? await searchPractitioners({ q, status: "all", sort: "random", page: 1, pageSize: PAGE_SIZE })
-    : undefined;
-  const practitionerProfessions = ready ? await getProfessionCounts() : [];
-  // Facilities + jobs — sequential too (shared Supabase client, see above).
-  const facilitiesReady = ready ? await isFacilitiesReady() : false;
-  const facilityStats = facilitiesReady ? await getFacilityStats() : null;
-  const topFacilities = facilitiesReady
-    ? await searchFacilities({ sort: "rating", page: 1, pageSize: 6 })
-    : undefined;
-  const recentPosts = ready ? (await getPosts()).slice(0, 6) : [];
+  // Each call below gets its own Supabase client (see lib/supabase/server.ts),
+  // so — unlike before — these are safe to run in parallel.
+  const [ready, facilitiesReadyRaw] = await Promise.all([isDbReady(), isFacilitiesReady()]);
+  const facilitiesReady = ready && facilitiesReadyRaw;
+
+  const [stats, initialResults, practitionerProfessions, facilityStats, topFacilities, posts] =
+    await Promise.all([
+      ready ? getStats() : Promise.resolve(null),
+      ready
+        ? searchPractitioners({ q, status: "all", sort: "random", page: 1, pageSize: PAGE_SIZE })
+        : Promise.resolve(undefined),
+      ready ? getProfessionCounts() : Promise.resolve([]),
+      facilitiesReady ? getFacilityStats() : Promise.resolve(null),
+      facilitiesReady
+        ? searchFacilities({ sort: "rating", page: 1, pageSize: 6 })
+        : Promise.resolve(undefined),
+      ready ? getPosts() : Promise.resolve([]),
+    ]);
+  const recentPosts = posts.slice(0, 6);
 
   return (
     <>
@@ -78,7 +81,7 @@ export default async function HomePage({
 
           <div className="relative z-10 w-full px-4 py-10 text-center sm:px-10 sm:py-16">
             <p className="mx-auto mb-3 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-              🇺🇬 Uganda&apos;s health professionals, hospitals &amp; pharmacies — rated by patients
+              🇺🇬 The website for Uganda&apos;s health workers — verified, rated and hiring
             </p>
             <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-5xl">
               <AnimatedWords text="Find the right care in Uganda." startDelay={0.15} />{" "}

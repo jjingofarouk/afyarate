@@ -99,6 +99,7 @@ function facilitySchema(f: Facility, ratings: Awaited<ReturnType<typeof getFacil
     image: f.imageUrl || `${SITE_URL}/logo.png`,
     ...(f.address ? { address: { "@type": "PostalAddress", streetAddress: street, addressLocality: city, addressRegion: region, addressCountry: "UG" } } : {}),
     ...(f.phone ? { telephone: f.phone } : {}),
+    ...(f.specialties ? { medicalSpecialty: f.specialties } : {}),
     ...(f.sourceUrl ? { sameAs: f.sourceUrl } : {}),
     ...(f.ratingCount > 0 && f.avgRating
       ? {
@@ -142,11 +143,25 @@ export default async function FacilityPage({
   const ratings = await getFacilityRatings(facility.id);
   const kind = FACILITY_KIND_LABELS[facility.kind];
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "Facilities", item: `${SITE_URL}/facilities` },
+      { "@type": "ListItem", position: 3, name: kind.label, item: `${SITE_URL}/facilities?kind=${facility.kind}` },
+      { "@type": "ListItem", position: 4, name: facility.name },
+    ],
+  };
+
   const jsonLd = facilitySchema(facility, ratings);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: safeJsonLd([breadcrumbLd, jsonLd]) }}
+      />
 
       <nav className="mb-6 text-xs text-slate-400 dark:text-slate-500">
         <Link href="/" className="hover:text-emerald-700 dark:hover:text-emerald-400">Home</Link>
