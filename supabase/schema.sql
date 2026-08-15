@@ -268,7 +268,8 @@ as $$
          or (p_status = 'active' and licence_status = 'Active')
          or (p_status = 'inactive'
              and (licence_status <> 'Active' or licence_status is null)))
-  order by random()
+  -- Practitioners with a profile photo always come first.
+  order by (image_url is not null) desc, random()
   limit p_limit offset p_offset
 $$;
 

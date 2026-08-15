@@ -3,12 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProfessionCounts, getProfessions, searchPractitioners } from "@/lib/practitioners";
 import { getPosts, slugify } from "@/lib/posts";
-import PractitionerCard from "@/components/PractitionerCard";
-import { SITE_NAME, SITE_URL } from "@/lib/site";
+import PractitionerSearch from "@/components/PractitionerSearch";
+import { PAGE_SIZE, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
-
-const PAGE_SIZE = 30;
 
 /** Escape "<" so user-submitted text can't break out of the JSON-LD <script> tag. */
 function safeJsonLd(data: unknown): string {
@@ -162,27 +160,21 @@ export default async function ProfessionPractitionersPage({
           <strong className="font-semibold text-slate-800 dark:text-slate-200">
             {prof.count.toLocaleString()} registered {prof.profession}s
           </strong>{" "}
-          in Uganda on {SITE_NAME}. Below are the most highly rated. Every profile shows the
-          practitioner&apos;s council, registration and licence status so you can verify they are
-          currently licensed. {result.total > 0 ? `${result.total.toLocaleString()} matched this profession.` : ""}
+          in Uganda on {SITE_NAME}. Use the search below to find, filter and sort
+          them. Every profile shows the practitioner&apos;s council, registration and
+          licence status so you can verify they are currently licensed.{" "}
+          {result.total > 0 ? `${result.total.toLocaleString()} matched this profession.` : ""}
         </p>
       </header>
 
-      <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        {result.items.map((p) => (
-          <PractitionerCard key={p.id} p={p} />
-        ))}
+      <div className="mt-8">
+        <PractitionerSearch
+          initialProfession={prof.profession}
+          lockProfession
+          initialSort="rating"
+          initialData={result}
+        />
       </div>
-
-      {result.total > PAGE_SIZE && (
-        <p className="mt-8 text-sm text-slate-500 dark:text-slate-400">
-          Showing the top {PAGE_SIZE} of {result.total.toLocaleString()} {prof.profession}s by rating.{" "}
-          <Link href="/" className="font-medium text-emerald-700 underline dark:text-emerald-400">
-            Search all {prof.profession}s
-          </Link>
-          .
-        </p>
-      )}
 
       {/* Cross-links: same profession in the jobs directory */}
       {jobs.length > 0 && (

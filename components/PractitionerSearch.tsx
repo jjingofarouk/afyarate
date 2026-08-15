@@ -37,12 +37,25 @@ const cardVariants: Variants = {
 
 export default function PractitionerSearch({
   initialQuery = "",
+  initialProfession = "",
+  lockProfession = false,
+  initialSort = "random",
   initialData,
 }: {
   initialQuery?: string;
+  /** Pre-set the profession filter (e.g. on "Doctors in Uganda" pages). */
+  initialProfession?: string;
+  /** When true, hide the profession dropdown so users stay within one profession. */
+  lockProfession?: boolean;
+  initialSort?: Filters["sort"];
   initialData?: SearchResult;
 }) {
-  const initialFilters: Filters = { ...baseFilters, q: initialQuery };
+  const initialFilters: Filters = {
+    ...baseFilters,
+    q: initialQuery,
+    profession: initialProfession,
+    sort: initialSort,
+  };
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [data, setData] = useState<SearchResult | null>(initialData ?? null);
   const [loading, setLoading] = useState(!initialData);
@@ -149,18 +162,20 @@ export default function PractitionerSearch({
               </option>
             ))}
           </select>
-          <select
-            value={filters.profession}
-            onChange={(e) => update({ profession: e.target.value })}
-            className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-          >
-            <option value="">All professions</option>
-            {data?.professions.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
+          {!lockProfession && (
+            <select
+              value={filters.profession}
+              onChange={(e) => update({ profession: e.target.value })}
+              className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            >
+              <option value="">All professions</option>
+              {data?.professions.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          )}
           <div className="flex rounded-xl border border-slate-300 p-0.5 text-sm dark:border-slate-700">
             {(["all", "active", "inactive"] as const).map((s) => (
               <button

@@ -126,6 +126,9 @@ export async function searchPractitioners(
         .select("*", { count: "exact" })
         .range(offset, offset + pageSize - 1),
     );
+    // Photos first: practitioners with a profile photo always come before
+    // those without one (image_url is ordered NULLS LAST).
+    query = query.order("image_url", { ascending: true, nullsFirst: false });
     if (sort === "rating") {
       query = query
         .order("rating_count", { ascending: false, nullsFirst: false })
