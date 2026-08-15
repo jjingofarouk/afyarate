@@ -393,7 +393,7 @@ export default function NewPostPage() {
                 <img
                   src={photo.preview}
                   alt="Preview"
-                  className="h-20 w-20 rounded-xl object-cover"
+                  className="h-20 w-20 rounded-xl object-cover object-top"
                 />
                 <span className="truncate text-sm text-slate-500 dark:text-slate-400">{photo.name}</span>
               </div>

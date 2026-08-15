@@ -54,7 +54,7 @@ export default function PostCard({ post }: { post: Post }) {
             src={post.imageUrl}
             alt={post.title}
             loading="lazy"
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover object-top"
           />
           <div className="absolute left-2 top-2">
             <TypeBadge type={post.type} />

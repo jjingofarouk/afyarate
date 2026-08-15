@@ -167,7 +167,7 @@ function Manager() {
                         <img
                           src={post.imageUrl}
                           alt=""
-                          className="h-10 w-10 shrink-0 rounded-lg object-cover"
+                          className="h-10 w-10 shrink-0 rounded-lg object-cover object-top"
                         />
                       ) : (
                         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-800">
