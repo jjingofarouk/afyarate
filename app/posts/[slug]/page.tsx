@@ -180,10 +180,11 @@ function isHeadingLine(line: string): boolean {
   return words.some((w) => /^[A-Z]/.test(w));
 }
 
-/** Minimal inline markdown: **bold** and [link](url). */
+/** Minimal inline formatting: **bold**, [link](url) and bare https:// URLs. */
 function inlineFormat(text: string): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
-  const re = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)\s]+\))/g;
+  const re = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)\s]+\)|https?:\/\/[^\s)\]]+)/g;
+  const linkCls = "font-medium text-emerald-700 underline dark:text-emerald-400";
   let last = 0;
   let m: RegExpExecArray | null;
   let key = 0;
@@ -192,17 +193,17 @@ function inlineFormat(text: string): React.ReactNode[] {
     const token = m[0];
     if (token.startsWith("**")) {
       parts.push(<strong key={key++}>{token.slice(2, -2)}</strong>);
+    } else if (/^https?:\/\//.test(token)) {
+      parts.push(
+        <a key={key++} href={token} target="_blank" rel="noopener noreferrer" className={linkCls}>
+          {token}
+        </a>,
+      );
     } else {
       const lm = token.match(/^\[([^\]]+)\]\(([^)\s]+)\)$/);
       if (lm) {
         parts.push(
-          <a
-            key={key++}
-            href={lm[2]}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-emerald-700 underline dark:text-emerald-400"
-          >
+          <a key={key++} href={lm[2]} target="_blank" rel="noopener noreferrer" className={linkCls}>
             {lm[1]}
           </a>,
         );
@@ -512,7 +513,7 @@ export default async function PostDetailPage({
                 How to apply
               </h2>
               <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                {post.howToApply}
+                {inlineFormat(post.howToApply)}
               </p>
             </div>
           )}

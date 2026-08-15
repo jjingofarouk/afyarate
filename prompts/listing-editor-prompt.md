@@ -30,8 +30,11 @@ facts — use only what the source gives me.
 - If asked to keep only certain roles, remove the others from the output.
 - Use East African / Ugandan English spelling: organisation, licence, programme,
   curriculum vitae, centre.
+- NEVER use em dashes (—) or en dashes (–) or curly quotes ("…", "…", '…').
+  Use plain hyphens (-) and straight apostrophes ('). This is mandatory.
 - Keep exact emails, phone numbers, deadlines and application instructions
-  verbatim from the source.
+  verbatim from the source. Any https:// URL should appear on its own line so it
+  renders as a clickable link.
 
 ## OUTPUT FORMAT — valid JSON ONLY
 ```json
