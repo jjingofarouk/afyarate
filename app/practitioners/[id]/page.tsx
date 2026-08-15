@@ -11,6 +11,7 @@ import { SITE_URL } from "@/lib/site";
 import { InitialsAvatar } from "@/components/PractitionerCard";
 import { Stars } from "@/components/Stars";
 import RatingForm from "@/components/RatingForm";
+import ShareButtons from "@/components/ShareButtons";
 import { Star } from "@/components/StarIcon";
 import { FadeIn } from "@/components/motion/FadeIn";
 
@@ -280,6 +281,10 @@ export default async function PractitionerPage({
               {practitioner.name}
             </h1>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{practitioner.council}</p>
+
+            <div className="mt-5">
+              <ShareButtons title={practitioner.name} url={`${SITE_URL}/practitioners/${practitioner.id}`} />
+            </div>
 
             <dl className="mt-4">
               <Field

@@ -6,6 +6,7 @@ import { FACILITY_KIND_LABELS, type Facility } from "@/lib/types";
 import { FacilityKindBadge, FacilityInitials } from "@/components/FacilityCard";
 import { Stars } from "@/components/Stars";
 import FacilityRatingForm from "@/components/FacilityRatingForm";
+import ShareButtons from "@/components/ShareButtons";
 import { Star } from "@/components/StarIcon";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { SITE_URL } from "@/lib/site";
@@ -242,6 +243,10 @@ export default async function FacilityPage({
               {facility.city ? ` · ${facility.city}` : ""}
               {facility.region ? `, ${facility.region}` : ""}
             </p>
+
+            <div className="mt-5">
+              <ShareButtons title={facility.name} url={`${SITE_URL}/facilities/${facility.slug}`} />
+            </div>
 
             <dl className="mt-4">
               <Field label="Address" value={facility.address} />

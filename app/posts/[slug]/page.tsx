@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getPost, getPosts, slugify } from "@/lib/posts";
 import { TypeBadge } from "@/components/PostCard";
 import PostGrid from "@/components/PostGrid";
+import ShareButtons from "@/components/ShareButtons";
 import { POST_TYPE_LABELS, type Post, type PostType } from "@/lib/types";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
@@ -423,6 +424,10 @@ export default async function PostDetailPage({
             {post.title}
           </h1>
           <p className="mt-1 text-base text-slate-600 dark:text-slate-400">{post.organization}</p>
+
+          <div className="mt-5">
+            <ShareButtons title={post.title} url={`${SITE_URL}/posts/${post.slug}`} />
+          </div>
 
           <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-5 border-y border-slate-200 py-5 sm:grid-cols-4 dark:border-slate-800">
             {post.location && <MetaItem label="Location" value={post.location} />}
