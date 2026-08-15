@@ -258,11 +258,8 @@ export default function TermsPage() {
           violates them can be sent via our{" "}
           <Link href="/contact" className="text-emerald-700 underline dark:text-emerald-400">
             contact form
-          </Link>{" "}
-          or{" "}
-          <a className="text-emerald-700 underline dark:text-emerald-400" href="tel:+256751360385">
-            +256 751 360 385
-          </a>.
+          </Link>
+          .
         </p>
       </S>
 

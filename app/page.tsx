@@ -67,8 +67,8 @@ export default async function HomePage({
       <FadeIn>
         <section className="relative flex min-h-[420px] items-center overflow-hidden sm:min-h-[480px] lg:min-h-[600px]">
           <MotionImg
-            src="/dr-jjingo-hero.jpg"
-            alt="Licensed health professionals in Uganda"
+            src="https://media.istockphoto.com/id/2156017445/photo/pediatric-checkup-for-smiling-boy-with-mother-and-doctor.webp?a=1&b=1&s=612x612&w=0&k=20&c=sQDaqjnI8xIG2k5xPD6hfVZhs872KhwoTZF-k1mCJ48="
+            alt="A doctor giving a pediatric check-up to a smiling boy with his mother"
             className="absolute inset-0 h-full w-full object-cover"
             loading="eager"
             width={1200}

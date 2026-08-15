@@ -142,11 +142,7 @@ export default async function HelpArticlePage({ params }: Props) {
           If not,{" "}
           <Link href="/contact" className="text-emerald-700 underline dark:text-emerald-400">
             contact us
-          </Link>{" "}
-          or call{" "}
-          <a className="text-emerald-700 underline dark:text-emerald-400" href="tel:+256751360385">
-            +256 751 360 385
-          </a>
+          </Link>
           .
         </p>
       </div>

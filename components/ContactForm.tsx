@@ -136,13 +136,6 @@ export default function ContactForm() {
       >
         {submitting ? "Sending…" : "Send message"}
       </button>
-      <p className="mt-3 text-center text-xs text-slate-400 dark:text-slate-500">
-        Prefer to talk? Call or WhatsApp{" "}
-        <a className="text-emerald-700 underline dark:text-emerald-400" href="tel:+256751360385">
-          +256 751 360 385
-        </a>
-        .
-      </p>
     </form>
   );
 }

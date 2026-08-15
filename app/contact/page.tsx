@@ -16,12 +16,8 @@ export default function ContactPage() {
         Contact us
       </h1>
       <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-        Questions, corrections, or reports about content — send us a message and
-        we&apos;ll get back to you. You can also call or WhatsApp{" "}
-        <a className="text-emerald-700 underline dark:text-emerald-400" href="tel:+256751360385">
-          +256 751 360 385
-        </a>
-        .
+        Questions, corrections, or reports about content: send us a message and
+        we&apos;ll get back to you.
       </p>
 
       <div className="mt-8">

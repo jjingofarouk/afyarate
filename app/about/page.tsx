@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-// Contact email for the "Contact the developer" section. Kept private — no
-// personal name appears anywhere on the site. Set this to your contact email.
-const DEVELOPER_EMAIL = "you@example.com"; // ← replace with the developer contact email
+// Contact email for the "Contact the developer" section. Kept private - no
+// personal name appears anywhere on the site.
+const DEVELOPER_EMAIL = "rawvidence@gmail.com";
 
 export const metadata: Metadata = {
   title: "About",
@@ -62,17 +62,6 @@ export default function AboutPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               Email the developer
-            </a>
-            <a
-              href="https://wa.me/256751360385?text=Hello%20Rate%20Musawo"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
-            >
-              <svg className="size-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-                <path d="M12.04 2a9.9 9.9 0 00-8.46 14.94L2 22l5.2-1.52A9.9 9.9 0 1012.04 2zm5.8 14.05c-.24.68-1.4 1.3-1.93 1.35-.52.05-1.02.24-3.43-.71-2.9-1.16-4.74-4.16-4.88-4.36-.14-.19-1.17-1.55-1.17-2.96 0-1.41.74-2.1 1-2.39.26-.28.57-.35.76-.35.19 0 .38 0 .54.01.18.01.4-.06.63.48.24.56.8 1.95.87 2.09.07.14.12.3.02.49-.09.19-.14.3-.28.47-.14.17-.3.38-.42.51-.14.14-.29.29-.13.57.16.28.72 1.19 1.55 1.93 1.06.95 1.96 1.24 2.24 1.38.28.14.44.12.6-.07.16-.19.69-.8.87-1.08.18-.28.37-.23.62-.14.25.09 1.61.76 1.88.9.28.14.46.21.53.32.07.12.07.68-.17 1.37z" />
-              </svg>
-              WhatsApp us
             </a>
           </div>
           <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
