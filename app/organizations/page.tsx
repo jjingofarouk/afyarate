@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getOrganizations } from "@/lib/posts";
-import FacetHub from "@/components/FacetHub";
+import OrganizationDirectory from "@/components/OrganizationDirectory";
 import { SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -49,13 +49,13 @@ export default async function OrganizationsPage() {
   };
   return (
     <>
-      <FacetHub
+      <OrganizationDirectory
         facets={facets}
         base="/organizations"
         crumb="Organizations"
         listLabel="organization"
         title="Browse Jobs &amp; Opportunities by Organization in Uganda"
-        blurb={`${facets.length} hospitals, universities, NGOs, government bodies and international organisations currently have open roles, training or funding — pick one to see every live opportunity. We update listings daily.`}
+        blurb={`${facets.length} hospitals, universities, NGOs, government bodies and international organisations currently have open roles, training or funding — search or filter to find one, then pick it to see every live opportunity. We update listings daily.`}
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </>
