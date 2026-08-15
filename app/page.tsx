@@ -1,5 +1,9 @@
 import { getProfessionCounts, getStats, isDbReady, searchPractitioners } from "@/lib/practitioners";
+import { getFacilityStats, isFacilitiesReady, searchFacilities } from "@/lib/facilities";
+import { getPosts } from "@/lib/posts";
 import PractitionerSearch from "@/components/PractitionerSearch";
+import FacilityCard from "@/components/FacilityCard";
+import PostCard from "@/components/PostCard";
 import { PAGE_SIZE } from "@/lib/site";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { AnimatedWords } from "@/components/motion/AnimatedWords";
@@ -26,6 +30,13 @@ export default async function HomePage({
     ? await searchPractitioners({ q, status: "all", sort: "random", page: 1, pageSize: PAGE_SIZE })
     : undefined;
   const practitionerProfessions = ready ? await getProfessionCounts() : [];
+  // Facilities + jobs — sequential too (shared Supabase client, see above).
+  const facilitiesReady = ready ? await isFacilitiesReady() : false;
+  const facilityStats = facilitiesReady ? await getFacilityStats() : null;
+  const topFacilities = facilitiesReady
+    ? await searchFacilities({ sort: "rating", page: 1, pageSize: 6 })
+    : undefined;
+  const recentPosts = ready ? (await getPosts()).slice(0, 6) : [];
 
   return (
     <>
@@ -44,19 +55,19 @@ export default async function HomePage({
 
           <div className="relative z-10 w-full px-4 py-10 text-center sm:px-10 sm:py-16">
             <p className="mx-auto mb-3 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-              🇺🇬 Uganda&apos;s licensed health professionals, rated by patients
+              🇺🇬 Uganda&apos;s health professionals, hospitals &amp; pharmacies — rated by patients
             </p>
             <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-5xl">
-              <AnimatedWords text="Find a licensed practitioner." startDelay={0.15} />{" "}
+              <AnimatedWords text="Find the right care in Uganda." startDelay={0.15} />{" "}
               <AnimatedWords
-                text="See how patients rate them."
-                startDelay={0.15 + 4 * 0.045}
+                text="Rate it like a patient."
+                startDelay={0.15 + 5 * 0.045}
                 className="text-emerald-400"
               />
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base text-slate-200">
               <AnimatedWords
-                text="Search doctors, nurses, pharmacists and allied health professionals with a valid licence, read community ratings, and leave your own."
+                text="Search licensed doctors, nurses, pharmacists and allied health professionals, rate hospitals and pharmacies, and browse current health jobs and opportunities."
                 startDelay={0.6}
                 wordDelay={0.018}
               />
@@ -67,26 +78,30 @@ export default async function HomePage({
 
       <div className="mx-auto max-w-6xl px-4">
         {/* Stats */}
-        {stats && (
+        {(stats || facilityStats) && (
           <FadeIn delay={0.1}>
-            <section className="mb-8 mt-8 grid grid-cols-3 gap-2 sm:gap-3">
+            <section className="mb-8 mt-8 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-5">
               {[
-                { label: "Practitioners", value: stats.practitioners.toLocaleString() },
-                { label: "Active licences", value: stats.active.toLocaleString() },
-                { label: "Patient ratings", value: stats.totalRatings.toLocaleString() },
-              ].map((s) => (
-                <div
-                  key={s.label}
-                  className="min-w-0 rounded-2xl border border-slate-200 bg-white p-2.5 text-center shadow-sm sm:p-4 dark:border-slate-800 dark:bg-slate-900"
-                >
-                  <div className="truncate text-lg font-bold text-emerald-700 sm:text-2xl dark:text-emerald-400">
-                    {s.value}
+                stats ? { label: "Practitioners", value: stats.practitioners.toLocaleString() } : null,
+                stats ? { label: "Active licences", value: stats.active.toLocaleString() } : null,
+                stats ? { label: "Patient ratings", value: stats.totalRatings.toLocaleString() } : null,
+                facilityStats ? { label: "Hospitals", value: facilityStats.hospitals.toLocaleString() } : null,
+                facilityStats ? { label: "Pharmacies", value: facilityStats.pharmacies.toLocaleString() } : null,
+              ]
+                .filter((s): s is { label: string; value: string } => s !== null)
+                .map((s) => (
+                  <div
+                    key={s.label}
+                    className="min-w-0 rounded-2xl border border-slate-200 bg-white p-2.5 text-center shadow-sm sm:p-4 dark:border-slate-800 dark:bg-slate-900"
+                  >
+                    <div className="truncate text-lg font-bold text-emerald-700 sm:text-2xl dark:text-emerald-400">
+                      {s.value}
+                    </div>
+                    <div className="mt-0.5 text-[10px] font-medium uppercase leading-tight tracking-wide text-slate-500 sm:text-xs dark:text-slate-400">
+                      {s.label}
+                    </div>
                   </div>
-                  <div className="mt-0.5 text-[10px] font-medium uppercase leading-tight tracking-wide text-slate-500 sm:text-xs dark:text-slate-400">
-                    {s.label}
-                  </div>
-                </div>
-              ))}
+                ))}
             </section>
           </FadeIn>
         )}
@@ -108,6 +123,62 @@ export default async function HomePage({
           </div>
         ) : (
           <PractitionerSearch initialQuery={q ?? ""} initialData={initialResults} />
+        )}
+
+        {/* Rate hospitals & pharmacies — top-rated, with a link to the full directory */}
+        {topFacilities && topFacilities.items.length > 0 && (
+          <section className="mt-14">
+            <div className="flex flex-wrap items-end justify-between gap-2">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                  Rate hospitals &amp; pharmacies
+                </h2>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  {facilityStats
+                    ? `${facilityStats.hospitals.toLocaleString()} hospitals and ${facilityStats.pharmacies.toLocaleString()} pharmacies across Uganda — see how patients rate them.`
+                    : "Hospitals and pharmacies across Uganda, rated by patients."}
+                </p>
+              </div>
+              <Link
+                href="/facilities"
+                className="text-sm font-medium text-emerald-700 underline hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
+              >
+                Browse all facilities →
+              </Link>
+            </div>
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {topFacilities.items.map((f) => (
+                <FacilityCard key={f.id} facility={f} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Latest jobs & opportunities — fresh listings from the board */}
+        {recentPosts.length > 0 && (
+          <section className="mt-14">
+            <div className="flex flex-wrap items-end justify-between gap-2">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                  Latest jobs &amp; opportunities
+                </h2>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  Fresh openings for Uganda&apos;s health workforce.
+                </p>
+              </div>
+              <Link
+                href="/posts"
+                className="text-sm font-medium text-emerald-700 underline hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
+              >
+                View all listings →
+              </Link>
+            </div>
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {recentPosts.map((p) => (
+                <PostCard key={p.id} post={p} />
+              ))}
+            </div>
+          </section>
         )}
 
         {/* Browse by profession — internal linking that keeps crawl depth shallow */}

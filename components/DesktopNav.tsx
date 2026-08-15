@@ -72,6 +72,9 @@ export default function DesktopNav() {
       <Link href="/practitioners" className="rounded-lg px-1 py-1 transition hover:text-emerald-700 dark:hover:text-emerald-400">
         Practitioners
       </Link>
+      <Link href="/facilities" className="rounded-lg px-1 py-1 transition hover:text-emerald-700 dark:hover:text-emerald-400">
+        Facilities
+      </Link>
       <Link href="/about" className="rounded-lg px-1 py-1 transition hover:text-emerald-700 dark:hover:text-emerald-400">
         About
       </Link>

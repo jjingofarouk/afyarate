@@ -90,6 +90,7 @@ export async function GET(
       { url: `${SITE_URL}/locations`, priority: 0.6, freq: "weekly" },
       { url: `${SITE_URL}/organizations`, priority: 0.6, freq: "weekly" },
       { url: `${SITE_URL}/practitioners`, priority: 0.7, freq: "weekly" },
+      { url: `${SITE_URL}/facilities`, priority: 0.7, freq: "weekly" },
       { url: `${SITE_URL}/about`, priority: 0.4, freq: "monthly" },
       { url: `${SITE_URL}/contact`, priority: 0.3, freq: "monthly" },
       { url: `${SITE_URL}/terms`, priority: 0.2, freq: "yearly" },

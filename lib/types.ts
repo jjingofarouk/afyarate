@@ -106,3 +106,55 @@ export interface Post {
   views: number;
   imageUrl: string | null;
 }
+
+// ---------------------------------------------------------------------------
+// Facilities — hospitals & pharmacies, ratable like practitioners.
+// ---------------------------------------------------------------------------
+
+export const FACILITY_KINDS = ["hospital", "pharmacy"] as const;
+
+export type FacilityKind = (typeof FACILITY_KINDS)[number];
+
+export const FACILITY_KIND_LABELS: Record<
+  FacilityKind,
+  { label: string; plural: string }
+> = {
+  hospital: { label: "Hospital", plural: "Hospitals" },
+  pharmacy: { label: "Pharmacy", plural: "Pharmacies" },
+};
+
+export interface Facility {
+  id: number;
+  slug: string;
+  kind: FacilityKind;
+  name: string;
+  address: string | null;
+  city: string | null;
+  region: string | null;
+  description: string | null;
+  phone: string | null;
+  specialties: string | null;
+  imageUrl: string | null;
+  sourceUrl: string | null;
+  avgRating: number | null;
+  ratingCount: number;
+}
+
+export interface FacilityRating {
+  id: number;
+  facilityId: number;
+  rating: number;
+  comment: string | null;
+  reviewerName: string | null;
+  createdAt: string;
+  verified: boolean;
+}
+
+export interface FacilitySearchResult {
+  items: Facility[];
+  total: number;
+  page: number;
+  pageSize: number;
+  kinds: FacilityKind[];
+  cities: string[];
+}

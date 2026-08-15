@@ -119,8 +119,49 @@ alter table public.posts add constraint posts_status_check
   check (status in ('draft','published','expired','archived','rejected'));
 
 -- ----------------------------------------------------------------------------
+-- 3c. Facilities — hospitals & pharmacies across Uganda (source: Uganda
+--     Healthcare Directory). Ratable like practitioners; a new facility kind
+--     is just a new `kind` value, no schema change.
+-- ----------------------------------------------------------------------------
+create table if not exists public.facilities (
+  id bigint generated always as identity primary key,
+  slug text not null unique,           -- SEO-friendly URL, stable across imports
+  kind text not null
+    check (kind in ('hospital','pharmacy')),
+  name text not null,
+  address text,
+  city text,                            -- first part of address, for filters
+  region text,                          -- e.g. 'Central Region'
+  description text,
+  phone text,
+  specialties text,                     -- pharmacy/clinical specialties
+  image_url text,
+  source_url text,                      -- original directory listing
+  search_text text not null default '', -- lowercased name+city+region+specialties
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.facility_ratings (
+  id bigint generated always as identity primary key,
+  facility_id bigint not null references public.facilities (id) on delete cascade,
+  rating smallint not null check (rating between 1 and 5),
+  comment text,
+  reviewer_name text,
+  created_at timestamptz not null default now(),
+  verified boolean not null default false
+);
+
+-- ----------------------------------------------------------------------------
 -- Indexes
 -- ----------------------------------------------------------------------------
+create index if not exists facilities_search_trgm on public.facilities using gin (search_text gin_trgm_ops);
+create index if not exists facilities_kind on public.facilities (kind);
+create index if not exists facilities_city on public.facilities (city);
+create index if not exists facilities_slug on public.facilities (slug);
+create index if not exists facility_ratings_facility on public.facility_ratings (facility_id);
+create index if not exists facility_ratings_created on public.facility_ratings (created_at desc);
+
 create index if not exists posts_search_trgm on public.posts using gin (search_text gin_trgm_ops);
 create index if not exists posts_type_status on public.posts (type, status);
 create index if not exists posts_profession on public.posts (profession);
@@ -180,6 +221,17 @@ where profession is not null and profession <> ''
 group by profession
 order by practitioner_count desc;
 
+-- Facilities with aggregated rating stats (used by search + detail pages).
+drop view if exists public.facilities_overview;
+create view public.facilities_overview as
+select
+  f.*,
+  (select round(avg(r.rating)::numeric, 2) from public.facility_ratings r
+    where r.facility_id = f.id) as avg_rating,
+  (select count(*) from public.facility_ratings r
+    where r.facility_id = f.id) as rating_count
+from public.facilities f;
+
 -- Randomised browsing (used by the "Random" sort in the search UI).
 -- Returns a random slice of the registry so browsing shows a mix of
 -- specialties instead of one council at a time. Applies the same filters
@@ -225,6 +277,8 @@ alter table public.practitioners enable row level security;
 alter table public.licenses enable row level security;
 alter table public.ratings enable row level security;
 alter table public.posts enable row level security;
+alter table public.facilities enable row level security;
+alter table public.facility_ratings enable row level security;
 
 drop policy if exists "practitioners are publicly readable" on public.practitioners;
 create policy "practitioners are publicly readable"
@@ -254,6 +308,20 @@ create policy "anyone can submit a listing as draft"
   on public.posts for insert
   with check (status = 'draft' and featured = false and views = 0);
 
+-- Facilities: the directory is public, and anyone may add a facility rating
+-- (mirrors the practitioner rating policy).
+drop policy if exists "facilities are publicly readable" on public.facilities;
+create policy "facilities are publicly readable"
+  on public.facilities for select using (true);
+
+drop policy if exists "facility ratings are publicly readable" on public.facility_ratings;
+create policy "facility ratings are publicly readable"
+  on public.facility_ratings for select using (true);
+
+drop policy if exists "anyone can add a facility rating" on public.facility_ratings;
+create policy "anyone can add a facility rating"
+  on public.facility_ratings for insert with check (true);
+
 -- ----------------------------------------------------------------------------
 -- 5b. Storage — public bucket for listing photos. Public read (photos render
 --     once a listing is published); anyone may upload (the moderation queue
@@ -280,7 +348,10 @@ grant usage on schema public to anon, authenticated;
 grant select on public.practitioners, public.licenses, public.ratings, public.posts,
               public.practitioners_overview, public.councils, public.professions,
               public.profession_counts to anon, authenticated;
+grant select on public.facilities, public.facility_ratings,
+              public.facilities_overview to anon, authenticated;
 grant insert on public.ratings to anon, authenticated;
 grant insert on public.posts to anon, authenticated;
+grant insert on public.facility_ratings to anon, authenticated;
 grant usage on all sequences in schema public to anon, authenticated;
 grant execute on function public.search_random(integer, integer, text, text, text, text) to anon, authenticated;

@@ -131,6 +131,21 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/facilities" className={linkClass}>
+                  Hospitals &amp; pharmacies
+                </Link>
+              </li>
+              <li>
+                <Link href="/facilities?kind=hospital" className={linkClass}>
+                  Rate a hospital
+                </Link>
+              </li>
+              <li>
+                <Link href="/facilities?kind=pharmacy" className={linkClass}>
+                  Rate a pharmacy
+                </Link>
+              </li>
+              <li>
                 <Link href="/practitioners/profession/doctor" className={linkClass}>
                   Doctors in Uganda
                 </Link>
