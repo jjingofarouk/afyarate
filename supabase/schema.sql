@@ -76,6 +76,9 @@ create table if not exists public.posts (
                     'conference','opportunity','other')),
   title text not null,
   organization text not null,
+  submitter_name text,                 -- who submitted (ordinary-user posts)
+  submitter_email text,                -- contact email for moderation follow-up
+  rejection_reason text,               -- why a pending post was rejected
   category text,                        -- broad field, e.g. 'Health', 'Education'
   profession text,                      -- target cadre; matches practitioners.profession
   location text,                        -- 'Kampala, Uganda' or 'Remote'
@@ -96,7 +99,7 @@ create table if not exists public.posts (
   tags text[] not null default '{}',
   featured boolean not null default false,
   status text not null default 'draft'
-    check (status in ('draft','published','expired','archived')),
+    check (status in ('draft','published','expired','archived','rejected')),
   published_at timestamptz,
   views integer not null default 0,
   search_text text not null default '', -- lowercased title+org+summary+description
@@ -106,6 +109,14 @@ create table if not exists public.posts (
 );
 -- Keep existing tables up to date on re-runs (create table if not exists won't alter).
 alter table public.posts add column if not exists image_url text;
+alter table public.posts add column if not exists submitter_name text;
+alter table public.posts add column if not exists submitter_email text;
+alter table public.posts add column if not exists rejection_reason text;
+-- Widen the status check constraint to include the moderation 'rejected' state
+-- (drop-then-add is idempotent and safe to re-run).
+alter table public.posts drop constraint if exists posts_status_check;
+alter table public.posts add constraint posts_status_check
+  check (status in ('draft','published','expired','archived','rejected'));
 
 -- ----------------------------------------------------------------------------
 -- Indexes

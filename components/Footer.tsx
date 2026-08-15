@@ -229,6 +229,9 @@ export default function Footer() {
               <Link href="/privacy" className="text-xs text-slate-400 transition hover:text-emerald-700 dark:text-slate-500 dark:hover:text-emerald-400">
                 Privacy
               </Link>
+              <Link href="/admin" className="text-xs text-slate-400 transition hover:text-emerald-700 dark:text-slate-500 dark:hover:text-emerald-400">
+                Admin
+              </Link>
               <a
                 href="https://www.linkedin.com/in/farouk-jjingo-0341b01a5/"
                 target="_blank"

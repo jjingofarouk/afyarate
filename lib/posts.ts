@@ -2,19 +2,22 @@ import { createServerClient } from "./supabase/server";
 import type { Post } from "./types";
 
 // PostgREST returns snake_case columns; map them to the camelCase UI types.
-type Row = Record<string, unknown>;
+export type Row = Record<string, unknown>;
 
 function asString(v: unknown): string | null {
   return typeof v === "string" && v !== "" ? v : null;
 }
 
-function mapPost(row: Row): Post {
+export function mapPost(row: Row): Post {
   return {
     id: Number(row.id),
     slug: String(row.slug ?? ""),
     type: (row.type as Post["type"]) ?? "job",
     title: String(row.title ?? ""),
     organization: String(row.organization ?? ""),
+    submitterName: asString(row.submitter_name),
+    submitterEmail: asString(row.submitter_email),
+    rejectionReason: asString(row.rejection_reason),
     category: asString(row.category),
     profession: asString(row.profession),
     location: asString(row.location),
@@ -57,6 +60,13 @@ export function slugify(s: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80);
+}
+
+/** Deterministic listing slug from title (+ deadline, so a re-post of the same
+ *  job in a later cycle gets its own URL rather than overwriting the old one). */
+export function slugifyListing(title: string, deadline: string | null): string {
+  const base = slugify(title);
+  return deadline ? `${base}-${deadline}` : base;
 }
 
 export interface FacetItem {

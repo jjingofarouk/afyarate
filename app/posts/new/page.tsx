@@ -63,6 +63,10 @@ export default function NewPostPage() {
       setError("Title, organisation and description are required.");
       return;
     }
+    if (!form.submitter_email?.trim()) {
+      setError("A contact email is required so we can follow up about your listing.");
+      return;
+    }
     setSubmitting(true);
     try {
       let imageUrl: string | null = null;
@@ -128,6 +132,21 @@ export default function NewPostPage() {
         professionals in Uganda. Listings are reviewed before going live.
       </p>
 
+      <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-relaxed text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
+        <p className="font-semibold">Before you post — please check:</p>
+        <ul className="mt-2 list-disc space-y-1.5 pl-5">
+          <li>The listing is a genuine job, internship, scholarship, grant, fellowship, conference or opportunity in healthcare (Uganda or remote).</li>
+          <li>You have a real contact email so we can reach you if your listing needs changes.</li>
+          <li>The title and organisation are specific and correct — no vague or duplicate posts.</li>
+          <li>Include the essentials: role, requirements, deadline and how to apply.</li>
+          <li>Never ask applicants to pay money or registration fees — posts like that will be rejected.</li>
+          <li>Photos must be relevant and one you have the right to use (max 4 MB).</li>
+        </ul>
+        <p className="mt-3 border-t border-amber-200 pt-3 text-xs dark:border-amber-900/40">
+          Every submission is held for review and only goes live once approved.
+        </p>
+      </div>
+
       <form
         onSubmit={onSubmit}
         className="mt-8 space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800 dark:bg-slate-900"
@@ -170,6 +189,37 @@ export default function NewPostPage() {
               value={form.organization ?? ""}
               onChange={set("organization")}
               placeholder="e.g. Ministry of Health"
+              className={`mt-1.5 ${inputClass}`}
+            />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className={labelClass} htmlFor="submitter_email">
+              Your contact email *
+            </label>
+            <input
+              id="submitter_email"
+              required
+              type="email"
+              value={form.submitter_email ?? ""}
+              onChange={set("submitter_email")}
+              placeholder="you@example.org"
+              className={`mt-1.5 ${inputClass}`}
+            />
+            <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
+              Only used to contact you about this submission — never shown publicly.
+            </p>
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className={labelClass} htmlFor="submitter_name">
+              Your name
+            </label>
+            <input
+              id="submitter_name"
+              value={form.submitter_name ?? ""}
+              onChange={set("submitter_name")}
+              placeholder="Optional — so we know who to talk to"
               className={`mt-1.5 ${inputClass}`}
             />
           </div>

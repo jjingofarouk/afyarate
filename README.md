@@ -62,6 +62,45 @@ npm run dev                # http://localhost:3000
 `npm run import` is safe to re-run any time: it rebuilds the registry tables but
 **preserves user ratings**.
 
+## Listings board & admin panel
+
+The site has a jobs/opportunities board (`/posts` — jobs, internships,
+scholarships, grants, fellowships, conferences…). Anyone can post a listing from
+`/posts/new`; submissions are **held for moderation** and only go live once an
+admin approves them.
+
+### Criteria for user-submitted listings
+- A genuine job, internship, scholarship, grant, fellowship, conference or other
+  healthcare opportunity (Uganda or remote).
+- Title, organisation, a full description and a **valid contact email** are
+  required (the email is used only for moderation follow-up — never shown
+  publicly).
+- No asking applicants to pay money or registration fees — such posts are
+  rejected.
+- Photos are allowed (JPG/PNG/WebP, ≤ 4 MB) and must be relevant + rights-cleared.
+- Duplicate listings (same title + deadline) are rejected automatically.
+
+### Admin panel (`/admin`)
+Sign in at `/admin` with the admin passcode.
+
+Set-up (once):
+1. Add `ADMIN_PASSCODE` and `SUPABASE_SERVICE_ROLE_KEY` to `.env.local` (local
+   dev) — see `.env.example`. On Cloudflare deploy, set them as secrets:
+   `wrangler secret put ADMIN_PASSCODE` and
+   `wrangler secret put SUPABASE_SERVICE_ROLE_KEY`.
+2. Make sure `supabase/schema.sql` is up to date: `npm run db:setup`.
+
+What the admin can do:
+- **Moderation queue** on the dashboard — approve (publish), reject (with a
+  reason), or delete pending submissions.
+- **Edit any listing** — content, photo, tags, featured, publish/unpublish,
+  expire, archive.
+- **Create listings directly** (`/admin/posts/new`), published immediately or as
+  a draft.
+
+Moderation states: `draft` (pending) → `published` | `rejected` | `expired` |
+`archived`. Only `published` listings are visible on the public board.
+
 ## Project layout
 
 ```
@@ -70,9 +109,17 @@ app/                      # Next.js (App Router)
   practitioners/[id]/     # practitioner profile + ratings
   api/practitioners/      # search API
   api/ratings/            # POST rating (validated + rate-limited)
-components/               # search UI, cards, star widgets, rating form
+  api/posts/              # POST listing (moderated, draft-first)
+  api/admin/              # admin login/logout + posts CRUD/moderation
+  admin/                  # admin panel (login, dashboard, listings manager)
+  posts/new/              # public "post a listing" form
+components/               # search UI, cards, star widgets, rating form, admin
 lib/
   supabase/server.ts      # Supabase client (publishable key + RLS)
+  supabase/admin.ts       # Supabase client (service-role, admin only)
+  admin-auth.ts           # passcode session signing / cookie helpers
+  admin-posts.ts          # admin CRUD + moderation data layer
+  posts.ts                # public listings query layer
   practitioners.ts        # query layer
   types.ts
 supabase/schema.sql       # tables, RLS, views, indexes

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { isDbReady } from "@/lib/practitioners";
-import { getPostsPage } from "@/lib/posts";
+import { getPostsPage, slugifyListing } from "@/lib/posts";
 import { POST_TYPES } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -44,18 +44,7 @@ function clientIp(req: NextRequest): string {
   return (fwd ?? "unknown").split(",")[0].trim();
 }
 
-// Deterministic slug from title (+ deadline, so a re-post of the same job in a
-// later cycle gets its own URL rather than silently overwriting the old one).
-function slugify(title: string, deadline: string | null): string {
-  const base = title
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80);
-  return deadline ? `${base}-${deadline}` : base;
-}
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const str = (v: unknown, max: number): string =>
   typeof v === "string" ? v.trim().slice(0, max) : "";
@@ -86,6 +75,7 @@ export async function POST(req: NextRequest) {
   const type = str(b.type, 30);
   const description = str(b.description, 20000);
   const deadline = str(b.deadline, 10);
+  const submitterEmail = str(b.submitter_email, 200);
 
   if (!title) return NextResponse.json({ error: "Title is required" }, { status: 400 });
   if (!organization)
@@ -96,8 +86,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Description is required" }, { status: 400 });
   if (deadline && !/^\d{4}-\d{2}-\d{2}$/.test(deadline))
     return NextResponse.json({ error: "Deadline must be a YYYY-MM-DD date" }, { status: 400 });
+  if (!submitterEmail)
+    return NextResponse.json(
+      { error: "A contact email is required so we can follow up about your listing" },
+      { status: 400 },
+    );
+  if (!EMAIL_RE.test(submitterEmail))
+    return NextResponse.json({ error: "Please enter a valid contact email" }, { status: 400 });
 
-  const slug = slugify(title, deadline || null);
+  const slug = slugifyListing(title, deadline || null);
 
   const supabase = createServerClient();
 
@@ -115,6 +112,7 @@ export async function POST(req: NextRequest) {
     "employment_type", "experience_level", "salary", "summary", "description",
     "how_to_apply", "application_url", "application_email", "deadline",
     "source_name", "source_url", "image_url",
+    "submitter_name", "submitter_email",
   ];
   const insert: Record<string, unknown> = {
     slug,

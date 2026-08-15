@@ -79,6 +79,9 @@ export interface Post {
   type: PostType;
   title: string;
   organization: string;
+  submitterName: string | null;
+  submitterEmail: string | null;
+  rejectionReason: string | null;
   category: string | null;
   profession: string | null;
   location: string | null;
@@ -98,7 +101,7 @@ export interface Post {
   sourceUrl: string | null;
   tags: string[];
   featured: boolean;
-  status: "draft" | "published" | "expired" | "archived";
+  status: "draft" | "published" | "expired" | "archived" | "rejected";
   publishedAt: string | null;
   views: number;
   imageUrl: string | null;
