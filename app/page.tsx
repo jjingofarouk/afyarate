@@ -15,13 +15,13 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "The home for Uganda's health workers",
   description:
-    "The home for Uganda's health workers. Find verified practitioners, rated facilities, and current jobs and opportunities across Uganda.",
+    "The home for Uganda's health workers. Find verified practitioners, current jobs and opportunities, and trusted hospitals and pharmacies across Uganda.",
 };
 
 const FAQS = [
   {
     q: "Is Rate Musawo free to use?",
-    a: "Yes. Searching the registry and reading or leaving ratings is completely free — for patients and health workers.",
+    a: "Yes. Searching the registry, browsing jobs and opportunities, and reading facility and practitioner pages is completely free.",
   },
   {
     q: "Where does the licensing data come from?",
@@ -29,7 +29,7 @@ const FAQS = [
   },
   {
     q: "Who can leave a rating?",
-    a: "Anyone who has seen a health worker can rate them — patients, their families, or colleagues. Each rating is reviewed and clearly marked as verified or unverified.",
+    a: "Anyone who has seen a health worker can leave feedback — patients, their families, or colleagues. Each rating is reviewed and clearly marked as verified or unverified.",
   },
   {
     q: "Can I find a doctor near me?",
@@ -88,7 +88,7 @@ export default async function HomePage({
 
           <div className="relative z-10 w-full px-4 py-10 text-center sm:px-10 sm:py-16">
             <p className="mx-auto mb-3 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-              🇺🇬 Verified licences, real ratings, live opportunities.
+              🇺🇬 Verified licences, live opportunities, trusted care.
             </p>
             <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-5xl">
               <AnimatedWords text="The home for Uganda&apos;s health workers." startDelay={0.15} />
@@ -249,10 +249,10 @@ export default async function HomePage({
           <div className="flex flex-wrap items-end justify-between gap-2">
             <div>
               <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-                Verify, learn and explore
+                Search, verify and explore
               </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Dedicated pages for licence checks, statistics and editorial guides.
+                Dedicated pages for licence checks, statistics, jobs and editorial guides.
               </p>
             </div>
           </div>
@@ -270,8 +270,8 @@ export default async function HomePage({
               },
               {
                 href: "/help",
-                title: "Help center",
-                text: "Read how the registry, ratings and job board work.",
+                title: "How it works",
+                text: "Read how the registry, listings and ratings sections work together.",
               },
             ].map((card) => (
               <Link

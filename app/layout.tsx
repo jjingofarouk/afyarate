@@ -118,7 +118,9 @@ export default function RootLayout({
               <HeaderSearch />
             </div>
             <div className="flex items-center gap-1">
-              <ThemeToggle />
+              <div className="hidden sm:block">
+                <ThemeToggle />
+              </div>
               <MobileNav />
             </div>
           </div>
