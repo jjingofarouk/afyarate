@@ -11,6 +11,7 @@
     "deploy": "opennextjs-cloudflare deploy",
     "db:setup": "node scripts/setup_supabase.mjs",
     "import": "node scripts/import_supabase.mjs",
+    "curate": "node scripts/curate_listing.mjs",
     "import:facilities": "node scripts/import_facilities.mjs",
     "scrape": "python3 scripts/scrape.py"
   },
