@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getFacilityStats, isFacilitiesReady, searchFacilities } from "@/lib/facilities";
+import {
+  getFacilityCities,
+  getFacilityStats,
+  isFacilitiesReady,
+  searchFacilities,
+} from "@/lib/facilities";
 import FacilitySearch from "@/components/FacilitySearch";
 import { FadeIn } from "@/components/motion/FadeIn";
+import { slugify } from "@/lib/posts";
 import { SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -27,16 +33,27 @@ const VALID_KIND = new Set(["hospital", "pharmacy"]);
 export default async function FacilitiesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ kind?: string; q?: string }>;
+  searchParams: Promise<{ kind?: string; type?: string; q?: string; city?: string; location?: string }>;
 }) {
   const sp = await searchParams;
-  const kind = sp.kind && VALID_KIND.has(sp.kind) ? sp.kind : "";
+  const kindValue = sp.kind ?? sp.type ?? "";
+  const cityValue = sp.city ?? sp.location ?? "";
+  const kind = kindValue && VALID_KIND.has(kindValue) ? kindValue : "";
   const q = sp.q ?? "";
+  const city = cityValue;
 
   const ready = await isFacilitiesReady();
   const stats = ready ? await getFacilityStats() : null;
+  const cities = ready ? await getFacilityCities() : [];
   const initialResults = ready
-    ? await searchFacilities({ q, kind, sort: "rating", page: 1, pageSize: INITIAL_COUNT })
+    ? await searchFacilities({
+        q,
+        kind,
+        city,
+        sort: "rating",
+        page: 1,
+        pageSize: INITIAL_COUNT,
+      })
     : undefined;
 
   const jsonLd = {
@@ -105,6 +122,20 @@ export default async function FacilitiesPage({
             </Link>
           </div>
         )}
+
+        {cities.length > 0 && (
+          <div className="mt-6 flex flex-wrap gap-2">
+            {cities.slice(0, 8).map((label) => (
+              <Link
+                key={label}
+                href={`/facilities/hospital/${slugify(label)}`}
+                className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:text-emerald-400"
+              >
+                Hospitals in {label}
+              </Link>
+            ))}
+          </div>
+        )}
       </FadeIn>
 
       {!ready ? (
@@ -126,6 +157,7 @@ export default async function FacilitiesPage({
             key={`${kind}:${q}`}
             initialQuery={q}
             initialKind={kind}
+            initialCity={city}
             initialData={initialResults}
           />
         </div>

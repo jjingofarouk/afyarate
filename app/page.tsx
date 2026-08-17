@@ -245,6 +245,51 @@ export default async function HomePage({
           </section>
         )}
 
+        <section className="mt-14">
+          <div className="flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                Verify, learn and explore
+              </h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Dedicated pages for licence checks, statistics and editorial guides.
+              </p>
+            </div>
+          </div>
+          <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+            {[
+              {
+                href: "/umdpc",
+                title: "UMDPC verification",
+                text: "Search the registry by name or licence number.",
+              },
+              {
+                href: "/stats/uganda",
+                title: "Uganda health stats",
+                text: "See the national counts for practitioners, facilities and jobs.",
+              },
+              {
+                href: "/news",
+                title: "Guides and news",
+                text: "Read the cornerstone licensing, career and directory pages.",
+              },
+            ].map((card) => (
+              <Link
+                key={card.href}
+                href={card.href}
+                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-400"
+              >
+                <h3 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                  {card.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                  {card.text}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+
         {/* FAQ — mirrors the FAQPage structured data below */}
         <section className="mx-auto mt-14 max-w-3xl">
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">

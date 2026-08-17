@@ -39,6 +39,8 @@ export default async function ProfessionPage({
   const facet = facets.find((f) => f.slug === slug);
   if (!facet) notFound();
   const posts = await getPosts({ profession: slug });
+  const salaryPosts = posts.filter((post) => post.salary).slice(0, 3);
+  const topEmployers = [...new Set(posts.map((post) => post.organization))].slice(0, 5);
 
   const breadcrumbLd = {
     "@context": "https://schema.org",
@@ -98,6 +100,78 @@ export default async function ProfessionPage({
       >
         Looking for a registered {facet.label}? Browse {facet.label}s in Uganda →
       </a>
+
+      <section className="mt-10 grid gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
+            How to become a {facet.label} in Uganda
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+            Follow the accredited training path for your cadre, complete any required internship or
+            supervised practice, and keep your registration and practising licence current.
+          </p>
+          <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+            <li>Pick an accredited training programme that matches the cadre you want.</li>
+            <li>Track licensing and registration deadlines through the council and registry.</li>
+            <li>Use live job openings to see which employers are hiring right now.</li>
+            <li>Keep CPD and specialty training in mind as you plan your career path.</li>
+          </ul>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <a
+              href="/news/umdpc-registration-guide"
+              className="text-sm font-medium text-emerald-700 underline dark:text-emerald-400"
+            >
+              Read the registration guide →
+            </a>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
+            Salary signals and active employers
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+            These live listings show what employers are currently advertising for {facet.label}
+            roles.
+          </p>
+          {salaryPosts.length > 0 ? (
+            <ul className="mt-4 space-y-3">
+              {salaryPosts.map((post) => (
+                <li key={post.slug} className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
+                  <div className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+                    {post.title}
+                  </div>
+                  <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {post.organization}
+                  </div>
+                  {post.salary && (
+                    <div className="mt-2 text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                      Salary: {post.salary}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
+              No salary data has been captured yet for this profession.
+            </p>
+          )}
+          {topEmployers.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {topEmployers.map((org) => (
+                <a
+                  key={org}
+                  href={`/organizations/${slugify(org)}`}
+                  className="rounded-full border border-slate-200 px-3 py-1.5 text-sm text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700 dark:border-slate-800 dark:text-slate-300 dark:hover:text-emerald-400"
+                >
+                  {org}
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
       <div className="mt-8">
         <PostBoard

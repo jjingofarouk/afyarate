@@ -43,16 +43,19 @@ const KIND_TABS: { value: string; label: string }[] = [
 export default function FacilitySearch({
   initialQuery = "",
   initialKind = "",
+  initialCity = "",
   initialData,
 }: {
   initialQuery?: string;
   initialKind?: string;
+  initialCity?: string;
   initialData?: FacilitySearchResult;
 }) {
   const [filters, setFilters] = useState<Filters>({
     ...baseFilters,
     q: initialQuery,
     kind: initialKind,
+    city: initialCity,
   });
   const [data, setData] = useState<FacilitySearchResult | null>(initialData ?? null);
   const [loading, setLoading] = useState(!initialData);

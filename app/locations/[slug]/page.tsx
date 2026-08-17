@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { getPosts, getLocations, facetOptions } from "@/lib/posts";
+import { searchFacilities } from "@/lib/facilities";
+import FacilityCard from "@/components/FacilityCard";
 import PostBoard from "@/components/PostBoard";
 import { SITE_NAME } from "@/lib/site";
 
@@ -38,7 +41,12 @@ export default async function LocationPage({
   const facets = await getLocations();
   const facet = facets.find((f) => f.slug === slug);
   if (!facet) notFound();
-  const posts = await getPosts({ location: slug });
+  const [posts, facilities] = await Promise.all([
+    getPosts({ location: slug }),
+    searchFacilities({ city: facet.label, sort: "rating", page: 1, pageSize: 4 }).catch(
+      () => null,
+    ),
+  ]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -69,6 +77,32 @@ export default async function LocationPage({
             professions={facetOptions(posts, (p) => p.profession)}
           />
       </div>
+
+      {facilities && facilities.items.length > 0 && (
+        <section className="mt-12">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                Hospitals and pharmacies in {facet.label}
+              </h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Nearby facilities surfaced from the directory.
+              </p>
+            </div>
+            <Link
+              href={`/facilities/hospital/${facet.slug}`}
+              className="text-sm font-medium text-emerald-700 underline dark:text-emerald-400"
+            >
+              Browse the full directory →
+            </Link>
+          </div>
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {facilities.items.map((facility) => (
+              <FacilityCard key={facility.id} facility={facility} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <p className="mt-10 border-t border-slate-100 pt-4 text-xs text-slate-400 dark:border-slate-800 dark:text-slate-500">
         Browse other locations:{" "}

@@ -57,7 +57,7 @@ const jsonLd = {
       description: SITE_DESCRIPTION,
       potentialAction: {
         "@type": "SearchAction",
-        target: `${SITE_URL}/?q={search_term_string}`,
+        target: `${SITE_URL}/practitioners?q={search_term_string}`,
         "query-input": "required name=search_term_string",
       },
     },
