@@ -1,72 +1,33 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getFacility, getFacilityRatings } from "@/lib/facilities";
-import { FACILITY_KIND_LABELS, type Facility } from "@/lib/types";
-import { FacilityKindBadge, FacilityInitials } from "@/components/FacilityCard";
-import { Stars } from "@/components/Stars";
 import FacilityRatingForm from "@/components/FacilityRatingForm";
+import { FacilityInitials, FacilityKindBadge } from "@/components/FacilityCard";
+import FacilitySearch from "@/components/FacilitySearch";
+import { FadeIn } from "@/components/motion/FadeIn";
+import { Stars } from "@/components/Stars";
 import ShareButtons from "@/components/ShareButtons";
 import { Star } from "@/components/StarIcon";
-import { FadeIn } from "@/components/motion/FadeIn";
+import {
+  getFacility,
+  getFacilityCities,
+  getFacilityRatings,
+  searchFacilities,
+} from "@/lib/facilities";
+import { getLocations, slugify } from "@/lib/posts";
+import { FACILITY_KIND_LABELS, type Facility, type FacilityKind } from "@/lib/types";
 import { SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
-  const { slug } = await params;
-  const f = await getFacility(slug);
-  if (!f) return { title: "Not found" };
-  const kind = FACILITY_KIND_LABELS[f.kind].label;
-  const title = `${f.name} — ${kind} in ${f.city ?? "Uganda"}`;
-  const description = `${f.name}, a ${kind.toLowerCase()} ${
-    f.city ? `in ${f.city}` : "in Uganda"
-  }. ${
-    f.ratingCount > 0
-      ? `Rated ${f.avgRating?.toFixed(1)}/5 from ${f.ratingCount} patient rating${f.ratingCount > 1 ? "s" : ""}.`
-      : "Patient ratings, contact details and location."
-  }`;
-  const url = `${SITE_URL}/facilities/${f.slug}`;
-  const image = f.imageUrl || `${SITE_URL}/logo.png`;
-
-  return {
-    title,
-    description,
-    keywords: [f.name, f.city, f.specialties, "Uganda", "hospital rating", "pharmacy rating"].filter(
-      (v): v is string => Boolean(v),
-    ),
-    alternates: { canonical: url },
-    openGraph: {
-      type: "website",
-      url,
-      title,
-      description,
-      images: [{ url: image }],
-    },
-    twitter: {
-      card: "summary",
-      title,
-      description,
-      images: [image],
-    },
-  };
+function isFacilityKind(value: string): value is FacilityKind {
+  return value === "hospital" || value === "pharmacy";
 }
 
-function Field({ label, value }: { label: string; value: string | null }) {
-  if (!value) return null;
-  return (
-    <div className="flex justify-between gap-4 border-b border-slate-100 py-2 text-sm dark:border-slate-800">
-      <dt className="shrink-0 text-slate-500 dark:text-slate-400">{label}</dt>
-      <dd className="text-right font-medium text-slate-800 dark:text-slate-200">{value}</dd>
-    </div>
-  );
+function safeJsonLd(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
-/** Postgres returns timestamptz with an explicit UTC offset already — parse as-is. */
 function formatRatingDate(iso: string): string | null {
   if (!iso) return null;
   const d = new Date(iso);
@@ -78,12 +39,6 @@ function formatRatingDate(iso: string): string | null {
   });
 }
 
-/** Escape "<" so user-submitted text can't break out of the JSON-LD <script> tag. */
-function safeJsonLd(data: unknown): string {
-  return JSON.stringify(data).replace(/</g, "\\u003c");
-}
-
-/** Schema.org type per facility kind — Hospitals and Pharmacies get distinct rich results. */
 function facilitySchemaType(f: Facility): string {
   return f.kind === "hospital" ? "Hospital" : "Pharmacy";
 }
@@ -98,7 +53,17 @@ function facilitySchema(f: Facility, ratings: Awaited<ReturnType<typeof getFacil
     name: f.name,
     url: `${SITE_URL}/facilities/${f.slug}`,
     image: f.imageUrl || `${SITE_URL}/logo.png`,
-    ...(f.address ? { address: { "@type": "PostalAddress", streetAddress: street, addressLocality: city, addressRegion: region, addressCountry: "UG" } } : {}),
+    ...(f.address
+      ? {
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: street,
+            addressLocality: city,
+            addressRegion: region,
+            addressCountry: "UG",
+          },
+        }
+      : {}),
     ...(f.phone ? { telephone: f.phone } : {}),
     ...(f.specialties ? { medicalSpecialty: f.specialties } : {}),
     ...(f.sourceUrl ? { sameAs: f.sourceUrl } : {}),
@@ -132,25 +97,34 @@ function facilitySchema(f: Facility, ratings: Awaited<ReturnType<typeof getFacil
   };
 }
 
-export default async function FacilityPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
+function Field({ label, value }: { label: string; value: string | null }) {
+  if (!value) return null;
+  return (
+    <div className="flex justify-between gap-4 border-b border-slate-100 py-2 text-sm dark:border-slate-800">
+      <dt className="shrink-0 text-slate-500 dark:text-slate-400">{label}</dt>
+      <dd className="text-right font-medium text-slate-800 dark:text-slate-200">{value}</dd>
+    </div>
+  );
+}
+
+async function FacilityDetailPage({ slug }: { slug: string }) {
   const facility = await getFacility(slug);
   if (!facility) notFound();
 
   const ratings = await getFacilityRatings(facility.id);
   const kind = FACILITY_KIND_LABELS[facility.kind];
-
   const breadcrumbLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
       { "@type": "ListItem", position: 2, name: "Facilities", item: `${SITE_URL}/facilities` },
-      { "@type": "ListItem", position: 3, name: kind.label, item: `${SITE_URL}/facilities?kind=${facility.kind}` },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: kind.label,
+        item: `${SITE_URL}/facilities?kind=${facility.kind}`,
+      },
       { "@type": "ListItem", position: 4, name: facility.name },
     ],
   };
@@ -165,15 +139,18 @@ export default async function FacilityPage({
       />
 
       <nav className="mb-6 text-xs text-slate-400 dark:text-slate-500">
-        <Link href="/" className="hover:text-emerald-700 dark:hover:text-emerald-400">Home</Link>
+        <Link href="/" className="hover:text-emerald-700 dark:hover:text-emerald-400">
+          Home
+        </Link>
         <span className="mx-1.5">/</span>
-        <Link href="/facilities" className="hover:text-emerald-700 dark:hover:text-emerald-400">Facilities</Link>
+        <Link href="/facilities" className="hover:text-emerald-700 dark:hover:text-emerald-400">
+          Facilities
+        </Link>
         <span className="mx-1.5">/</span>
         <span className="text-slate-600 dark:text-slate-400">{kind.label}</span>
       </nav>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left: photo + summary */}
         <FadeIn className="lg:col-span-1">
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
@@ -195,11 +172,7 @@ export default async function FacilityPage({
               <div className="mt-1 flex items-center gap-2">
                 <span className="flex text-amber-400">
                   {[1, 2, 3, 4, 5].map((n) => (
-                    <Star
-                      key={n}
-                      size={18}
-                      filled={n <= Math.round(facility.avgRating ?? 0)}
-                    />
+                    <Star key={n} size={18} filled={n <= Math.round(facility.avgRating ?? 0)} />
                   ))}
                 </span>
                 <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
@@ -207,8 +180,7 @@ export default async function FacilityPage({
                 </span>
                 {facility.ratingCount > 0 && (
                   <span className="text-xs text-slate-500 dark:text-slate-400">
-                    ({facility.ratingCount} rating
-                    {facility.ratingCount > 1 ? "s" : ""})
+                    ({facility.ratingCount} rating{facility.ratingCount > 1 ? "s" : ""})
                   </span>
                 )}
               </div>
@@ -218,7 +190,13 @@ export default async function FacilityPage({
                   href={`tel:${facility.phone.replace(/[^+\d]/g, "")}`}
                   className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700 hover:underline dark:text-emerald-400"
                 >
-                  <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    className="size-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -232,7 +210,6 @@ export default async function FacilityPage({
           </div>
         </FadeIn>
 
-        {/* Right: details */}
         <FadeIn delay={0.1} className="lg:col-span-2">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
@@ -280,7 +257,6 @@ export default async function FacilityPage({
             )}
           </div>
 
-          {/* Ratings */}
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             <FacilityRatingForm facilityId={facility.id} />
 
@@ -304,7 +280,9 @@ export default async function FacilityPage({
                         <div className="flex items-center justify-between">
                           <Stars value={r.rating} size={14} />
                           {dateLabel && (
-                            <span className="text-xs text-slate-400 dark:text-slate-500">{dateLabel}</span>
+                            <span className="text-xs text-slate-400 dark:text-slate-500">
+                              {dateLabel}
+                            </span>
                           )}
                         </div>
                         {r.comment && (
@@ -331,11 +309,168 @@ export default async function FacilityPage({
           Browse all hospitals &amp; pharmacies
         </Link>{" "}
         or{" "}
-        <Link href={`/facilities?kind=${facility.kind}`} className="text-emerald-700 underline dark:text-emerald-400">
+        <Link
+          href={`/facilities?kind=${facility.kind}`}
+          className="text-emerald-700 underline dark:text-emerald-400"
+        >
           more {kind.plural.toLowerCase()}
         </Link>
         .
       </p>
     </div>
   );
+}
+
+async function FacilityCityPage({ kind, city }: { kind: FacilityKind; city: string }) {
+  const cities = await getFacilityCities();
+  const cityLabel = cities.find((item) => slugify(item) === city);
+  if (!cityLabel) notFound();
+
+  const jobLocation = (await getLocations()).find((item) => item.slug === city);
+  const initialData = await searchFacilities({
+    kind,
+    city: cityLabel,
+    sort: "rating",
+    page: 1,
+    pageSize: 12,
+  });
+  const kindLabel = FACILITY_KIND_LABELS[kind].plural;
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-10">
+      <nav className="mb-6 text-xs text-slate-400 dark:text-slate-500">
+        <Link href="/" className="hover:text-emerald-700 dark:hover:text-emerald-400">
+          Home
+        </Link>
+        <span className="mx-1.5">/</span>
+        <Link href="/facilities" className="hover:text-emerald-700 dark:hover:text-emerald-400">
+          Facilities
+        </Link>
+        <span className="mx-1.5">/</span>
+        <span className="text-slate-600 dark:text-slate-400">
+          {kindLabel} in {cityLabel}
+        </span>
+      </nav>
+
+      <header className="max-w-3xl">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-emerald-700 dark:text-emerald-400">
+          Local directory
+        </p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+          {kindLabel} in {cityLabel}
+        </h1>
+        <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+          Browse the {initialData.total.toLocaleString()} {kindLabel.toLowerCase()} listed in{" "}
+          {cityLabel}, then filter by name or specialty.
+        </p>
+      </header>
+
+      <div className="mt-8">
+        <FacilitySearch initialKind={kind} initialCity={cityLabel} initialData={initialData} />
+      </div>
+
+      <p className="mt-10 border-t border-slate-100 pt-4 text-xs text-slate-400 dark:border-slate-800 dark:text-slate-500">
+        Explore related pages:{" "}
+        <Link
+          href={`/facilities?kind=${kind}`}
+          className="text-emerald-700 underline dark:text-emerald-400"
+        >
+          all {kindLabel.toLowerCase()}
+        </Link>{" "}
+        ·{" "}
+        {jobLocation ? (
+          <Link href={`/stats/${city}`} className="text-emerald-700 underline dark:text-emerald-400">
+            {cityLabel} stats
+          </Link>
+        ) : (
+          <Link href="/stats/uganda" className="text-emerald-700 underline dark:text-emerald-400">
+            Uganda stats
+          </Link>
+        )}
+      </p>
+    </div>
+  );
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ path: string[] }>;
+}): Promise<Metadata> {
+  const { path } = await params;
+  if (path.length === 1) {
+    const facility = await getFacility(path[0]);
+    if (!facility) return { title: "Not found" };
+    const kind = FACILITY_KIND_LABELS[facility.kind].label;
+    const title = `${facility.name} — ${kind} in ${facility.city ?? "Uganda"}`;
+    const description = `${facility.name}, a ${kind.toLowerCase()} ${
+      facility.city ? `in ${facility.city}` : "in Uganda"
+    }. ${
+      facility.ratingCount > 0
+        ? `Rated ${facility.avgRating?.toFixed(1)}/5 from ${facility.ratingCount} patient rating${
+            facility.ratingCount > 1 ? "s" : ""
+          }.`
+        : "Patient ratings, contact details and location."
+    }`;
+    const url = `${SITE_URL}/facilities/${facility.slug}`;
+    const image = facility.imageUrl || `${SITE_URL}/logo.png`;
+    return {
+      title,
+      description,
+      keywords: [
+        facility.name,
+        facility.city,
+        facility.specialties,
+        "Uganda",
+        "hospital rating",
+        "pharmacy rating",
+      ].filter((v): v is string => Boolean(v)),
+      alternates: { canonical: url },
+      openGraph: {
+        type: "website",
+        url,
+        title,
+        description,
+        images: [{ url: image }],
+      },
+      twitter: {
+        card: "summary",
+        title,
+        description,
+        images: [image],
+      },
+    };
+  }
+
+  if (path.length === 2 && isFacilityKind(path[0])) {
+    const cities = await getFacilityCities();
+    const cityLabel = cities.find((item) => slugify(item) === path[1]);
+    if (!cityLabel) return { title: "Not found" };
+    const kindLabel = FACILITY_KIND_LABELS[path[0]].plural;
+    return {
+      title: `${kindLabel} in ${cityLabel}`,
+      description: `Browse ${kindLabel.toLowerCase()} in ${cityLabel}, Uganda.`,
+      alternates: { canonical: `/facilities/${path[0]}/${path[1]}` },
+      openGraph: {
+        title: `${kindLabel} in ${cityLabel} · Uganda`,
+        description: `Browse ${kindLabel.toLowerCase()} in ${cityLabel}, Uganda.`,
+        type: "website",
+      },
+    };
+  }
+
+  return { title: "Not found" };
+}
+
+export default async function FacilityRoutePage({
+  params,
+}: {
+  params: Promise<{ path: string[] }>;
+}) {
+  const { path } = await params;
+  if (path.length === 1) return <FacilityDetailPage slug={path[0]} />;
+  if (path.length === 2 && isFacilityKind(path[0])) {
+    return <FacilityCityPage kind={path[0]} city={path[1]} />;
+  }
+  notFound();
 }
