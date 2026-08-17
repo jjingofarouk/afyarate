@@ -86,8 +86,8 @@ export default async function PractitionersHubPage({
             Search the registry
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-            Use the home search or the UMDPC page to search by name or licence number, then open
-            the full profile for a verified record.
+            Use the home search to search by name or licence number, then open the full
+            profile for a verified record.
           </p>
           <div className="mt-4">
             <PractitionerSearch

@@ -33,7 +33,7 @@ export default function AboutPage() {
           >
             Uganda Medical &amp; Dental Practitioners Council
           </a>{" "}
-          (UMPDC), alongside the Uganda Nurses &amp; Midwives Council and the Allied
+          alongside the Uganda Nurses &amp; Midwives Council and the Allied
           Health Professionals Council. We refresh the registry regularly so you can
           check a practitioner&apos;s licence status and expiry before you book.
         </p>

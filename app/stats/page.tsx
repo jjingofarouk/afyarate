@@ -164,10 +164,10 @@ export default async function StatsPage() {
               Browse jobs
             </Link>
             <Link
-              href="/umdpc"
+              href="/practitioners"
               className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-900/30 dark:text-emerald-300"
             >
-              Verify a licence
+              Search practitioners
             </Link>
           </div>
         </div>
@@ -177,4 +177,3 @@ export default async function StatsPage() {
     </div>
   );
 }
-

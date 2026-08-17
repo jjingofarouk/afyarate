@@ -113,12 +113,12 @@ export default async function StatsDetailPage({
               High-intent next steps
             </h2>
             <div className="mt-4 flex flex-wrap gap-3">
-              <Link
-                href="/umdpc"
-                className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
-              >
-                Verify a licence
-              </Link>
+            <Link
+              href="/practitioners"
+              className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+            >
+              Search practitioners
+            </Link>
               <Link
                 href="/practitioners"
                 className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-900/30 dark:text-emerald-300"

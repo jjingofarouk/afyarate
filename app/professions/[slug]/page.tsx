@@ -118,10 +118,10 @@ export default async function ProfessionPage({
           </ul>
           <div className="mt-4 flex flex-wrap gap-2">
             <a
-              href="/news/umdpc-registration-guide"
+              href="/help/how-does-rate-musawo-work"
               className="text-sm font-medium text-emerald-700 underline dark:text-emerald-400"
             >
-              Read the registration guide →
+              How verification works →
             </a>
           </div>
         </div>

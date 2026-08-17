@@ -259,9 +259,9 @@ export default async function HomePage({
           <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
             {[
               {
-                href: "/umdpc",
-                title: "UMDPC verification",
-                text: "Search the registry by name or licence number.",
+                href: "/practitioners",
+                title: "Search the registry",
+                text: "Find licensed practitioners by name, profession or council.",
               },
               {
                 href: "/stats/uganda",
@@ -269,9 +269,9 @@ export default async function HomePage({
                 text: "See the national counts for practitioners, facilities and jobs.",
               },
               {
-                href: "/news",
-                title: "Guides and news",
-                text: "Read the cornerstone licensing, career and directory pages.",
+                href: "/help",
+                title: "Help center",
+                text: "Read how the registry, ratings and job board work.",
               },
             ].map((card) => (
               <Link

@@ -22,7 +22,6 @@ export const metadata: Metadata = {
     "Uganda doctors",
     "find a doctor Uganda",
     "health worker ratings Uganda",
-    "UMDPC registry",
     "licensed nurses Uganda",
     "Uganda medical council",
     "rate a doctor",

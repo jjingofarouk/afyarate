@@ -1,7 +1,6 @@
 import { getPosts, getProfessions, getLocations, getOrganizations, slugify } from "@/lib/posts";
 import { getPractitionerIdsPage, getProfessionCounts, getStats } from "@/lib/practitioners";
 import { getFacilityCities, getFacilityIdsPage, getFacilityStats } from "@/lib/facilities";
-import { getEditorialArticles } from "@/lib/editorial";
 import { HELP_ARTICLES } from "@/data/help";
 import { POST_TYPE_LABELS, POST_TYPES } from "@/lib/types";
 import { SITE_URL } from "@/lib/site";
@@ -113,18 +112,11 @@ export async function GET(
       { url: `${SITE_URL}/terms`, priority: 0.2, freq: "yearly" },
       { url: `${SITE_URL}/privacy`, priority: 0.2, freq: "yearly" },
       { url: `${SITE_URL}/help`, priority: 0.5, freq: "monthly" },
-      { url: `${SITE_URL}/news`, priority: 0.6, freq: "weekly" },
       { url: `${SITE_URL}/stats`, priority: 0.6, freq: "weekly" },
       { url: `${SITE_URL}/stats/uganda`, priority: 0.7, freq: "weekly" },
-      { url: `${SITE_URL}/umdpc`, priority: 0.7, freq: "weekly" },
       ...HELP_ARTICLES.map((a) => ({
         url: `${SITE_URL}/help/${a.slug}`,
         priority: 0.4,
-        freq: "monthly",
-      })),
-      ...getEditorialArticles().map((article) => ({
-        url: `${SITE_URL}/news/${article.slug}`,
-        priority: 0.5,
         freq: "monthly",
       })),
     ];

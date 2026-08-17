@@ -125,18 +125,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/umdpc" className={linkClass}>
-                  UMDPC verification
-                </Link>
-              </li>
-              <li>
                 <Link href="/stats/uganda" className={linkClass}>
                   Uganda health stats
-                </Link>
-              </li>
-              <li>
-                <Link href="/news" className={linkClass}>
-                  News &amp; guides
                 </Link>
               </li>
               <li>
