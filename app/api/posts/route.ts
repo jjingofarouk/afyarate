@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
     profession: sp.get("profession") ?? undefined,
     location: sp.get("location") ?? undefined,
     organization: sp.get("organization") ?? undefined,
+    tag: sp.get("tag") ?? undefined,
     q: sp.get("q") ?? undefined,
     sort: POST_SORTS.has(sortParam as PostSort) ? (sortParam as PostSort) : undefined,
     offset: Number(sp.get("offset") ?? 0) || 0,
@@ -144,18 +145,20 @@ export async function POST(req: NextRequest) {
     insert.tags = (b.tags as unknown[]).filter((t) => typeof t === "string").slice(0, 10);
   }
 
-  const { data, error } = await supabase
+  // NOTE: no .select()/.single() here. The SELECT RLS policy only exposes
+  // status='published' rows, so a RETURNING clause re-checks the fresh draft
+  // against that policy and fails with 42501 ("new row violates row-level
+  // security policy"). The frontend only needs success/failure, not the row.
+  const { error } = await supabase
     .from("posts")
-    .insert({ ...insert, status: "draft" })
-    .select("id, slug, status")
-    .single();
+    .insert({ ...insert, status: "draft" });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   return NextResponse.json(
-    { post: data, message: "Thanks! Your listing is submitted for review." },
+    { message: "Thanks! Your listing is submitted for review." },
     { status: 201 },
   );
 }

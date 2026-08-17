@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import type { Post } from "@/lib/types";
 import type { PostSort } from "@/lib/posts";
 import PostCard from "./PostCard";
@@ -15,6 +16,9 @@ export default function PostBoard({
   profession,
   location,
   organization,
+  tag,
+  professions = [],
+  locations = [],
 }: {
   initialPosts: Post[];
   total: number;
@@ -22,9 +26,14 @@ export default function PostBoard({
   profession?: string;
   location?: string;
   organization?: string;
+  tag?: string;
+  professions?: string[];
+  locations?: string[];
 }) {
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<PostSort>("featured");
+  const [professionFilter, setProfessionFilter] = useState("");
+  const [locationFilter, setLocationFilter] = useState("");
   const [posts, setPosts] = useState(initialPosts);
   const [total, setTotal] = useState(initialTotal);
   // Two distinct loading states: a fresh search replaces the whole grid, a
@@ -37,25 +46,41 @@ export default function PostBoard({
   const isFirstRender = useRef(true);
 
   const buildParams = useCallback(
-    (offset: number, limit: number, currentQ: string, currentSort: PostSort) => {
+    (
+      offset: number,
+      limit: number,
+      currentQ: string,
+      currentSort: PostSort,
+      currentProf: string,
+      currentLoc: string,
+    ) => {
       const params = new URLSearchParams({ offset: String(offset), limit: String(limit) });
       if (type) params.set("type", type);
       if (profession) params.set("profession", profession);
+      else if (currentProf) params.set("profession", currentProf);
       if (location) params.set("location", location);
+      else if (currentLoc) params.set("location", currentLoc);
       if (organization) params.set("organization", organization);
+      if (tag) params.set("tag", tag);
       if (currentQ.trim()) params.set("q", currentQ.trim());
       if (currentSort !== "featured") params.set("sort", currentSort);
       return params;
     },
-    [type, profession, location, organization],
+    [type, profession, location, organization, tag],
   );
 
   const runSearch = useCallback(
-    async (currentQ: string, currentSort: PostSort, signal?: AbortSignal) => {
+    async (
+      currentQ: string,
+      currentSort: PostSort,
+      currentProf: string,
+      currentLoc: string,
+      signal?: AbortSignal,
+    ) => {
       setSearching(true);
       setError(null);
       try {
-        const params = buildParams(0, PAGE_SIZE, currentQ, currentSort);
+        const params = buildParams(0, PAGE_SIZE, currentQ, currentSort, currentProf, currentLoc);
         const res = await fetch(`/api/posts?${params.toString()}`, { signal });
         if (!res.ok) throw new Error(`Request failed (${res.status})`);
         const data = await res.json();
@@ -72,7 +97,7 @@ export default function PostBoard({
     [buildParams],
   );
 
-  // Debounced re-search whenever the query or sort changes. Skipped on
+  // Debounced re-search whenever the query, sort or filters change. Skipped on
   // mount — the server already rendered the first page for that state.
   useEffect(() => {
     if (isFirstRender.current) {
@@ -82,14 +107,14 @@ export default function PostBoard({
     const ctrl = new AbortController();
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      runSearch(q, sort, ctrl.signal);
+      runSearch(q, sort, professionFilter, locationFilter, ctrl.signal);
     }, 250);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       ctrl.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, sort]);
+  }, [q, sort, professionFilter, locationFilter]);
 
   const hasMore = posts.length < total;
   const remaining = total - posts.length;
@@ -98,7 +123,7 @@ export default function PostBoard({
     setLoadingMore(true);
     setError(null);
     try {
-      const params = buildParams(posts.length, PAGE_SIZE, q, sort);
+      const params = buildParams(posts.length, PAGE_SIZE, q, sort, professionFilter, locationFilter);
       const res = await fetch(`/api/posts?${params.toString()}`);
       if (!res.ok) throw new Error(`Request failed (${res.status})`);
       const data = await res.json();
@@ -110,45 +135,115 @@ export default function PostBoard({
     }
   }
 
+  const showProfessionFilter = !profession && professions.length > 0;
+  const showLocationFilter = !location && locations.length > 0;
+
+  const selectCls =
+    "rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100";
+
   return (
     <div>
-      {/* Search + sort */}
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <svg
-            aria-hidden="true"
-            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z"
+      {/* Search + filters + sort */}
+      <div className="mb-6 flex flex-col gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <svg
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z"
+              />
+            </svg>
+            <input
+              type="search"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search by title, organisation or location…"
+              aria-label="Search listings"
+              className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-base outline-none transition placeholder:text-base placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/40"
             />
-          </svg>
-          <input
-            type="search"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search by title, organisation or location…"
-            aria-label="Search listings"
-            className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-base outline-none transition placeholder:text-base placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/40"
-          />
+          </div>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as PostSort)}
+            aria-label="Sort listings"
+            className={selectCls}
+          >
+            <option value="featured">Featured</option>
+            <option value="closingSoon">Closing soon</option>
+            <option value="newest">Newest</option>
+          </select>
         </div>
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value as PostSort)}
-          aria-label="Sort listings"
-          className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-        >
-          <option value="featured">Featured</option>
-          <option value="closingSoon">Closing soon</option>
-          <option value="newest">Newest</option>
-        </select>
+
+        {(showProfessionFilter || showLocationFilter) && (
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            {showProfessionFilter && (
+              <select
+                value={professionFilter}
+                onChange={(e) => setProfessionFilter(e.target.value)}
+                aria-label="Filter by profession"
+                className={selectCls}
+              >
+                <option value="">All professions</option>
+                {professions.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            )}
+            {showLocationFilter && (
+              <select
+                value={locationFilter}
+                onChange={(e) => setLocationFilter(e.target.value)}
+                aria-label="Filter by location"
+                className={selectCls}
+              >
+                <option value="">All locations</option>
+                {locations.map((l) => (
+                  <option key={l} value={l}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            )}
+            {(professionFilter || locationFilter) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setProfessionFilter("");
+                  setLocationFilter("");
+                }}
+                className="text-sm font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-800 dark:text-emerald-400"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+        )}
       </div>
+
+      {tag && (
+        <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/50 dark:text-emerald-300">
+          <span>
+            Showing listings tagged{" "}
+            <span className="font-semibold">#{tag}</span>
+          </span>
+          <Link
+            href="/posts"
+            className="font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-900 dark:text-emerald-400 dark:hover:text-emerald-200"
+          >
+            Show all
+          </Link>
+        </div>
+      )}
 
       {/* Announced to screen readers on change; visually the grid/skeletons below already show this */}
       <p className="sr-only" role="status" aria-live="polite">
@@ -177,13 +272,17 @@ export default function PostBoard({
 
           {posts.length === 0 && !loadingMore && (
             <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
-              No listings matched your search. Try a different keyword, or{" "}
+              No listings matched your search. Try a different keyword or filter, or{" "}
               <button
                 type="button"
-                onClick={() => setQ("")}
+                onClick={() => {
+                  setQ("");
+                  setProfessionFilter("");
+                  setLocationFilter("");
+                }}
                 className="text-emerald-700 underline dark:text-emerald-400"
               >
-                clear the search
+                clear the search and filters
               </button>
               .
             </div>

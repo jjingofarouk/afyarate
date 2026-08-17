@@ -8,6 +8,7 @@ import {
   updateAdminPost,
   PostApiError,
 } from "@/lib/admin-posts";
+import { purgePostSlugs } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -92,6 +93,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Params }) {
     }
 
     const post = await updateAdminPost(id, changes);
+    // Evict the Cloudflare edge cache so the updated page is served immediately.
+    await purgePostSlugs([post.slug]);
     return NextResponse.json({ post });
   } catch (err) {
     return apiError(err);
@@ -102,7 +105,10 @@ export async function DELETE(req: NextRequest, { params }: { params: Params }) {
   if (!isAdminRequest(req)) return unauthorized();
   const { id } = await params;
   try {
+    // Fetch slug before deletion so we can purge the edge cache.
+    const post = await getAdminPost(id);
     await deleteAdminPost(id);
+    if (post) await purgePostSlugs([post.slug]);
     return NextResponse.json({ ok: true });
   } catch (err) {
     return apiError(err);

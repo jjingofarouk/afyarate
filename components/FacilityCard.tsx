@@ -39,7 +39,7 @@ export default function FacilityCard({ facility: f }: { facility: Facility }) {
             src={f.imageUrl}
             alt={f.name}
             loading="lazy"
-            className="h-full w-full object-cover object-center"
+            className="h-full w-full object-contain object-center"
           />
         ) : (
           <FacilityInitials name={f.name} />

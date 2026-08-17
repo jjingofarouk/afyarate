@@ -54,6 +54,7 @@ export interface PostSearchOptions {
   profession?: string; // profession slug
   location?: string; // location slug
   organization?: string; // organization slug
+  tag?: string; // tag slug
   q?: string; // free-text match against title/organization/location/profession/category
   sort?: PostSort;
 }
@@ -80,6 +81,13 @@ export interface FacetItem {
   slug: string;
   label: string;
   count: number;
+}
+
+/** Distinct, sorted option values for the board filter dropdowns. */
+export function facetOptions(posts: Post[], pick: (p: Post) => string | null): string[] {
+  return [...new Set(posts.map(pick).filter((v): v is string => !!v))].sort((a, b) =>
+    a.localeCompare(b),
+  );
 }
 
 function buildFacet(posts: Post[], pick: (p: Post) => string | null): FacetItem[] {
@@ -166,12 +174,12 @@ const postCache = new Map<string, { data: Post | null; expires: number }>();
 // a fraction of the size of a full `select("*")`.
 const LIST_COLUMNS =
   "id, slug, type, title, organization, category, profession, location, country, " +
-  "deadline, salary, featured, status, published_at, image_url";
+  "deadline, salary, featured, status, published_at, image_url, tags";
 
 /** All published listings, including ones whose deadline has passed (the card
  *  marks those as "Closed"). Cached in the worker; filtered by type in memory. */
 export async function getPosts(opts: PostSearchOptions = {}): Promise<Post[]> {
-  const { type, profession, location, organization, q, sort } = opts;
+  const { type, profession, location, organization, tag, q, sort } = opts;
   let posts = postsCache && postsCache.expires > Date.now() ? postsCache.data : null;
   if (!posts) {
     const supabase = createServerClient();
@@ -189,6 +197,10 @@ export async function getPosts(opts: PostSearchOptions = {}): Promise<Post[]> {
   if (profession) posts = posts.filter((p) => slugMatches(profession, p.profession));
   if (location) posts = posts.filter((p) => slugMatches(location, p.location));
   if (organization) posts = posts.filter((p) => slugMatches(organization, p.organization));
+  if (tag) {
+    const needle = tag.toLowerCase();
+    posts = posts.filter((p) => (p.tags ?? []).some((t) => t.toLowerCase() === needle));
+  }
   if (q && q.trim()) {
     const needle = q.trim().toLowerCase();
     posts = posts.filter((p) =>

@@ -47,7 +47,7 @@ export default function PractitionerCard({ p }: { p: Practitioner }) {
             src={p.imageUrl}
             alt={p.name}
             loading="lazy"
-            className="h-full w-full object-cover object-top"
+            className="h-full w-full object-contain object-top"
           />
         ) : (
           <InitialsAvatar name={p.name} />

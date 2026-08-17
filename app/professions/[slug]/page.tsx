@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getPosts, getProfessions, slugify } from "@/lib/posts";
+import { getPosts, getProfessions, slugify, facetOptions } from "@/lib/posts";
 import PostBoard from "@/components/PostBoard";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
@@ -100,7 +100,12 @@ export default async function ProfessionPage({
       </a>
 
       <div className="mt-8">
-        <PostBoard initialPosts={posts.slice(0, INITIAL_COUNT)} total={posts.length} profession={slug} />
+        <PostBoard
+            initialPosts={posts.slice(0, INITIAL_COUNT)}
+            total={posts.length}
+            profession={slug}
+            locations={facetOptions(posts, (p) => p.location)}
+          />
       </div>
 
       <p className="mt-10 border-t border-slate-100 pt-4 text-xs text-slate-400 dark:border-slate-800 dark:text-slate-500">

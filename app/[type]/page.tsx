@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getPosts } from "@/lib/posts";
+import { getPosts, facetOptions } from "@/lib/posts";
 import { POST_TYPE_LABELS, POST_TYPES, type PostType } from "@/lib/types";
 import PostBoard from "@/components/PostBoard";
 import PostTypeTabs from "@/components/PostTypeTabs";
@@ -130,7 +130,13 @@ export default async function TypePage({
         </p>
       ) : (
         <div className="mt-8">
-          <PostBoard initialPosts={posts.slice(0, INITIAL_COUNT)} total={posts.length} type={t} />
+          <PostBoard
+              initialPosts={posts.slice(0, INITIAL_COUNT)}
+              total={posts.length}
+              type={t}
+              professions={facetOptions(posts, (p) => p.profession)}
+              locations={facetOptions(posts, (p) => p.location)}
+            />
         </div>
       )}
 

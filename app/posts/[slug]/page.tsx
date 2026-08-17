@@ -181,15 +181,19 @@ function isHeadingLine(line: string): boolean {
   return words.some((w) => /^[A-Z]/.test(w));
 }
 
-/** Minimal inline formatting: **bold**, [link](url) and bare https:// URLs. */
+const INLINE_RE =
+  /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)\s]+\)|https?:\/\/[^\s)\]]+|[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}|\+?256[\s-]?\d{3}[\s-]?\d{3}[\s-]?\d{3}|0\d{3}[\s-]?\d{3}[\s-]?\d{3})/g;
+const EMAIL_RE = /^[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}$/;
+const PHONE_RE = /^\+?256[\s-]?\d{3}[\s-]?\d{3}[\s-]?\d{3}$|^0\d{3}[\s-]?\d{3}[\s-]?\d{3}$/;
+
+/** Minimal inline formatting: **bold**, [link](url), bare https:// URLs, emails and phone numbers (made clickable so text can't be copied). */
 function inlineFormat(text: string): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
-  const re = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)\s]+\)|https?:\/\/[^\s)\]]+)/g;
   const linkCls = "font-medium text-emerald-700 underline dark:text-emerald-400";
   let last = 0;
   let m: RegExpExecArray | null;
   let key = 0;
-  while ((m = re.exec(text))) {
+  while ((m = INLINE_RE.exec(text))) {
     if (m.index > last) parts.push(text.slice(last, m.index));
     const token = m[0];
     if (token.startsWith("**")) {
@@ -206,6 +210,18 @@ function inlineFormat(text: string): React.ReactNode[] {
         parts.push(
           <a key={key++} href={lm[2]} target="_blank" rel="noopener noreferrer" className={linkCls}>
             {lm[1]}
+          </a>,
+        );
+      } else if (EMAIL_RE.test(token)) {
+        parts.push(
+          <a key={key++} href={`mailto:${token}`} className={linkCls}>
+            {token}
+          </a>,
+        );
+      } else if (PHONE_RE.test(token)) {
+        parts.push(
+          <a key={key++} href={`tel:${token.replace(/[\s-]/g, "")}`} className={linkCls}>
+            {token}
           </a>,
         );
       } else {
@@ -402,7 +418,7 @@ export default async function PostDetailPage({
               alt={`${post.title} at ${post.organization}`}
               width={1200}
               height={675}
-              className="h-full w-full object-cover object-center"
+              className="h-full w-full object-contain object-center"
             />
           </div>
         )}
@@ -441,7 +457,7 @@ export default async function PostDetailPage({
 
           {post.summary && (
             <p className="mt-6 text-lg font-medium leading-relaxed text-slate-800 dark:text-slate-100">
-              {post.summary}
+              {inlineFormat(post.summary)}
             </p>
           )}
 
@@ -456,7 +472,7 @@ export default async function PostDetailPage({
                 </svg>
               }
             >
-              {post.qualification}
+              {inlineFormat(post.qualification)}
             </Segment>
           )}
 
@@ -469,7 +485,7 @@ export default async function PostDetailPage({
                 </svg>
               }
             >
-              {post.eligibility}
+              {inlineFormat(post.eligibility)}
             </Segment>
           )}
 
@@ -482,7 +498,7 @@ export default async function PostDetailPage({
                 </svg>
               }
             >
-              {post.benefits}
+              {inlineFormat(post.benefits)}
             </Segment>
           )}
 
@@ -495,7 +511,7 @@ export default async function PostDetailPage({
                 </svg>
               }
             >
-              {post.requiredDocuments}
+              {inlineFormat(post.requiredDocuments)}
             </Segment>
           )}
 
@@ -508,7 +524,7 @@ export default async function PostDetailPage({
                 </svg>
               }
             >
-              {post.keyDates}
+              {inlineFormat(post.keyDates)}
             </Segment>
           )}
 
@@ -542,12 +558,13 @@ export default async function PostDetailPage({
           {post.tags.length > 0 && (
             <div className="mt-6 flex flex-wrap gap-2">
               {post.tags.map((t) => (
-                <span
+                <Link
                   key={t}
-                  className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                  href={`/posts?tag=${encodeURIComponent(t)}`}
+                  className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-emerald-950 dark:hover:text-emerald-400"
                 >
                   #{t}
-                </span>
+                </Link>
               ))}
             </div>
           )}

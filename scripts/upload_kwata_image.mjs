@@ -1,0 +1,54 @@
+#!/usr/bin/env node
+/**
+ * Download the Kwata Medical Chambers photo and re-host it in the Supabase
+ * `post-images` bucket, then point the JSONL listing at the new URL.
+ */
+import { readFileSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { loadEnv } from "./lib_env.mjs";
+
+const require = createRequire(import.meta.url);
+const { Client } = require("pg");
+
+loadEnv();
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+if (!supabaseUrl || !key) {
+  console.error("NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY not set in .env.local");
+  process.exit(1);
+}
+
+const SRC =
+  "https://white-ash-residences-komamboga.kampala-hotels-ug.com/data/Photos/700x500w/15329/1532927/1532927389/kampala-white-ash-residences-komamboga-photo-1.JPEG";
+const UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36";
+
+const res = await fetch(SRC, { redirect: "follow", headers: { "User-Agent": UA } });
+if (!res.ok) throw new Error(`download failed: ${res.status}`);
+const ct = res.headers.get("content-type") ?? "";
+if (!ct.startsWith("image/")) throw new Error(`not an image: ${ct}`);
+const buf = Buffer.from(await res.arrayBuffer());
+const mime = ct.split(";")[0].trim();
+const ext = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" }[mime] ?? "jpg";
+console.log(`Downloaded ${buf.length} bytes (${mime})`);
+
+const filename = `medical-officer-kwata-medical-chambers.${ext}`;
+const up = await fetch(`${supabaseUrl}/storage/v1/object/post-images/${filename}`, {
+  method: "POST",
+  headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": mime },
+  body: buf,
+});
+if (!up.ok) {
+  const body = await up.text().catch(() => "");
+  throw new Error(`upload failed: ${up.status}: ${body.slice(0, 200)}`);
+}
+const publicUrl = `${supabaseUrl}/storage/v1/object/public/post-images/${filename}`;
+console.log(`Uploaded -> ${publicUrl}`);
+
+// Point the JSONL listing at the new image.
+const file = "data/posts/medical-officer-kwata-medical-chambers.jsonl";
+const rec = JSON.parse(readFileSync(file, "utf8").trim());
+rec.image_url = publicUrl;
+writeFileSync(file, JSON.stringify(rec) + "\n");
+console.log("JSONL image_url updated.");

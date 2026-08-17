@@ -6,6 +6,7 @@ import {
   sanitizePostInput,
   PostApiError,
 } from "@/lib/admin-posts";
+import { purgePostSlugs } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +56,9 @@ export async function POST(req: NextRequest) {
     const row = sanitizePostInput((body ?? {}) as Record<string, unknown>);
     if (!row.status) row.status = "published";
     const post = await createAdminPost(row);
+    // Immediately-published posts get a warm cache purge so any CDN placeholder
+    // is cleared and the new page is served fresh on first visitor hit.
+    if (post.status === "published") await purgePostSlugs([post.slug]);
     return NextResponse.json({ post }, { status: 201 });
   } catch (err) {
     return apiError(err);

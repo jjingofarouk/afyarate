@@ -182,7 +182,7 @@ export default async function FacilityPage({
                 <img
                   src={facility.imageUrl}
                   alt={facility.name}
-                  className="h-full w-full object-cover object-center"
+                  className="h-full w-full object-contain object-center"
                 />
               ) : (
                 <FacilityInitials name={facility.name} />

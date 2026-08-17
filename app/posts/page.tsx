@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getPosts } from "@/lib/posts";
+import { getPosts, facetOptions } from "@/lib/posts";
 import PostBoard from "@/components/PostBoard";
 import PostTypeTabs from "@/components/PostTypeTabs";
 import { FadeIn } from "@/components/motion/FadeIn";
@@ -28,10 +28,10 @@ export const metadata: Metadata = {
 export default async function PostsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string }>;
+  searchParams: Promise<{ type?: string; tag?: string }>;
 }) {
-  const { type } = await searchParams;
-  const posts = await getPosts({ type });
+  const { type, tag } = await searchParams;
+  const posts = await getPosts({ type, tag });
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -101,7 +101,14 @@ export default async function PostsPage({
       ) : (
         <FadeIn delay={0.05}>
           <div className="mt-8">
-            <PostBoard initialPosts={posts.slice(0, INITIAL_COUNT)} total={posts.length} type={type} />
+            <PostBoard
+              initialPosts={posts.slice(0, INITIAL_COUNT)}
+              total={posts.length}
+              type={type}
+              tag={tag}
+              professions={facetOptions(posts, (p) => p.profession)}
+              locations={facetOptions(posts, (p) => p.location)}
+            />
           </div>
         </FadeIn>
       )}

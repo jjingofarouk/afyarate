@@ -226,7 +226,7 @@ export default async function PractitionerPage({
                 <img
                   src={practitioner.imageUrl}
                   alt={practitioner.name}
-                  className="h-full w-full object-cover object-top"
+                  className="h-full w-full object-contain object-top"
                 />
               ) : (
                 <InitialsAvatar name={practitioner.name} />
