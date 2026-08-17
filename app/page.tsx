@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getProfessionCounts, getStats, isDbReady, searchPractitioners } from "@/lib/practitioners";
 import { getFacilityStats, isFacilitiesReady, searchFacilities } from "@/lib/facilities";
 import { getPosts } from "@/lib/posts";
@@ -10,6 +11,12 @@ import { AnimatedWords } from "@/components/motion/AnimatedWords";
 import { MotionImg } from "@/components/motion/MotionImg";
 import { slugify } from "@/lib/posts";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "The home for Uganda's health workers",
+  description:
+    "The home for Uganda's health workers. Find verified practitioners, rated facilities, and current jobs and opportunities across Uganda.",
+};
 
 const FAQS = [
   {
@@ -81,19 +88,14 @@ export default async function HomePage({
 
           <div className="relative z-10 w-full px-4 py-10 text-center sm:px-10 sm:py-16">
             <p className="mx-auto mb-3 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-              🇺🇬 The home for Uganda&apos;s health workers. Verified, rated and hiring.
+              🇺🇬 Verified licences, real ratings, live opportunities.
             </p>
             <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-5xl">
-              <AnimatedWords text="Find the right care in Uganda." startDelay={0.15} />{" "}
-              <AnimatedWords
-                text="Rate it like a patient."
-                startDelay={0.15 + 5 * 0.045}
-                className="text-emerald-400"
-              />
+              <AnimatedWords text="The home for Uganda&apos;s health workers." startDelay={0.15} />
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base text-slate-200">
               <AnimatedWords
-                text="Search licensed doctors, nurses, pharmacists and allied health professionals, rate hospitals and pharmacies, and browse current health jobs and opportunities."
+                text="Search licensed practitioners, browse current health jobs and opportunities, and find trusted hospitals and pharmacies across Uganda."
                 startDelay={0.6}
                 wordDelay={0.018}
               />
@@ -103,10 +105,56 @@ export default async function HomePage({
       </FadeIn>
 
       <div className="mx-auto max-w-6xl px-4">
+        {/* Latest jobs & opportunities — lead story now */}
+        {recentPosts.length > 0 && (
+          <section className="mt-14">
+            <div className="flex flex-wrap items-end justify-between gap-2">
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                  Latest jobs &amp; opportunities
+                </h2>
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  Fresh openings for Uganda&apos;s health workforce.
+                </p>
+              </div>
+              <Link
+                href="/posts"
+                className="text-sm font-medium text-emerald-700 underline hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
+              >
+                View all listings →
+              </Link>
+            </div>
+            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {recentPosts.map((p) => (
+                <PostCard key={p.id} post={p} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {!ready ? (
+          <div className="mx-auto max-w-xl rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-900/50 dark:bg-amber-950/30">
+            <h2 className="text-lg font-semibold text-amber-900 dark:text-amber-300">
+              Database not set up yet
+            </h2>
+            <p className="mt-2 text-sm text-amber-800 dark:text-amber-400">
+              Run{" "}
+              <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">node scripts/setup_supabase.mjs</code>{" "}
+              (with <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">SUPABASE_DB_URL</code> in{" "}
+              <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">.env.local</code>) to create the
+              tables, then{" "}
+              <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">npm run import</code> to load the
+              scraped registry. <Link href="/about" className="underline">Learn more</Link>
+            </p>
+          </div>
+        ) : (
+          <PractitionerSearch initialQuery={q ?? ""} initialData={initialResults} />
+        )}
+
         {/* Stats */}
         {(stats || facilityStats) && (
           <FadeIn delay={0.1}>
-            <section className="mb-8 mt-8 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-5">
+            <section className="mt-14 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-5">
               {[
                 stats ? { label: "Practitioners", value: stats.practitioners.toLocaleString() } : null,
                 stats ? { label: "Active licences", value: stats.active.toLocaleString() } : null,
@@ -132,37 +180,16 @@ export default async function HomePage({
           </FadeIn>
         )}
 
-        {!ready ? (
-          <div className="mx-auto max-w-xl rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center dark:border-amber-900/50 dark:bg-amber-950/30">
-            <h2 className="text-lg font-semibold text-amber-900 dark:text-amber-300">
-              Database not set up yet
-            </h2>
-            <p className="mt-2 text-sm text-amber-800 dark:text-amber-400">
-              Run{" "}
-              <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">node scripts/setup_supabase.mjs</code>{" "}
-              (with <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">SUPABASE_DB_URL</code> in{" "}
-              <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">.env.local</code>) to create the
-              tables, then{" "}
-              <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">npm run import</code> to load the
-              scraped registry. <Link href="/about" className="underline">Learn more</Link>
-            </p>
-          </div>
-        ) : (
-          <PractitionerSearch initialQuery={q ?? ""} initialData={initialResults} />
-        )}
-
-        {/* Rate hospitals & pharmacies — top-rated, with a link to the full directory */}
+        {/* Hospitals & pharmacies — useful, but no longer the lead story */}
         {topFacilities && topFacilities.items.length > 0 && (
           <section className="mt-14">
             <div className="flex flex-wrap items-end justify-between gap-2">
               <div>
                 <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-                  Rate hospitals &amp; pharmacies
+                  Hospitals &amp; pharmacies
                 </h2>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  {facilityStats
-                    ? `${facilityStats.hospitals.toLocaleString()} hospitals and ${facilityStats.pharmacies.toLocaleString()} pharmacies across Uganda — see how patients rate them.`
-                    : "Hospitals and pharmacies across Uganda, rated by patients."}
+                  Search hospitals and pharmacies across Uganda and see patient feedback.
                 </p>
               </div>
               <Link
@@ -175,33 +202,6 @@ export default async function HomePage({
             <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {topFacilities.items.map((f) => (
                 <FacilityCard key={f.id} facility={f} />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Latest jobs & opportunities — fresh listings from the board */}
-        {recentPosts.length > 0 && (
-          <section className="mt-14">
-            <div className="flex flex-wrap items-end justify-between gap-2">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-                  Latest jobs &amp; opportunities
-                </h2>
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  Fresh openings for Uganda&apos;s health workforce.
-                </p>
-              </div>
-              <Link
-                href="/posts"
-                className="text-sm font-medium text-emerald-700 underline hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
-              >
-                View all listings →
-              </Link>
-            </div>
-            <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {recentPosts.map((p) => (
-                <PostCard key={p.id} post={p} />
               ))}
             </div>
           </section>

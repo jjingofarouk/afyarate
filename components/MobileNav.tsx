@@ -28,7 +28,7 @@ export default function MobileNav() {
         onClick={() => setOpen(true)}
         aria-label="Open menu"
         aria-expanded={open}
-        className="grid size-9 shrink-0 place-items-center rounded-lg text-slate-600 transition hover:bg-slate-100 sm:hidden dark:text-slate-300 dark:hover:bg-slate-800"
+        className="grid size-9 shrink-0 place-items-center rounded-lg text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
           <path d="M4 6h16M4 12h16M4 18h16" />
@@ -40,7 +40,7 @@ export default function MobileNav() {
           <>
             <motion.div
               key="backdrop"
-              className="fixed inset-0 z-40 h-dvh w-screen bg-black/70 sm:hidden"
+              className="fixed inset-0 z-40 h-dvh w-screen bg-black/70"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -52,7 +52,7 @@ export default function MobileNav() {
               role="dialog"
               aria-modal="true"
               aria-label="Menu"
-              className="fixed inset-y-0 right-0 z-50 flex h-dvh w-80 max-w-[85vw] flex-col overflow-y-auto border-l border-slate-200 bg-white p-5 shadow-2xl sm:hidden dark:border-slate-700 dark:bg-slate-900"
+              className="fixed inset-y-0 right-0 z-50 flex h-dvh w-[min(92vw,24rem)] flex-col overflow-y-auto border-l border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-700 dark:bg-slate-900"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}

@@ -5,7 +5,7 @@ import Script from "next/script";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import ThemeToggle, { ThemeInitScript } from "@/components/ThemeToggle";
 import MobileNav from "@/components/MobileNav";
-import DesktopNav from "@/components/DesktopNav";
+import HeaderSearch from "@/components/HeaderSearch";
 import Footer from "@/components/Footer";
 import NoCopyScript from "@/components/NoCopy";
 import CopyNotice from "@/components/CopyNotice";
@@ -14,7 +14,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} · Rate Uganda's Health Workers`,
+    default: SITE_NAME,
     template: `%s · ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -33,13 +33,13 @@ export const metadata: Metadata = {
     locale: "en_UG",
     url: "/",
     siteName: SITE_NAME,
-    title: `${SITE_NAME} · Rate Uganda's Health Workers`,
+    title: SITE_NAME,
     description: SITE_DESCRIPTION,
     images: [{ url: "/logo.png", width: 1254, height: 1254, alt: SITE_NAME }],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} · Rate Uganda's Health Workers`,
+    title: SITE_NAME,
     description: SITE_DESCRIPTION,
     images: ["/logo.png"],
   },
@@ -102,8 +102,8 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
         <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-            <Link href="/" className="flex items-center gap-2">
+          <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+            <Link href="/" className="flex shrink-0 items-center gap-2">
               <Image
                 src="/logo.png"
                 alt={`${SITE_NAME} logo`}
@@ -112,10 +112,12 @@ export default function RootLayout({
                 priority
                 className="rounded-full object-cover"
               />
-              <span className="text-lg font-semibold tracking-tight">{SITE_NAME}</span>
+              <span className="hidden text-lg font-semibold tracking-tight sm:inline">{SITE_NAME}</span>
             </Link>
-            <div className="flex items-center gap-1 sm:gap-3">
-              <DesktopNav />
+            <div className="min-w-0 flex-1">
+              <HeaderSearch />
+            </div>
+            <div className="flex items-center gap-1">
               <ThemeToggle />
               <MobileNav />
             </div>
