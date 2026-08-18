@@ -28,10 +28,10 @@ export const metadata: Metadata = {
 export default async function PostsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string; tag?: string }>;
+  searchParams: Promise<{ type?: string; tag?: string; q?: string }>;
 }) {
-  const { type, tag } = await searchParams;
-  const posts = await getPosts({ type, tag });
+  const { type, tag, q } = await searchParams;
+  const posts = await getPosts({ type, tag, q });
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -90,7 +90,7 @@ export default async function PostsPage({
         <PostTypeTabs active={type ?? ""} />
       </div>
 
-      {posts.length === 0 ? (
+      {posts.length === 0 && !q ? (
         <div className="mt-10 rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
           No listings here yet. Be the first to{" "}
           <Link href="/posts/new" className="text-emerald-700 underline dark:text-emerald-400">
@@ -106,6 +106,7 @@ export default async function PostsPage({
               total={posts.length}
               type={type}
               tag={tag}
+              initialQuery={q}
               professions={facetOptions(posts, (p) => p.profession)}
               locations={facetOptions(posts, (p) => p.location)}
             />

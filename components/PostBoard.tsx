@@ -17,6 +17,7 @@ export default function PostBoard({
   location,
   organization,
   tag,
+  initialQuery = "",
   professions = [],
   locations = [],
 }: {
@@ -27,10 +28,11 @@ export default function PostBoard({
   location?: string;
   organization?: string;
   tag?: string;
+  initialQuery?: string;
   professions?: string[];
   locations?: string[];
 }) {
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(initialQuery);
   const [sort, setSort] = useState<PostSort>("featured");
   const [professionFilter, setProfessionFilter] = useState("");
   const [locationFilter, setLocationFilter] = useState("");

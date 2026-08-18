@@ -158,6 +158,25 @@ export async function searchPractitioners(
   };
 }
 
+/** Top-rated practitioners for the home page: only those with at least one
+ *  rating, ordered by number of ratings then average score (a single 5★ is
+ *  less meaningful than a well-reviewed 4.5★). Dedicated query because the
+ *  search path deliberately puts profile photos first. */
+export async function getTopRatedPractitioners(limit = 8): Promise<Practitioner[]> {
+  const supabase = createServerClient();
+  const { data, error } = await supabase
+    .from("practitioners_overview")
+    .select("*")
+    .gt("rating_count", 0)
+    .order("rating_count", { ascending: false })
+    .order("avg_rating", { ascending: false })
+    .order("image_url", { ascending: true, nullsFirst: false })
+    .order("name", { ascending: true })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as Row[]).map(mapPractitioner);
+}
+
 // cache(): dedupes within a single request — generateMetadata() and the page
 // body both look up the same practitioner, and this collapses that back to
 // one Supabase call. Scoped per-request only, so a rating submitted via

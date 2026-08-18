@@ -84,14 +84,17 @@ export async function generateMetadata({
 
 export default async function TypePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ type: string }>;
+  searchParams: Promise<{ q?: string }>;
 }) {
   const { type } = await params;
+  const { q } = await searchParams;
   const t = SLUG_TO_TYPE[type];
   if (!t) notFound();
   const meta = META[t];
-  const posts = await getPosts({ type: t });
+  const posts = await getPosts({ type: t, q });
   const h1 =
     t === "job" ? "Medical & Health Jobs in Uganda" : `${meta.short} in Uganda`;
   const count = posts.length;
@@ -120,7 +123,7 @@ export default async function TypePage({
         <PostTypeTabs active={t} />
       </div>
 
-      {count === 0 ? (
+      {count === 0 && !q ? (
         <p className="mt-10 text-sm text-slate-500 dark:text-slate-400">
           No {meta.short.toLowerCase()} are open right now. Browse{" "}
           <a href="/posts" className="text-emerald-700 underline dark:text-emerald-400">
@@ -134,6 +137,7 @@ export default async function TypePage({
               initialPosts={posts.slice(0, INITIAL_COUNT)}
               total={posts.length}
               type={t}
+              initialQuery={q}
               professions={facetOptions(posts, (p) => p.profession)}
               locations={facetOptions(posts, (p) => p.location)}
             />

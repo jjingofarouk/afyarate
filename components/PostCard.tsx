@@ -29,54 +29,41 @@ function Deadline({ date }: { date: string | null }) {
             : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300"
       }`}
     >
-      {closed ? "Closed" : days === 0 ? "Closes today" : `${days}d left`}
+      {closed ? "Closed" : days === 0 ? "Closes today" : `${days} ${days === 1 ? "day" : "days"} left`}
     </span>
   );
 }
 
 export default function PostCard({ post }: { post: Post }) {
-  const initials = (post.organization || "?")
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0] ?? "")
-    .join("")
-    .toUpperCase();
-
   return (
     <Link
       href={`/posts/${post.slug}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
     >
-      {post.imageUrl ? (
-        <div className="relative aspect-[16/10] overflow-hidden bg-slate-100 dark:bg-slate-800">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={post.imageUrl}
-            alt={`${post.title} — ${post.organization}`}
-            width={1200}
-            height={750}
-            loading="lazy"
-            className="h-full w-full object-contain object-center"
-          />
-          <div className="absolute left-2 top-2">
-            <TypeBadge type={post.type} />
-          </div>
+      <div className="relative aspect-[16/10] overflow-hidden bg-slate-100 dark:bg-slate-800">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={post.imageUrl || `/opportunities/${post.type}.svg`}
+          alt={`${post.title} — ${post.organization}`}
+          width={1200}
+          height={750}
+          loading="lazy"
+          className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+        />
+        <div className="absolute left-2 top-2">
+          <TypeBadge type={post.type} />
         </div>
-      ) : (
-        <div className="relative flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-emerald-500 to-teal-600">
-          <span className="text-3xl font-bold text-white/90">{initials}</span>
-          <div className="absolute left-2 top-2">
-            <TypeBadge type={post.type} />
-          </div>
-        </div>
-      )}
+      </div>
 
       <div className="flex flex-1 flex-col gap-1.5 p-4">
         <div className="flex items-center justify-between gap-2">
           <Deadline date={post.deadline} />
           {post.featured && (
-            <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-              ★ Featured
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400">
+              <svg aria-hidden="true" className="size-3.5 fill-current" viewBox="0 0 24 24">
+                <path d="M12 2.5l2.95 5.98 6.6.96-4.78 4.66 1.13 6.58L12 17.58l-5.9 3.1 1.13-6.58L2.45 9.44l6.6-.96L12 2.5z" />
+              </svg>
+              Featured
             </span>
           )}
         </div>
