@@ -1,9 +1,9 @@
 export const OPPORTUNITY_TYPES = [
   "Jobs",
-  "Internships",
-  "Scholarships",
   "Grants",
   "Fellowships",
+  "Scholarships",
+  "Internships",
   "Conferences",
 ] as const;
 

@@ -318,6 +318,20 @@ export default function Newsletter({
             )}
           </div>
 
+          {/* Sticky submit bar — always visible as user scrolls through chips */}
+          <div className="sticky top-0 z-10 -mx-1 flex items-center gap-3 bg-white py-3 dark:bg-slate-900">
+            <button
+              type="submit"
+              disabled={status === "loading"}
+              className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {status === "loading" ? "Subscribing…" : "Subscribe free →"}
+            </button>
+            <p className="text-xs text-slate-400 dark:text-slate-500">
+              No spam. Unsubscribe anytime.
+            </p>
+          </div>
+
           <ChipGroup
             label="What should we send you? *"
             options={[...OPPORTUNITY_TYPES]}
@@ -349,18 +363,6 @@ export default function Newsletter({
               {apiError}
             </p>
           )}
-
-          <button
-            type="submit"
-            disabled={status === "loading"}
-            className="w-full rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-          >
-            {status === "loading" ? "Subscribing…" : "Subscribe free →"}
-          </button>
-
-          <p className="text-xs text-slate-400 dark:text-slate-500">
-            We&apos;ll only use your email to send the alerts you asked for. No spam, unsubscribe anytime.
-          </p>
         </form>
       )}
     </div>
