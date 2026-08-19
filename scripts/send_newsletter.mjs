@@ -1,11 +1,19 @@
 /**
  * Rate Musawo, local newsletter sender.
- * Usage:  node scripts/send_newsletter.mjs [--dry] [--to email] [--reset]
+ * Usage:  node scripts/send_newsletter.mjs [--dry] [--to email] [--reset] [--force]
  *
  * Sends ONE featured opportunity per subscriber based on their preferences.
  * Run locally; subscribers are stored in Supabase.
+ *
+ * Meant to be invoked frequently (e.g. every 15 min) by cron so that a
+ * missed run (Mac asleep at the scheduled hour) gets caught the moment the
+ * machine wakes. A stamp file guarantees only one real send per EAT day
+ * regardless of how many times this fires. See alreadySentToday() below.
  */
 
+import { existsSync, readFileSync, writeFileSync } from "fs";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 import nodemailer from "nodemailer";
 import { createClient } from "@supabase/supabase-js";
 import { loadEnv } from "./lib_env.mjs";
@@ -16,10 +24,39 @@ loadEnv();
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes("--dry-run") || args.includes("--dry");
 const RESET   = args.includes("--reset");
+const FORCE   = args.includes("--force");
 const toIdx   = args.indexOf("--to");
 const TO_ONLY = toIdx >= 0 ? args[toIdx + 1] : null;
 
 const SITE = "https://ratemusawo.online";
+
+// ── Once-daily guard ─────────────────────────────────────────────────────
+// Send window opens at 19:00 EAT. Stamp file records the EAT calendar date
+// of the last successful full send so retries within the same day no-op.
+const SEND_HOUR = 19;
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const STAMP_FILE = join(__dirname, "..", ".newsletter-last-sent");
+
+function todayEAT() {
+  return eatNow().toISOString().slice(0, 10);
+}
+
+function alreadySentToday() {
+  if (!existsSync(STAMP_FILE)) return false;
+  try {
+    return readFileSync(STAMP_FILE, "utf8").trim() === todayEAT();
+  } catch {
+    return false;
+  }
+}
+
+function markSentToday() {
+  try {
+    writeFileSync(STAMP_FILE, todayEAT());
+  } catch (err) {
+    console.warn("Could not write stamp file:", err.message);
+  }
+}
 
 // ── Clients ────────────────────────────────────────────────────────────────
 const supabase = createClient(
@@ -595,6 +632,22 @@ function isExpired(post) {
 async function main() {
   console.log(`\nRate Musawo Newsletter, ${DRY_RUN ? "DRY RUN" : "LIVE SEND"}`);
 
+  // Gate the real daily send: only applies to unattended full runs (not
+  // --dry, not --to test sends, not --force). Cron can fire this every
+  // 15 min all day; before 19:00 EAT it's a silent no-op, and once sent,
+  // every later tick that day is also a silent no-op.
+  if (!DRY_RUN && !TO_ONLY && !FORCE) {
+    const hour = eatNow().getUTCHours();
+    if (hour < SEND_HOUR) {
+      console.log(`Before ${SEND_HOUR}:00 EAT, not time yet. Exiting.`);
+      return;
+    }
+    if (alreadySentToday()) {
+      console.log(`Already sent today (${todayEAT()} EAT). Exiting.`);
+      return;
+    }
+  }
+
   if (RESET) {
     if (!TO_ONLY) {
       console.error("--reset requires --to <email> to avoid wiping all send history.");
@@ -685,6 +738,8 @@ async function main() {
   }
 
   console.log(`\nDone. Sent: ${sent}, Skipped: ${skipped}`);
+
+  if (!DRY_RUN && !TO_ONLY) markSentToday();
 }
 
 main();

@@ -56,3 +56,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# newsletter cron state (machine-local, not shared)
+/.newsletter-last-sent
