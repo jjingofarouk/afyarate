@@ -1,6 +1,6 @@
 /**
  * Rate Musawo — local newsletter sender.
- * Usage:  node scripts/send_newsletter.mjs [--dry] [--since YYYY-MM-DD] [--to email] [--reset]
+ * Usage:  node scripts/send_newsletter.mjs [--dry] [--to email] [--reset]
  *
  * Sends ONE featured opportunity per subscriber based on their preferences.
  * Run locally; subscribers are stored in Supabase.
@@ -16,14 +16,8 @@ loadEnv();
 const args = process.argv.slice(2);
 const DRY_RUN = args.includes("--dry-run") || args.includes("--dry");
 const RESET   = args.includes("--reset");
-const sinceIdx = args.indexOf("--since");
-const SINCE = sinceIdx >= 0 ? args[sinceIdx + 1] : null;
-const toIdx = args.indexOf("--to");
+const toIdx   = args.indexOf("--to");
 const TO_ONLY = toIdx >= 0 ? args[toIdx + 1] : null;
-
-const sinceDate = SINCE
-  ? new Date(SINCE)
-  : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
 const SITE = "https://ratemusawo.online";
 
@@ -587,10 +581,19 @@ async function sendWelcomeEmails() {
   console.log();
 }
 
+// ── Deadline filter ────────────────────────────────────────────────────────
+function isExpired(post) {
+  if (!post.deadline) return false;           // no deadline = evergreen
+  const d = new Date(post.deadline);
+  if (isNaN(d.getTime())) return false;       // unparseable = keep it
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);                // start of today in local time
+  return d < today;                           // past = expired
+}
+
 // ── Main ───────────────────────────────────────────────────────────────────
 async function main() {
   console.log(`\nRate Musawo Newsletter — ${DRY_RUN ? "DRY RUN" : "LIVE SEND"}`);
-  console.log(`Fetching posts since ${sinceDate.toISOString().slice(0, 10)}\n`);
 
   if (RESET) {
     if (!TO_ONLY) {
@@ -610,16 +613,18 @@ async function main() {
 
   await sendWelcomeEmails();
 
-  const { data: posts, error: postsErr } = await supabase
+  const { data: allPosts, error: postsErr } = await supabase
     .from("posts")
     .select("id,slug,type,title,organization,location,profession,deadline,summary,featured,image_url,published_at")
     .eq("status", "published")
-    .gte("published_at", sinceDate.toISOString())
     .order("featured", { ascending: false })
     .order("published_at", { ascending: false });
 
   if (postsErr) { console.error("Posts fetch failed:", postsErr.message); process.exit(1); }
-  console.log(`Found ${posts.length} recent post(s).`);
+
+  const posts = allPosts.filter((p) => !isExpired(p));
+  const expiredCount = allPosts.length - posts.length;
+  console.log(`Found ${posts.length} active post(s) (${expiredCount} skipped — deadline passed).`);
   if (!posts.length) { console.log("Nothing to send."); return; }
 
   const [{ data: subscribers, error: subErr }, sentMap] = await Promise.all([
