@@ -180,6 +180,7 @@ export default function NewsletterFab() {
               <Newsletter
                 title=""
                 description="Fresh jobs, scholarships, grants and conferences across Uganda — tailored to your preferences."
+                onSuccess={() => setOpen(false)}
               />
             </div>
           </div>

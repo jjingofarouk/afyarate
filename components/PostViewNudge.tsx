@@ -125,6 +125,7 @@ export default function PostViewNudge({
                 description=""
                 defaultTypes={defaultTypes}
                 defaultRoles={defaultRoles}
+                onSuccess={dismiss}
               />
             </div>
           </div>

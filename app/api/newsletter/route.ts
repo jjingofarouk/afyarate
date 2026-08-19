@@ -10,11 +10,6 @@ function badRequest(message: string) {
   return NextResponse.json({ error: message }, { status: 400 });
 }
 
-/**
- * Newsletter subscription backed by the site's own Supabase table
- * (newsletter_subscribers): email, name and preference selections. Sending is
- * handled separately once a digest pipeline exists.
- */
 export async function POST(req: NextRequest) {
   let body: unknown;
   try {
@@ -32,35 +27,43 @@ export async function POST(req: NextRequest) {
   };
 
   const email = typeof b.email_address === "string" ? b.email_address.trim().toLowerCase() : "";
-  if (!email || !EMAIL_RE.test(email)) {
-    return badRequest("Please enter a valid email address.");
-  }
+  if (!email || !EMAIL_RE.test(email)) return badRequest("Please enter a valid email address.");
+
   const firstName = typeof b.first_name === "string" ? b.first_name.trim().slice(0, MAX_NAME_LENGTH) : "";
   const lastName = typeof b.last_name === "string" ? b.last_name.trim().slice(0, MAX_NAME_LENGTH) : "";
+  if (!firstName) return badRequest("First name is required.");
+  if (!lastName) return badRequest("Last name is required.");
+
   const strings = (v: unknown): string[] =>
     Array.isArray(v)
       ? v.filter((x): x is string => typeof x === "string").map((s) => s.trim()).filter(Boolean)
       : [];
 
+  const types = strings(b.types);
+  const roles = strings(b.roles);
+  const regions = strings(b.regions);
+  if (types.length === 0) return badRequest("Please choose at least one opportunity type.");
+  if (roles.length === 0) return badRequest("Please choose at least one role.");
+  if (regions.length === 0) return badRequest("Please choose at least one location.");
+
   const supabase = createServerClient();
-  const { error } = await supabase.from("newsletter_subscribers").insert({
-    email,
-    first_name: firstName || null,
-    last_name: lastName || null,
-    opportunity_types: strings(b.types),
-    roles: strings(b.roles),
-    regions: strings(b.regions),
-    status: "subscribed",
-  });
+  const { error } = await supabase.from("newsletter_subscribers").upsert(
+    {
+      email,
+      first_name: firstName,
+      last_name: lastName,
+      opportunity_types: types,
+      roles,
+      regions,
+      status: "subscribed",
+    },
+    { onConflict: "email" },
+  );
 
   if (error) {
-    // Already subscribed — idempotent, treat as success.
-    if (error.code === "23505" || /duplicate key/i.test(error.message)) {
-      return NextResponse.json({ ok: true });
-    }
-    console.error("Newsletter subscribe error:", error);
+    console.error("Newsletter upsert error:", error);
     return NextResponse.json(
-      { error: "Couldn't subscribe you right now. Please try again in a moment." },
+      { error: "Couldn't save your subscription right now. Please try again in a moment." },
       { status: 502 },
     );
   }

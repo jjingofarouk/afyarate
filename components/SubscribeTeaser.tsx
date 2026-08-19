@@ -103,7 +103,7 @@ export default function SubscribeTeaser() {
               </button>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-              <Newsletter title="" description="" defaultEmail={email.trim()} />
+              <Newsletter title="" description="" defaultEmail={email.trim()} onSuccess={() => setOpen(false)} />
             </div>
           </div>
         </div>

@@ -39,12 +39,14 @@ function ChipGroup({
   selected,
   onToggle,
   searchable = false,
+  error,
 }: {
   label: string;
   options: string[];
   selected: string[];
   onToggle: (v: string) => void;
   searchable?: boolean;
+  error?: string;
 }) {
   const [q, setQ] = useState("");
   const [expanded, setExpanded] = useState(false);
@@ -54,7 +56,6 @@ function ChipGroup({
   const lq = q.trim().toLowerCase();
   const filtered = lq ? options.filter((o) => o.toLowerCase().includes(lq)) : options;
 
-  // Always surface selected items even when collapsed
   const selectedSet = new Set(selected);
   const selectedInFiltered = filtered.filter((o) => selectedSet.has(o));
   const unselectedInFiltered = filtered.filter((o) => !selectedSet.has(o));
@@ -110,6 +111,9 @@ function ChipGroup({
           </button>
         )}
       </div>
+      {error && (
+        <p className="mt-1.5 text-xs font-medium text-red-600 dark:text-red-400">{error}</p>
+      )}
     </div>
   );
 }
@@ -123,6 +127,7 @@ export default function Newsletter({
   defaultEmail = "",
   roleOptions: roleOptionsProp,
   locationOptions: locationOptionsProp,
+  onSuccess,
 }: {
   title?: string;
   description?: string;
@@ -132,6 +137,7 @@ export default function Newsletter({
   defaultEmail?: string;
   roleOptions?: string[];
   locationOptions?: string[];
+  onSuccess?: () => void;
 }) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -142,7 +148,8 @@ export default function Newsletter({
   const [roleOptions, setRoleOptions] = useState<string[]>(roleOptionsProp ?? []);
   const [locationOptions, setLocationOptions] = useState<string[]>(locationOptionsProp ?? []);
   const [status, setStatus] = useState<Status>("idle");
-  const [message, setMessage] = useState("");
+  const [apiError, setApiError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (roleOptionsProp !== undefined || locationOptionsProp !== undefined) return;
@@ -155,20 +162,42 @@ export default function Newsletter({
       .catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Auto-dismiss 2s after success animation completes
+  useEffect(() => {
+    if (status !== "success") return;
+    const id = setTimeout(() => onSuccess?.(), 2000);
+    return () => clearTimeout(id);
+  }, [status]); // eslint-disable-line react-hooks/exhaustive-deps
+
   function toggle(list: string[], setList: (next: string[]) => void, value: string) {
     setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
+  }
+
+  function clearError(key: string) {
+    setFieldErrors((prev) => { const next = { ...prev }; delete next[key]; return next; });
   }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const trimmed = email.trim();
-    if (!EMAIL_RE.test(trimmed)) {
-      setStatus("error");
-      setMessage("Please enter a valid email address.");
+    const errs: Record<string, string> = {};
+
+    if (!firstName.trim()) errs.firstName = "First name is required.";
+    if (!lastName.trim()) errs.lastName = "Last name is required.";
+    if (!EMAIL_RE.test(trimmed)) errs.email = "Enter a valid email address.";
+    if (types.length === 0) errs.types = "Choose at least one opportunity type.";
+    if (roles.length === 0) errs.roles = "Choose at least one role.";
+    if (regions.length === 0) errs.regions = "Choose at least one location.";
+
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs);
       return;
     }
+
+    setFieldErrors({});
     setStatus("loading");
-    setMessage("");
+    setApiError("");
+
     try {
       const res = await fetch("/api/newsletter", {
         method: "POST",
@@ -185,131 +214,155 @@ export default function Newsletter({
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         setStatus("success");
-        setMessage(
-          firstName.trim()
-            ? `You're subscribed, ${firstName.trim()}! We'll email you when new opportunities match your preferences.`
-            : "You're subscribed! We'll email you when new opportunities match your preferences.",
-        );
-        setFirstName("");
-        setLastName("");
-        setEmail("");
       } else {
         setStatus("error");
-        setMessage(data?.error ?? "Something went wrong. Please try again.");
+        setApiError(data?.error ?? "Something went wrong. Please try again.");
       }
     } catch {
       setStatus("error");
-      setMessage("Something went wrong. Please try again.");
+      setApiError("Something went wrong. Please try again.");
     }
   }
 
-  const inputClass =
-    "w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/40";
+  const baseInput =
+    "w-full rounded-xl border bg-white px-3 py-2.5 text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-2 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500";
+  const okInput = `${baseInput} border-slate-300 focus:border-emerald-500 focus:ring-emerald-100 dark:border-slate-700 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/40`;
+  const errInput = `${baseInput} border-red-400 focus:border-red-500 focus:ring-red-100 dark:border-red-600 dark:focus:ring-red-900/40`;
 
   return (
     <div className={className}>
       {title && (
-        <h3 className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-50">
-          {title}
-        </h3>
+        <h3 className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-50">{title}</h3>
       )}
       {description && (
-        <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-          {description}
-        </p>
+        <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-slate-500 dark:text-slate-400">{description}</p>
       )}
 
       {status === "success" ? (
-        <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
-          {message}
-        </p>
+        <div className="check-pop flex flex-col items-center justify-center gap-4 py-10 text-center">
+          <div className="flex size-20 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/40">
+            <svg
+              className="size-10 text-emerald-600 dark:text-emerald-400"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path className="draw-check" d="M5 12l5 5L19 7" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-base font-bold text-slate-900 dark:text-slate-50">
+              {firstName.trim() ? `You're in, ${firstName.trim()}!` : "You're subscribed!"}
+            </p>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              We&apos;ll email you matching opportunities as soon as they&apos;re posted.
+            </p>
+          </div>
+        </div>
       ) : (
         <form onSubmit={onSubmit} className="mt-5 space-y-5" noValidate>
           <div className="grid max-w-xl grid-cols-2 gap-2">
             <div>
-              <label htmlFor="newsletter-first-name" className="sr-only">First name</label>
+              <label htmlFor="nl-first-name" className="sr-only">First name</label>
               <input
-                id="newsletter-first-name"
+                id="nl-first-name"
                 type="text"
                 name="firstName"
                 autoComplete="given-name"
-                placeholder="First name"
+                placeholder="First name *"
                 value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                className={inputClass}
+                onChange={(e) => { setFirstName(e.target.value); clearError("firstName"); }}
+                className={fieldErrors.firstName ? errInput : okInput}
               />
+              {fieldErrors.firstName && (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.firstName}</p>
+              )}
             </div>
             <div>
-              <label htmlFor="newsletter-last-name" className="sr-only">Last name</label>
+              <label htmlFor="nl-last-name" className="sr-only">Last name</label>
               <input
-                id="newsletter-last-name"
+                id="nl-last-name"
                 type="text"
                 name="lastName"
                 autoComplete="family-name"
-                placeholder="Last name"
+                placeholder="Last name *"
                 value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className={inputClass}
+                onChange={(e) => { setLastName(e.target.value); clearError("lastName"); }}
+                className={fieldErrors.lastName ? errInput : okInput}
               />
+              {fieldErrors.lastName && (
+                <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.lastName}</p>
+              )}
             </div>
           </div>
 
-          <div className="flex max-w-xl flex-col gap-2 sm:flex-row">
-            <label htmlFor="newsletter-email" className="sr-only">Email address</label>
+          <div className="max-w-xl">
+            <label htmlFor="nl-email" className="sr-only">Email address</label>
             <input
-              id="newsletter-email"
+              id="nl-email"
               type="email"
               name="email"
-              required
               autoComplete="email"
               inputMode="email"
-              placeholder="you@example.com"
+              placeholder="you@example.com *"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={`${inputClass} flex-1`}
+              onChange={(e) => { setEmail(e.target.value); clearError("email"); }}
+              className={fieldErrors.email ? errInput : okInput}
             />
-            <button
-              type="submit"
-              disabled={status === "loading"}
-              className="shrink-0 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {status === "loading" ? "Subscribing…" : "Subscribe"}
-            </button>
+            {fieldErrors.email && (
+              <p className="mt-1 text-xs text-red-600 dark:text-red-400">{fieldErrors.email}</p>
+            )}
           </div>
 
           <ChipGroup
-            label="What should we send you?"
+            label="What should we send you? *"
             options={[...OPPORTUNITY_TYPES]}
             selected={types}
-            onToggle={(v) => toggle(types, setTypes, v)}
+            onToggle={(v) => { toggle(types, setTypes, v); clearError("types"); }}
+            error={fieldErrors.types}
           />
 
           <ChipGroup
-            label="Roles you're interested in"
+            label="Roles you're interested in *"
             options={roleOptions}
             selected={roles}
-            onToggle={(v) => toggle(roles, setRoles, v)}
+            onToggle={(v) => { toggle(roles, setRoles, v); clearError("roles"); }}
             searchable
+            error={fieldErrors.roles}
           />
 
           <ChipGroup
-            label="Where in Uganda?"
+            label="Where in Uganda? *"
             options={locationOptions}
             selected={regions}
-            onToggle={(v) => toggle(regions, setRegions, v)}
+            onToggle={(v) => { toggle(regions, setRegions, v); clearError("regions"); }}
             searchable
+            error={fieldErrors.regions}
           />
+
+          {apiError && (
+            <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
+              {apiError}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={status === "loading"}
+            className="w-full rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+          >
+            {status === "loading" ? "Subscribing…" : "Subscribe free →"}
+          </button>
+
+          <p className="text-xs text-slate-400 dark:text-slate-500">
+            We&apos;ll only use your email to send the alerts you asked for. No spam, unsubscribe anytime.
+          </p>
         </form>
       )}
-
-      {status === "error" && (
-        <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
-          {message}
-        </p>
-      )}
-      <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">
-        We'll only use your email to send job and opportunity alerts you asked for.
-      </p>
     </div>
   );
 }
