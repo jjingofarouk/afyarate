@@ -168,6 +168,122 @@ function pickWelcomeMessage() {
   return WELCOME_MESSAGES[Math.floor(Math.random() * WELCOME_MESSAGES.length)];
 }
 
+// ── Context helpers ─────────────────────────────────────────────────────────
+
+// Uganda = EAT (UTC+3)
+function eatNow() {
+  return new Date(Date.now() + 3 * 3_600_000);
+}
+
+function timeGreeting() {
+  const h = eatNow().getUTCHours();
+  if (h >= 5  && h < 12) return "Good morning";
+  if (h >= 12 && h < 17) return "Good afternoon";
+  if (h >= 17 && h < 21) return "Good evening";
+  return "Hi";
+}
+
+function timePeriodLabel() {
+  const h = eatNow().getUTCHours();
+  if (h >= 5  && h < 12) return "Morning pick";
+  if (h >= 12 && h < 17) return "Afternoon match";
+  if (h >= 17 && h < 21) return "Evening opportunity";
+  return "Latest match";
+}
+
+// Computus — Western Easter Sunday
+function easterSunday(year) {
+  const a = year % 19, b = Math.floor(year / 100), c = year % 100;
+  const d = Math.floor(b / 4), e = b % 4, g = Math.floor((b + 8) / 25);
+  const h = Math.floor((b - g + 1) / 3);
+  const i = (19 * a + b - d - h + 15) % 30;
+  const k = Math.floor(c / 4), l = c % 4;
+  const m = (32 + 2 * e + 2 * k - i - l) % 7;
+  const n = Math.floor((a + 11 * i + 22 * m) / 451);
+  const month = Math.floor((i + m - 7 * n + 114) / 31);
+  const day   = (i + m - 7 * n + 114) % 31 + 1;
+  return new Date(year, month - 1, day);
+}
+
+const FIXED_HOLIDAYS = [
+  { m: 1,  d: 1,  name: "New Year's Day",           emoji: "🎆" },
+  { m: 1,  d: 26, name: "NRM Liberation Day",        emoji: "🇺🇬" },
+  { m: 2,  d: 16, name: "Archbishop Luwum Day",      emoji: "🕊️" },
+  { m: 3,  d: 8,  name: "International Women's Day", emoji: "💜" },
+  { m: 5,  d: 1,  name: "Labour Day",                emoji: "🛠️" },
+  { m: 6,  d: 3,  name: "Uganda Martyrs' Day",       emoji: "🕊️" },
+  { m: 6,  d: 9,  name: "National Heroes Day",       emoji: "🏆" },
+  { m: 10, d: 9,  name: "Independence Day",          emoji: "🇺🇬" },
+  { m: 12, d: 25, name: "Christmas Day",             emoji: "🎄" },
+  { m: 12, d: 26, name: "Boxing Day",                emoji: "🎁" },
+];
+
+function todayHoliday() {
+  const now = eatNow();
+  const m = now.getUTCMonth() + 1, d = now.getUTCDate(), y = now.getUTCFullYear();
+  const fixed = FIXED_HOLIDAYS.find(h => h.m === m && h.d === d);
+  if (fixed) return fixed;
+  const easter = easterSunday(y);
+  const gf = new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() - 2);
+  const em = new Date(easter.getFullYear(), easter.getMonth(), easter.getDate() + 1);
+  if (m === gf.getMonth() + 1 && d === gf.getDate()) return { name: "Good Friday",  emoji: "✝️" };
+  if (m === em.getMonth() + 1 && d === em.getDate()) return { name: "Easter Monday", emoji: "✝️" };
+  return null;
+}
+
+function daysUntilDeadline(str) {
+  if (!str) return null;
+  const t = new Date(str).getTime();
+  if (isNaN(t)) return null;
+  const days = Math.ceil((t - Date.now()) / 86_400_000);
+  return days > 0 ? days : null;
+}
+
+function postedAge(iso) {
+  if (!iso) return null;
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  if (days <= 0) return "Posted today";
+  if (days === 1) return "Posted yesterday";
+  if (days <= 6) return `Posted ${days} days ago`;
+  return null;
+}
+
+const DOW_MESSAGES = {
+  0: [ // Sunday
+    "Sunday planning mode? Here's an opportunity to keep on your radar.",
+    "Before the week starts, here's something worth knowing about.",
+    "A quiet Sunday read. This one came in and we think it's worth your time.",
+  ],
+  1: [ // Monday
+    "Fresh week, fresh opportunity. Here's today's pick for you.",
+    "Start the week on the front foot. Here's your match.",
+    "New week, new listing. Here's what we found for you.",
+    "Monday is a good day to make a move. Here's your match.",
+  ],
+  3: [ // Wednesday
+    "Midweek and there's already something worth sharing.",
+    "Wednesday brought something interesting your way.",
+    "Halfway through the week. Here's a new listing for you.",
+  ],
+  5: [ // Friday
+    "Head into the weekend knowing about this one.",
+    "End the week on a strong note. Here's your match.",
+    "Before you switch off for the weekend, check this out.",
+    "Friday pick, matched just for you.",
+  ],
+  6: [ // Saturday
+    "Weekend browsing? This one might be worth it.",
+    "A little Saturday reading. We think you'd be interested.",
+    "Spotted this one and thought of you. Weekend edition.",
+  ],
+};
+
+function pickContextMessage(dow) {
+  const pool = DOW_MESSAGES[dow];
+  if (pool) return pool[Math.floor(Math.random() * pool.length)];
+  return MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
+}
+
 // ── Email template ─────────────────────────────────────────────────────────
 const TYPE_COLORS = {
   job:          { bg: "#dcfce7", text: "#166534", label: "Job" },
@@ -203,9 +319,17 @@ function buildEmail(sub, post) {
       </td></tr>`
     : "";
 
-  const message = pickMessage();
-  const hasImage = !!post.image_url;
-  const subject = `${color.label}: ${post.title} at ${post.organization} | Rate Musawo`;
+  // Context-aware variables
+  const dow         = eatNow().getUTCDay();
+  const greeting    = timeGreeting();
+  const message     = pickContextMessage(dow);
+  const holiday     = todayHoliday();
+  const urgencyDays = daysUntilDeadline(post.deadline);
+  const age         = postedAge(post.published_at);
+  const hasImage    = !!post.image_url;
+  const subject     = holiday
+    ? `${holiday.emoji} Happy ${holiday.name} | ${color.label}: ${post.title} | Rate Musawo`
+    : `${timePeriodLabel()}: ${post.title} at ${post.organization} | Rate Musawo`;
 
   // Per-cell border-radius (overflow:hidden is unreliable in email clients)
   const imgRadius   = "border-radius:10px 10px 0 0;";
@@ -235,9 +359,18 @@ function buildEmail(sub, post) {
 
         <!-- Greeting -->
         <tr><td style="background:#ffffff;padding:24px 24px 16px;">
-          <p style="margin:0;font-size:17px;color:#111827;">Hi <strong>${name}</strong>,</p>
+          <p style="margin:0;font-size:17px;color:#111827;">${greeting}, <strong>${name}</strong>.</p>
           <p style="margin:8px 0 0;font-size:15px;color:#6b7280;line-height:1.7;">${message}</p>
+          ${holiday ? `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;"><tr><td style="background:#ecfdf5;border-radius:8px;padding:10px 14px;"><p style="margin:0;font-size:14px;color:#065f46;font-weight:600;">${holiday.emoji} Happy ${holiday.name} to everyone celebrating today!</p></td></tr></table>` : ""}
         </td></tr>
+
+        ${urgencyDays !== null && urgencyDays <= 7 ? `
+        <!-- Deadline urgency -->
+        <tr><td style="background:#fef3c7;padding:9px 24px;border-left:3px solid #f59e0b;">
+          <p style="margin:0;font-size:13px;font-weight:700;color:#92400e;">
+            &#x26A1; Closes in ${urgencyDays} day${urgencyDays === 1 ? "" : "s"} -- don't wait too long.
+          </p>
+        </td></tr>` : ""}
 
         <!-- Opportunity card -->
         <tr><td style="background:#ffffff;padding:0 24px 20px;">
@@ -249,7 +382,10 @@ function buildEmail(sub, post) {
             </td></tr>` : ""}
 
             <tr><td style="border:1px solid #e5e7eb;border-bottom:none;${hasImage ? "" : badgeRadius}background:${color.bg};padding:8px 20px;">
-              <span style="font-size:11px;font-weight:700;color:${color.text};text-transform:uppercase;letter-spacing:0.8px;">${color.label}</span>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+                <td><span style="font-size:11px;font-weight:700;color:${color.text};text-transform:uppercase;letter-spacing:0.8px;">${color.label}</span></td>
+                ${age ? `<td align="right"><span style="font-size:11px;color:#9ca3af;">${age}</span></td>` : ""}
+              </tr></table>
             </td></tr>
 
             <tr><td style="border:1px solid #e5e7eb;${bodyRadius}padding:20px 20px 24px;">
