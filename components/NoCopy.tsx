@@ -13,6 +13,8 @@ export function NoCopyScript() {
       }
       document.addEventListener("copy", block);
       document.addEventListener("cut", block);
+      document.addEventListener("selectstart", block);
+      document.addEventListener("dragstart", block);
     })();
   `;
   // eslint-disable-next-line react/no-danger

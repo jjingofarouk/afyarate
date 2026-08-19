@@ -349,7 +349,7 @@ function buildEmail(sub, post) {
           <img src="${SITE}/logo.png" alt="Rate Musawo" width="52" height="52"
             style="border-radius:8px;display:block;margin:0 auto 10px;">
           <p style="margin:0;font-size:21px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Rate Musawo</p>
-          <p style="margin:3px 0 0;font-size:12px;color:#86efac;letter-spacing:0.2px;">Jobs, opportunities and more for Uganda's health workers</p>
+          <p style="margin:3px 0 0;font-size:12px;color:#86efac;letter-spacing:0.2px;">Jobs, grants, scholarships, fellowships, conferences and more for Uganda's health workers</p>
         </td></tr>
 
         <!-- Greeting -->
@@ -479,7 +479,7 @@ function buildWelcomeEmail(sub) {
           <img src="${SITE}/logo.png" alt="Rate Musawo" width="52" height="52"
             style="border-radius:8px;display:block;margin:0 auto 10px;">
           <p style="margin:0;font-size:21px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Rate Musawo</p>
-          <p style="margin:3px 0 0;font-size:12px;color:#86efac;letter-spacing:0.2px;">Jobs, opportunities and more for Uganda's health workers</p>
+          <p style="margin:3px 0 0;font-size:12px;color:#86efac;letter-spacing:0.2px;">Jobs, grants, scholarships, fellowships, conferences and more for Uganda's health workers</p>
         </td></tr>
 
         <!-- Body -->

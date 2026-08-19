@@ -21,10 +21,12 @@ export default function CopyNotice() {
 
     document.addEventListener("copy", show);
     document.addEventListener("cut", show);
+    document.addEventListener("selectstart", show);
 
     return () => {
       document.removeEventListener("copy", show);
       document.removeEventListener("cut", show);
+      document.removeEventListener("selectstart", show);
       if (timer.current) clearTimeout(timer.current);
     };
   }, []);
