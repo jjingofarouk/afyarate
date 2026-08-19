@@ -165,7 +165,7 @@ export default function Newsletter({
   // Auto-dismiss 2s after success animation completes
   useEffect(() => {
     if (status !== "success") return;
-    const id = setTimeout(() => onSuccess?.(), 2000);
+    const id = setTimeout(() => onSuccess?.(), 4000);
     return () => clearTimeout(id);
   }, [status]); // eslint-disable-line react-hooks/exhaustive-deps
 

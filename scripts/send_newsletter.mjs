@@ -270,6 +270,13 @@ function buildEmail(sub, post) {
           <p style="margin:0 0 6px;font-size:12px;color:#9ca3af;">
             You're receiving this because you subscribed to Rate Musawo opportunity alerts.
           </p>
+          <p style="margin:0 0 6px;font-size:12px;">
+            <a href="${SITE}/newsletter/manage?email=${encodeURIComponent(sub.email)}"
+              style="color:#059669;font-weight:600;text-decoration:none;">Manage preferences</a>
+            &nbsp;·&nbsp;
+            <a href="${SITE}/newsletter/manage?email=${encodeURIComponent(sub.email)}"
+              style="color:#9ca3af;text-decoration:none;">Unsubscribe</a>
+          </p>
           <p style="margin:0;font-size:12px;color:#9ca3af;">
             <a href="${SITE}" style="color:#6b7280;text-decoration:none;">ratemusawo.online</a>
             &nbsp;·&nbsp;
