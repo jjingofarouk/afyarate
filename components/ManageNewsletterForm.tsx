@@ -218,16 +218,6 @@ export default function ManageNewsletterForm({
 
   return (
     <div className="min-h-dvh bg-slate-50 pb-16 dark:bg-slate-950">
-      {/* Brand header */}
-      <header className="bg-[#0f4c24] px-6 py-5 text-center">
-        <a href="/" className="inline-flex flex-col items-center gap-1 no-underline">
-          <span className="text-lg font-bold tracking-tight text-white">Rate Musawo</span>
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-emerald-300">
-            Uganda's Health Worker Hub
-          </span>
-        </a>
-      </header>
-
       <div className="mx-auto max-w-xl px-4 py-8">
 
         {isUnsubscribed ? (
