@@ -146,30 +146,42 @@ export default function NewsletterFab() {
       {/* Modal */}
       {open && (
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
+          {/* Backdrop */}
           <button
             type="button"
             aria-label="Close"
             onClick={() => setOpen(false)}
             className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
           />
+          {/* Sheet — fixed height, header sticky, body scrolls */}
           <div
             role="dialog"
             aria-modal="true"
             aria-label="Subscribe for daily job updates"
-            className="relative z-10 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-white p-6 shadow-xl sm:rounded-2xl dark:bg-slate-900"
+            className="relative z-10 flex w-full max-w-lg flex-col rounded-t-2xl bg-white shadow-xl sm:max-h-[80vh] sm:rounded-2xl dark:bg-slate-900"
+            style={{ maxHeight: "min(80vh, 600px)" }}
           >
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label="Close"
-              className="absolute right-3 top-3 grid size-9 place-items-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
-            >
-              <CloseIcon />
-            </button>
-            <Newsletter
-              title="Daily job updates, straight to your inbox"
-              description="Fresh jobs, scholarships, grants and conferences across Uganda delivered every day. Tell us what you want to hear about and we'll tailor it."
-            />
+            {/* Sticky header */}
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+              <p className="text-sm font-bold text-slate-900 dark:text-slate-50">
+                Daily job updates
+              </p>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Close"
+                className="grid size-8 place-items-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            {/* Scrollable body */}
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+              <Newsletter
+                title=""
+                description="Fresh jobs, scholarships, grants and conferences across Uganda — tailored to your preferences."
+              />
+            </div>
           </div>
         </div>
       )}
