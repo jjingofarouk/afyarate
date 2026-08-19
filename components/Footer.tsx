@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { POST_TYPES, POST_TYPE_LABELS } from "@/lib/types";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
+import Newsletter from "@/components/Newsletter";
 
 const sectionClass =
   "text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500";
@@ -186,6 +187,13 @@ export default function Footer() {
               </li>
             </ul>
           </div>
+        </div>
+
+        <div className="mb-10 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-6 sm:p-8 dark:border-emerald-900/40 dark:bg-emerald-950/30">
+          <Newsletter
+            title="New jobs & opportunities, straight to your inbox"
+            description="Fresh nursing, midwifery, clinical and allied-health openings across Uganda — plus scholarships, grants and conferences. No spam, unsubscribe anytime."
+          />
         </div>
 
         <div className="mt-12 flex flex-col items-start justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-6 sm:flex-row sm:items-center dark:border-slate-800 dark:bg-slate-900">

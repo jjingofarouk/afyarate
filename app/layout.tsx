@@ -10,6 +10,7 @@ import Footer from "@/components/Footer";
 import NoCopyScript from "@/components/NoCopy";
 import CopyNotice from "@/components/CopyNotice";
 import Lightbox from "@/components/Lightbox";
+import NewsletterFab from "@/components/NewsletterFab";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -133,6 +134,7 @@ export default function RootLayout({
 
         <CopyNotice />
         <Lightbox />
+        <NewsletterFab />
       </body>
     </html>
   );

@@ -32,6 +32,7 @@ import {
   type FacilityKind,
 } from "@/lib/types";
 import Link from "next/link";
+import Newsletter from "@/components/Newsletter";
 
 export const metadata: Metadata = {
   title: "The home for Uganda's health workers",
@@ -220,6 +221,25 @@ function GlobeIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M12 21a9 9 0 100-18 9 9 0 000 18zm0 0c-2.21 0-4-4.03-4-9s1.79-9 4-9 4 4.03 4 9-1.79 9-4 9zm-8-9h16"
+      />
+    </svg>
+  );
+}
+
+function MailIcon() {
+  return (
+    <svg
+      className="size-3.5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
       />
     </svg>
   );
@@ -555,6 +575,20 @@ export default async function HomePage({
           </div>
         </HomeSection>
       )}
+
+      {/* Newsletter — job alerts by email */}
+      <HomeSection
+        id="newsletter"
+        tone="emerald"
+        eyebrow="Job alerts"
+        eyebrowIcon={<MailIcon />}
+        title="New jobs, straight to your inbox"
+        description="Never miss an opening — subscribe and get fresh jobs, scholarships, grants and conferences across Uganda delivered by email."
+      >
+        <div className="mx-auto max-w-2xl rounded-2xl border border-emerald-100 bg-white/70 p-6 sm:p-8 dark:border-emerald-900/40 dark:bg-slate-900/60">
+          <Newsletter />
+        </div>
+      </HomeSection>
 
       {/* Section 2 — the ratings of doctors */}
       <HomeSection
