@@ -105,6 +105,19 @@ const TYPE_MAP = {
   Conferences: "conference",
 };
 
+// Roles that are the same job under different labels across postings.
+// Selecting either one also matches the other.
+const ROLE_SYNONYMS = {
+  doctor: ["medical officer"],
+  "medical officer": ["doctor"],
+};
+
+function roleMatchesProfession(role, prof) {
+  const r = role.toLowerCase();
+  if (prof.includes(r.split(" ")[0])) return true;
+  return (ROLE_SYNONYMS[r] ?? []).some((syn) => prof.includes(syn));
+}
+
 function pickBestPost(posts, sub, alreadySent = new Set()) {
   const wantedTypes = sub.opportunity_types?.length
     ? sub.opportunity_types.map((t) => TYPE_MAP[t]).filter(Boolean)
@@ -115,7 +128,7 @@ function pickBestPost(posts, sub, alreadySent = new Set()) {
     if (!wantedTypes.includes(p.type)) return false;
     if (sub.roles?.length && p.profession) {
       const prof = p.profession.toLowerCase();
-      const hit = sub.roles.some((r) => prof.includes(r.split(" ")[0].toLowerCase()));
+      const hit = sub.roles.some((r) => roleMatchesProfession(r, prof));
       if (!hit) return false;
     }
     if (sub.regions?.length && p.location) {
