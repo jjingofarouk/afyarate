@@ -9,6 +9,7 @@ import HeaderSearch from "@/components/HeaderSearch";
 import Footer from "@/components/Footer";
 import NoCopyScript from "@/components/NoCopy";
 import CopyNotice from "@/components/CopyNotice";
+import Lightbox from "@/components/Lightbox";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -131,6 +132,7 @@ export default function RootLayout({
         <Footer />
 
         <CopyNotice />
+        <Lightbox />
       </body>
     </html>
   );

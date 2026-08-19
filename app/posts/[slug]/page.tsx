@@ -7,44 +7,15 @@ import PostGrid from "@/components/PostGrid";
 import ShareButtons from "@/components/ShareButtons";
 import { POST_TYPE_LABELS, type Post, type PostType } from "@/lib/types";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { jobPostingSchema } from "@/lib/jobPosting";
 
 export const dynamic = "force-dynamic";
 
-function deadlineIso(post: Post): string | undefined {
-  return post.deadline ? `${post.deadline}T00:00:00` : undefined;
-}
-
-function employmentSchemaType(raw: string | null): string | undefined {
-  if (!raw) return undefined;
-  const s = raw.toLowerCase();
-  if (s.includes("full")) return "FULL_TIME";
-  if (s.includes("part")) return "PART_TIME";
-  if (s.includes("contract") || s.includes("consult")) return "CONTRACTUAL";
-  if (s.includes("temp") || s.includes("short")) return "TEMPORARY";
-  if (s.includes("intern")) return "INTERNSHIP";
-  if (s.includes("volunteer")) return "VOLUNTEER";
-  if (s.includes("remote")) return "REMOTE";
-  return undefined;
-}
-
-/**
- * Parse a salary string ("UGX 2M", "600K", "1,500,000") into a numeric
- * MonetaryAmount Google can use for Job rich results. Returns undefined for
- * vague values like "Negotiable" so the field is simply omitted.
- */
-function parseBaseSalary(
-  raw: string | null,
-): { "@type": "MonetaryAmount"; value: number; currency: string } | undefined {
-  if (!raw) return undefined;
-  const s = raw.replace(/,/g, "").toLowerCase();
-  const m = s.match(/(\d+(?:\.\d+)?)\s*(m|k|million)?/);
-  if (!m) return undefined;
-  let value = parseFloat(m[1]);
-  const unit = m[2];
-  if (unit === "m" || unit === "million") value *= 1_000_000;
-  else if (unit === "k") value *= 1_000;
-  if (!Number.isFinite(value) || value <= 0) return undefined;
-  return { "@type": "MonetaryAmount", value, currency: "UGX" };
+function deadlineIso(deadline: string | null): string | undefined {
+  if (!deadline) return undefined;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(deadline)) return `${deadline}T00:00:00`;
+  const d = new Date(deadline);
+  return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
 }
 
 /** Schema.org entity for a listing — different types get the most relevant schema. */
@@ -62,36 +33,8 @@ function postSchema(post: Post): Record<string, unknown> {
     url: `${SITE_URL}/posts/${post.slug}`,
   };
 
-  if (post.type === "job" || post.type === "internship") {
-    const baseSalary = parseBaseSalary(post.salary);
-    return {
-      "@type": "JobPosting",
-      title: post.title,
-      description: post.description || post.summary || post.title,
-      datePosted: post.publishedAt ?? new Date().toISOString().slice(0, 10),
-      validThrough: deadlineIso(post),
-      employmentType: employmentSchemaType(post.employmentType) ?? "OTHER",
-      hiringOrganization: {
-        "@type": "Organization",
-        name: post.organization,
-        ...(post.sourceUrl ? { sameAs: post.sourceUrl } : {}),
-      },
-      jobLocation: {
-        "@type": "Place",
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: post.location ?? undefined,
-          addressCountry: "UG",
-        },
-      },
-      url: `${SITE_URL}/posts/${post.slug}`,
-      directApply: false,
-      ...(post.qualification ? { qualifications: post.qualification } : {}),
-      ...(baseSalary
-        ? { baseSalary: { ...baseSalary, currency: "UGX" } }
-        : {}),
-    };
-  }
+  const jobPosting = jobPostingSchema(post);
+  if (jobPosting) return jobPosting;
   if (post.type === "grant") {
     return { ...base, "@type": "Grant", funder: { "@type": "Organization", name: post.organization } };
   }
@@ -106,7 +49,7 @@ function postSchema(post: Post): Record<string, unknown> {
       educationalLevel: post.qualification ?? undefined,
       credentialCategory: POST_TYPE_LABELS[post.type].label,
       url: `${SITE_URL}/posts/${post.slug}`,
-      ...(deadlineIso(post) ? { validFor: deadlineIso(post) } : {}),
+      ...(deadlineIso(post.deadline) ? { validFor: deadlineIso(post.deadline) } : {}),
     };
   }
   return base;
@@ -234,6 +177,69 @@ function inlineFormat(text: string): React.ReactNode[] {
   return parts;
 }
 
+function isTableSeparator(line: string): boolean {
+  const t = line.trim();
+  if (!t.startsWith("|")) return false;
+  const inner = t.replace(/^\|/, "").replace(/\|$/, "");
+  const cells = inner.split("|");
+  return cells.length > 0 && cells.every((c) => /^\s*:?-+:?\s*$/.test(c));
+}
+
+/** Parse a GFM-style table block into rows of cells, or null if it isn't one. */
+function parseTableBlock(lines: string[]): string[][] | null {
+  if (lines.length < 3) return null;
+  const cells = (l: string): string[] | null => {
+    const t = l.trim();
+    if (!t.startsWith("|") || !t.endsWith("|")) return null;
+    return t
+      .slice(1, -1)
+      .split("|")
+      .map((c) => c.trim());
+  };
+  const header = cells(lines[0]);
+  if (!header || header.length === 0) return null;
+  if (!isTableSeparator(lines[1])) return null;
+  const rows: string[][] = [];
+  for (let i = 2; i < lines.length; i++) {
+    const r = cells(lines[i]);
+    if (!r) return null;
+    rows.push(r);
+  }
+  return [header, ...rows];
+}
+
+function renderTable(header: string[], rows: string[][], key: number) {
+  return (
+    <div key={key} className="mt-4 overflow-x-auto first:mt-0">
+      <table className="w-full min-w-[420px] border-collapse text-left text-[15px] leading-relaxed">
+        <thead>
+          <tr className="border-b-2 border-slate-200 dark:border-slate-700">
+            {header.map((c, j) => (
+              <th
+                key={j}
+                className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+              >
+                {inlineFormat(c)}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, j) => (
+            <tr key={j} className="border-b border-slate-200 last:border-0 dark:border-slate-800">
+              {r.map((c, k) => (
+                <td key={k} className="px-3 py-2 align-top text-slate-700 dark:text-slate-300">
+                  {inlineFormat(c)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function renderDescription(text: string) {
   const blocks = text.split(/\n\s*\n/);
   return blocks
@@ -245,6 +251,12 @@ function renderDescription(text: string) {
         .map((l) => l.trim())
         .filter(Boolean);
       const all = (re: RegExp) => lines.length > 0 && lines.every((l) => re.test(l));
+
+      const table = parseTableBlock(lines);
+      if (table) {
+        const [header, ...rows] = table;
+        return renderTable(header, rows, i);
+      }
 
       const h = block.match(/^#{1,3}\s+(.+)$/);
       if (h) {

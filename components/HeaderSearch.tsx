@@ -149,7 +149,7 @@ export default function HeaderSearch() {
           onFocus={() => {
             if (results.length && q.trim().length >= MIN_CHARS) setOpen(true);
           }}
-          placeholder="Search jobs, scholarships, grants..."
+          placeholder="Search jobs, grants, etc..."
           role="combobox"
           aria-expanded={showDropdown}
           aria-controls="site-search-listbox"
