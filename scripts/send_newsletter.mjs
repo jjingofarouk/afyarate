@@ -104,49 +104,68 @@ function pickBestPost(posts, sub, alreadySent = new Set()) {
 // ── Varied greeting messages ───────────────────────────────────────────────
 const MESSAGES = [
   "We found something that lines up with your profile. Take a look.",
-  "One opportunity, carefully picked for you this week. Good luck! 🤞",
+  "One opportunity, carefully picked for you. Good luck! 🤞",
   "Something fresh came in that fits what you're looking for.",
-  "We do the scanning so you don't have to — here's your match.",
+  "We do the scanning so you don't have to. Here's your match.",
   "This one caught our eye and we thought of you straight away.",
   "Your next big step might be right here. Worth a read.",
-  "Opportunities like this don't stay open long — have a look.",
+  "Opportunities like this don't stay open long. Have a look.",
   "We spotted something that aligns well with where you're headed.",
   "Here's a listing that fits your profile. The rest is yours to take forward.",
   "A new door might be opening. We found this one for you.",
   "We went through hundreds of listings so you only see what matters.",
   "Health workers build Uganda. Here's something that could build your career too.",
   "Your skills deserve the right stage. Here's one possibility.",
-  "Not every listing is worth your time — this one might be.",
-  "One solid match this week. Give it a look when you can.",
+  "Not every listing is worth your time. This one might be.",
+  "One solid match this send. Give it a look when you can.",
   "Career moves start with a single listing. Here's yours. 🌿",
   "We think you'd be a great fit for this one. See what you think.",
-  "Something new landed that matches your interests — check it out.",
+  "Something new landed that matches your interests. Check it out.",
   "Sometimes the right opportunity just needs the right person. That could be you.",
-  "Here's this week's pick. We hope it leads somewhere great for you.",
+  "Here's today's pick. We hope it leads somewhere great for you.",
   "Good things are out there. Here's one we found for you. 🙏",
-  "We picked just one this week, and this is it. Worth your time.",
-  "Keep your eyes on this one — it lines up with your profile nicely.",
+  "We picked just one this time, and this is it. Worth your time.",
+  "This one lines up with your profile nicely. Take a look.",
   "A fresh opportunity matched for you. Go see what it's about.",
-  "This week's highlight. We hope it's exactly what you need.",
+  "Today's highlight. We hope it's exactly what you need.",
   "We're rooting for you. Here's a match we think is worth pursuing. 💪",
   "Your profile pointed us straight to this listing.",
-  "Here's something we think deserves your attention this week.",
-  "One opportunity, one week — make it count. Best of luck! 🌟",
-  "We found a match. Now over to you — you've got this.",
+  "Here's something we think deserves your attention.",
+  "One opportunity, one send. Make it count! Best of luck! 🌟",
+  "We found a match. Now over to you. You've got this.",
   "Something aligned with your preferences just came through.",
   "Here's a listing that felt right for someone with your background.",
   "We hope this one opens a door for you. Check it out. 🚀",
   "Wishing you the very best with this opportunity. Go get it.",
   "Your next chapter might start with this. Take a look.",
-  "We curated one just for you this week. We think it's a good one.",
+  "We curated this one just for you. We think it's a good one.",
   "Every opportunity starts as just a listing. This one's yours.",
-  "We're always looking out for you. Here's what we found this week.",
+  "We're always looking out for you. Here's what we found.",
   "This could be exactly what you've been waiting for. 🌱",
   "A well-matched opportunity just for you. Good luck out there!",
+  "We scanned the latest listings and this one had your name on it.",
+  "Fresh in and matched to you. Give it a read when you get a chance.",
+  "We only send what's relevant. Today, this is it.",
+  "Your preferences led us here. We think it's worth your time.",
+  "One listing, chosen just for you. Here it is.",
+];
+
+const WELCOME_MESSAGES = [
+  "We'll send you matched jobs, scholarships, grants and conferences based on your role and region.",
+  "From now on you'll hear about opportunities that fit your profile, as soon as they're posted.",
+  "Sit back while we go through new listings and send you only the ones that match your preferences.",
+  "You'll get notified about new opportunities tailored to you. No noise, just the ones that count.",
+  "We pick the best matches for your role and region so you never miss what matters.",
+  "Your inbox will now receive curated opportunities that align with where you are and where you're headed.",
+  "We send up to three updates a day, and only when something relevant comes up for you.",
 ];
 
 function pickMessage() {
   return MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
+}
+
+function pickWelcomeMessage() {
+  return WELCOME_MESSAGES[Math.floor(Math.random() * WELCOME_MESSAGES.length)];
 }
 
 // ── Email template ─────────────────────────────────────────────────────────
@@ -168,25 +187,25 @@ function buildEmail(sub, post) {
 
   const deadline = post.deadline
     ? `<tr><td style="padding:0 0 8px;">
-        <span style="font-size:13px;color:#6b7280;">⏰ Deadline: <strong style="color:#dc2626;">${post.deadline}</strong></span>
+        <span style="font-size:14px;color:#6b7280;">⏰ Deadline: <strong style="color:#dc2626;">${post.deadline}</strong></span>
       </td></tr>`
     : "";
 
   const location = post.location
     ? `<tr><td style="padding:0 0 8px;">
-        <span style="font-size:13px;color:#6b7280;">📍 ${post.location}</span>
+        <span style="font-size:14px;color:#6b7280;">📍 ${post.location}</span>
       </td></tr>`
     : "";
 
   const summary = post.summary
     ? `<tr><td style="padding:16px 0 0;">
-        <p style="margin:0;font-size:14px;line-height:1.6;color:#4b5563;">${post.summary.slice(0, 220)}${post.summary.length > 220 ? "…" : ""}</p>
+        <p style="margin:0;font-size:15px;line-height:1.7;color:#4b5563;">${post.summary.slice(0, 220)}${post.summary.length > 220 ? "…" : ""}</p>
       </td></tr>`
     : "";
 
   const message = pickMessage();
   const hasImage = !!post.image_url;
-  const subject = `${color.label}: ${post.title} at ${post.organization} — Rate Musawo`;
+  const subject = `${color.label}: ${post.title} at ${post.organization} | Rate Musawo`;
 
   // Per-cell border-radius (overflow:hidden is unreliable in email clients)
   const imgRadius   = "border-radius:10px 10px 0 0;";
@@ -216,8 +235,8 @@ function buildEmail(sub, post) {
 
         <!-- Greeting -->
         <tr><td style="background:#ffffff;padding:24px 24px 16px;">
-          <p style="margin:0;font-size:16px;color:#111827;">Hi <strong>${name}</strong>,</p>
-          <p style="margin:8px 0 0;font-size:14px;color:#6b7280;line-height:1.6;">${message}</p>
+          <p style="margin:0;font-size:17px;color:#111827;">Hi <strong>${name}</strong>,</p>
+          <p style="margin:8px 0 0;font-size:15px;color:#6b7280;line-height:1.7;">${message}</p>
         </td></tr>
 
         <!-- Opportunity card -->
@@ -239,7 +258,7 @@ function buildEmail(sub, post) {
                   <p style="margin:0;font-size:18px;font-weight:700;color:#111827;line-height:1.3;">${post.title}</p>
                 </td></tr>
                 <tr><td style="padding:0 0 14px;">
-                  <p style="margin:0;font-size:14px;color:#374151;font-weight:500;">${post.organization}</p>
+                  <p style="margin:0;font-size:15px;color:#374151;font-weight:500;">${post.organization}</p>
                 </td></tr>
                 ${location}
                 ${deadline}
@@ -259,9 +278,9 @@ function buildEmail(sub, post) {
 
         <!-- Browse more -->
         <tr><td style="background:#ffffff;padding:4px 24px 24px;text-align:center;">
-          <p style="margin:0;font-size:13px;color:#9ca3af;">
+          <p style="margin:0;font-size:14px;color:#9ca3af;">
             Want to see more?&nbsp;
-            <a href="${SITE}/posts" style="color:#0f4c24;font-weight:600;text-decoration:none;">Browse all opportunities</a>
+            <a href="${SITE}/jobs" style="color:#0f4c24;font-weight:600;text-decoration:none;">Browse all opportunities</a>
           </p>
         </td></tr>
 
@@ -301,6 +320,7 @@ function manageLink(sub) {
 function buildWelcomeEmail(sub) {
   const name = sub.first_name ? sub.first_name.trim() : "there";
   const manageUrl = manageLink(sub);
+  const intro = pickWelcomeMessage();
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -325,12 +345,11 @@ function buildWelcomeEmail(sub) {
         <!-- Body -->
         <tr><td style="background:#ffffff;padding:32px 24px 24px;">
           <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#111827;">You're in, ${name}! 🎉</p>
-          <p style="margin:0 0 14px;font-size:15px;color:#374151;line-height:1.6;">
-            Welcome to Rate Musawo — Uganda's hub for health worker jobs, scholarships, grants, fellowships and conferences.
-            We'll send you matched opportunities straight to your inbox based on your role and region.
+          <p style="margin:0 0 14px;font-size:15px;color:#374151;line-height:1.7;">
+            Welcome to Rate Musawo, Uganda's hub for health worker jobs, scholarships, grants, fellowships and conferences.
           </p>
-          <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.6;">
-            Emails go out up to three times a day, and only when there's something worth sharing for you.
+          <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.7;">
+            ${intro}
           </p>
 
           <!-- Manage button -->

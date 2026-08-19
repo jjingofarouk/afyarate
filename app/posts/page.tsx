@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getPosts, facetOptions } from "@/lib/posts";
 import PostBoard from "@/components/PostBoard";
 import PostTypeTabs from "@/components/PostTypeTabs";
@@ -31,6 +32,7 @@ export default async function PostsPage({
   searchParams: Promise<{ type?: string; tag?: string; q?: string }>;
 }) {
   const { type, tag, q } = await searchParams;
+  if (!type && !tag && !q) redirect("/jobs");
   const posts = await getPosts({ type, tag, q });
 
   const jsonLd = {

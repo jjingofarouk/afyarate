@@ -1,14 +1,11 @@
 import Link from "next/link";
 import { POST_TYPES, POST_TYPE_LABELS } from "@/lib/types";
 
-const TABS: { value: string; label: string; href: string }[] = [
-  { value: "", label: "All", href: "/posts" },
-  ...POST_TYPES.map((t) => ({
-    value: t,
-    label: POST_TYPE_LABELS[t].plural,
-    href: `/${POST_TYPE_LABELS[t].plural.toLowerCase()}`,
-  })),
-];
+const TABS = POST_TYPES.map((t) => ({
+  value: t,
+  label: POST_TYPE_LABELS[t].plural,
+  href: `/${POST_TYPE_LABELS[t].plural.toLowerCase()}`,
+}));
 
 /** Type switcher used on /posts and every /[type] page, so you can jump
  *  between jobs/internships/scholarships/etc. without going back to /posts. */
