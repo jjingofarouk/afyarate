@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { Post } from "@/lib/types";
 import type { PostSort } from "@/lib/posts";
@@ -267,12 +267,12 @@ export default function PostBoard({
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {posts.map((p, i) => (
-              <>
-                <PostCard key={p.id} post={p} />
+              <Fragment key={p.id}>
+                <PostCard post={p} />
                 {i === TEASER_AFTER - 1 && posts.length > TEASER_AFTER && (
-                  <SubscribeTeaser key="subscribe-teaser" />
+                  <SubscribeTeaser />
                 )}
-              </>
+              </Fragment>
             ))}
             {loadingMore &&
               Array.from({ length: Math.min(PAGE_SIZE, remaining) }).map((_, i) => (
