@@ -1,6 +1,6 @@
 /**
  * Rate Musawo — local newsletter sender.
- * Usage:  node scripts/send_newsletter.mjs [--dry-run] [--since YYYY-MM-DD] [--to email]
+ * Usage:  node scripts/send_newsletter.mjs [--dry] [--since YYYY-MM-DD] [--to email] [--reset]
  *
  * Sends ONE featured opportunity per subscriber based on their preferences.
  * Run locally; subscribers are stored in Supabase.
@@ -14,7 +14,8 @@ loadEnv();
 
 // ── CLI flags ──────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
-const DRY_RUN = args.includes("--dry-run");
+const DRY_RUN = args.includes("--dry-run") || args.includes("--dry");
+const RESET   = args.includes("--reset");
 const sinceIdx = args.indexOf("--since");
 const SINCE = sinceIdx >= 0 ? args[sinceIdx + 1] : null;
 const toIdx = args.indexOf("--to");
@@ -590,6 +591,22 @@ async function sendWelcomeEmails() {
 async function main() {
   console.log(`\nRate Musawo Newsletter — ${DRY_RUN ? "DRY RUN" : "LIVE SEND"}`);
   console.log(`Fetching posts since ${sinceDate.toISOString().slice(0, 10)}\n`);
+
+  if (RESET) {
+    if (!TO_ONLY) {
+      console.error("--reset requires --to <email> to avoid wiping all send history.");
+      process.exit(1);
+    }
+    const { error: resetErr } = await supabase
+      .from("newsletter_sends")
+      .delete()
+      .eq("email", TO_ONLY);
+    if (resetErr) {
+      console.error("Reset failed:", resetErr.message);
+      process.exit(1);
+    }
+    console.log(`Reset send history for ${TO_ONLY}.\n`);
+  }
 
   await sendWelcomeEmails();
 
