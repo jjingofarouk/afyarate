@@ -13,6 +13,7 @@ export default function CopyNotice() {
 
   useEffect(() => {
     function show() {
+      if ((window as { __allowCopy?: boolean }).__allowCopy) return;
       setVisible(true);
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => setVisible(false), 3200);
