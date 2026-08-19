@@ -9,7 +9,7 @@ export function NoCopyScript() {
   const code = `
     (function () {
       function block(e) {
-        if (!e.isTrusted) return; // allow programmatic clipboard writes (e.g. share button)
+        if (window.__allowCopy) return; // allow our share-button programmatic copies
         e.preventDefault();
         return false;
       }

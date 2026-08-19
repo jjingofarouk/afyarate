@@ -1,61 +1,81 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { SITE_NAME } from "@/lib/site";
 
 const base =
   "inline-flex size-9 items-center justify-center rounded-xl text-white shadow-sm transition hover:scale-105 hover:opacity-90";
 
 export default function ShareButtons({ title, url }: { title: string; url?: string }) {
-  const [href, setHref] = useState(url ?? "");
   const [copied, setCopied] = useState(false);
-
-  // Fallback when the server didn't pass a URL (e.g. embedded usage).
-  useEffect(() => {
-    if (!url && typeof window !== "undefined") setHref(window.location.href);
-  }, [url]);
 
   const text = `${title} — ${SITE_NAME}`;
   const q = (s: string) => encodeURIComponent(s);
 
   async function copyLink() {
+    const target = url ?? (typeof window !== "undefined" ? window.location.href : "");
+    if (!target) return;
+
+    // Try modern Clipboard API first
     try {
-      await navigator.clipboard.writeText(href);
+      await navigator.clipboard.writeText(target);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      return;
+    } catch {
+      // Fall through to legacy approach
+    }
+
+    // Legacy fallback: textarea + execCommand (bypasses NoCopy via window flag)
+    try {
+      (window as { __allowCopy?: boolean }).__allowCopy = true;
+      const el = document.createElement("textarea");
+      el.value = target;
+      el.style.cssText = "position:fixed;top:0;left:0;opacity:0;pointer-events:none";
+      document.body.appendChild(el);
+      el.focus();
+      el.select();
+      document.execCommand("copy");
+      el.remove();
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard unavailable — ignore.
+      // Silent fail
+    } finally {
+      (window as { __allowCopy?: boolean }).__allowCopy = false;
     }
   }
+
+  const shareUrl = url ?? "";
 
   const platforms = [
     {
       name: "WhatsApp",
-      href: `https://api.whatsapp.com/send?text=${q(`${text} ${href}`)}`,
+      href: `https://api.whatsapp.com/send?text=${q(`${text} ${shareUrl}`)}`,
       bg: "bg-[#25D366]",
       icon: <WhatsAppIcon />,
     },
     {
       name: "Facebook",
-      href: `https://www.facebook.com/sharer/sharer.php?u=${q(href)}`,
+      href: `https://www.facebook.com/sharer/sharer.php?u=${q(shareUrl)}`,
       bg: "bg-[#1877F2]",
       icon: <FacebookIcon />,
     },
     {
       name: "X",
-      href: `https://twitter.com/intent/tweet?text=${q(text)}&url=${q(href)}`,
+      href: `https://twitter.com/intent/tweet?text=${q(text)}&url=${q(shareUrl)}`,
       bg: "bg-slate-900 dark:bg-slate-100 dark:text-slate-900",
       icon: <XIcon />,
     },
     {
       name: "LinkedIn",
-      href: `https://www.linkedin.com/sharing/share-offsite/?url=${q(href)}`,
+      href: `https://www.linkedin.com/sharing/share-offsite/?url=${q(shareUrl)}`,
       bg: "bg-[#0A66C2]",
       icon: <LinkedInIcon />,
     },
     {
       name: "Telegram",
-      href: `https://t.me/share/url?url=${q(href)}&text=${q(text)}`,
+      href: `https://t.me/share/url?url=${q(shareUrl)}&text=${q(text)}`,
       bg: "bg-[#229ED9]",
       icon: <TelegramIcon />,
     },
