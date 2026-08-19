@@ -45,16 +45,20 @@ export default function Newsletter({
   title = "Get new jobs in your inbox",
   description = "New nursing, midwifery, clinical and allied-health openings across Uganda, delivered to your inbox. Tell us what you want to hear about — no spam, unsubscribe anytime.",
   className = "",
+  defaultTypes = [],
+  defaultRoles = [],
 }: {
   title?: string;
   description?: string;
   className?: string;
+  defaultTypes?: string[];
+  defaultRoles?: string[];
 }) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [types, setTypes] = useState<string[]>([]);
-  const [roles, setRoles] = useState<string[]>([]);
+  const [types, setTypes] = useState<string[]>(defaultTypes);
+  const [roles, setRoles] = useState<string[]>(defaultRoles);
   const [regions, setRegions] = useState<string[]>([]);
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");

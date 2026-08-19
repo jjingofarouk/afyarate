@@ -6,6 +6,9 @@ import type { Post } from "@/lib/types";
 import type { PostSort } from "@/lib/posts";
 import PostCard from "./PostCard";
 import PostCardSkeleton from "./PostCardSkeleton";
+import SubscribeTeaser from "./SubscribeTeaser";
+
+const TEASER_AFTER = 6;
 
 const PAGE_SIZE = 12;
 
@@ -263,8 +266,13 @@ export default function PostBoard({
       ) : (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {posts.map((p) => (
-              <PostCard key={p.id} post={p} />
+            {posts.map((p, i) => (
+              <>
+                <PostCard key={p.id} post={p} />
+                {i === TEASER_AFTER - 1 && posts.length > TEASER_AFTER && (
+                  <SubscribeTeaser key="subscribe-teaser" />
+                )}
+              </>
             ))}
             {loadingMore &&
               Array.from({ length: Math.min(PAGE_SIZE, remaining) }).map((_, i) => (

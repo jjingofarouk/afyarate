@@ -4,10 +4,26 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Newsletter from "@/components/Newsletter";
 
+// Cycles through these states, bell icon used when emoji is null
+const PHASES = [
+  { emoji: null,  text: "Daily job updates"        },
+  { emoji: "😊", text: "We found jobs for you"    },
+  { emoji: null,  text: "Fresh listings today"     },
+  { emoji: "✨", text: "New opportunities posted"  },
+  { emoji: null,  text: "Daily job updates"        },
+  { emoji: "👋", text: "Join health workers"       },
+  { emoji: null,  text: "Get matched alerts"       },
+  { emoji: "🎯", text: "Your next role is here"    },
+  { emoji: null,  text: "Daily job updates"        },
+  { emoji: "🌟", text: "Opportunities this week"   },
+  { emoji: null,  text: "Be first to know"         },
+  { emoji: "💪", text: "Advance your career"       },
+] as const;
+
 function BellIcon() {
   return (
     <svg
-      className="size-4"
+      className="size-4 shrink-0"
       fill="none"
       viewBox="0 0 24 24"
       stroke="currentColor"
@@ -38,20 +54,38 @@ function CloseIcon() {
   );
 }
 
-/**
- * Always-visible floating button ("Daily job updates") that opens a modal with
- * the newsletter signup form. Hidden on the admin panel.
- */
 export default function NewsletterFab() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen]       = useState(false);
+  const [phase, setPhase]     = useState(0);
+  const [textKey, setTextKey] = useState(0); // forces re-mount for fade
+  const [wiggle, setWiggle]   = useState(false);
   const pathname = usePathname();
-  const isAdmin = pathname.startsWith("/admin");
+  const isAdmin  = pathname.startsWith("/admin");
 
+  // Cycle phase + fade text
+  useEffect(() => {
+    const id = setInterval(() => {
+      setTextKey((k) => k + 1);
+      setPhase((p) => (p + 1) % PHASES.length);
+    }, 4500);
+    return () => clearInterval(id);
+  }, []);
+
+  // Wiggle: first time after 2.5s, then every 9s
+  useEffect(() => {
+    function doWiggle() {
+      setWiggle(true);
+      setTimeout(() => setWiggle(false), 800);
+    }
+    const first = setTimeout(doWiggle, 2500);
+    const loop  = setInterval(doWiggle, 9000);
+    return () => { clearTimeout(first); clearInterval(loop); };
+  }, []);
+
+  // Modal keyboard + scroll-lock
   useEffect(() => {
     if (!open) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
@@ -62,18 +96,54 @@ export default function NewsletterFab() {
 
   if (isAdmin) return null;
 
+  const current = PHASES[phase];
+
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label="Subscribe for daily job updates"
-        className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-950/25 transition hover:bg-emerald-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950 sm:px-5"
-      >
-        <BellIcon />
-        <span className="hidden sm:inline">Daily job updates</span>
-      </button>
+      {/* FAB */}
+      <div className="fixed bottom-5 right-5 z-40 fab-pop">
+        {/* Ping dot */}
+        <span className="pointer-events-none absolute -right-1 -top-1 flex size-3.5">
+          <span className="fab-ping absolute inline-flex size-full rounded-full bg-emerald-400" />
+          <span className="relative inline-flex size-3.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-950" />
+        </span>
 
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Subscribe for daily job updates"
+          className={[
+            "flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-3 text-sm font-semibold text-white",
+            "shadow-lg shadow-emerald-950/30 transition-colors",
+            "hover:bg-emerald-700 active:bg-emerald-800",
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2",
+            "dark:focus-visible:ring-offset-slate-950 sm:px-5",
+            wiggle ? "fab-wiggle" : "",
+          ].join(" ")}
+        >
+          {/* Icon slot — emoji or bell */}
+          <span className="flex size-4 shrink-0 items-center justify-center leading-none">
+            {current.emoji ? (
+              <span className="text-[15px] leading-none select-none" aria-hidden>
+                {current.emoji}
+              </span>
+            ) : (
+              <BellIcon />
+            )}
+          </span>
+
+          {/* Text with fade on change */}
+          <span
+            key={textKey}
+            className="hidden sm:inline animate-[fadeIn_0.3s_ease-out_both]"
+            style={{ animationName: "fadeIn" }}
+          >
+            {current.text}
+          </span>
+        </button>
+      </div>
+
+      {/* Modal */}
       {open && (
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
           <button

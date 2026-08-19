@@ -5,6 +5,7 @@ import { getPost, getPosts, slugify } from "@/lib/posts";
 import { TypeBadge } from "@/components/PostCard";
 import PostGrid from "@/components/PostGrid";
 import ShareButtons from "@/components/ShareButtons";
+import PostViewNudge from "@/components/PostViewNudge";
 import { POST_TYPE_LABELS, type Post, type PostType } from "@/lib/types";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { jobPostingSchema } from "@/lib/jobPosting";
@@ -589,7 +590,7 @@ export default async function PostDetailPage({
             More {post.profession} opportunities
           </h2>
           <div className="mt-4">
-            <PostGrid posts={similar} />
+            <PostGrid posts={similar} hideTeaser />
           </div>
         </section>
       )}
@@ -598,6 +599,8 @@ export default async function PostDetailPage({
         This listing is provided for information only. {SITE_NAME} does not guarantee
         its accuracy and is not involved in the recruitment or application process.
       </p>
+
+      <PostViewNudge postType={post.type} profession={post.profession} />
     </div>
   );
 }

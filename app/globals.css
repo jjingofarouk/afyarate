@@ -52,3 +52,32 @@ input::placeholder,
 textarea::placeholder {
   font-size: 1.125rem; /* 18px */
 }
+
+/* Newsletter FAB animations */
+@keyframes fab-wiggle {
+  0%   { transform: rotate(0deg) scale(1); }
+  15%  { transform: rotate(-14deg) scale(1.05); }
+  30%  { transform: rotate(11deg) scale(1.05); }
+  45%  { transform: rotate(-8deg) scale(1.02); }
+  60%  { transform: rotate(5deg) scale(1.01); }
+  80%  { transform: rotate(-2deg) scale(1); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+@keyframes fab-ping {
+  0%   { transform: scale(1); opacity: 0.85; }
+  70%  { transform: scale(1.9); opacity: 0.2; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+@keyframes fab-pop {
+  0%   { transform: scale(0.7); opacity: 0; }
+  70%  { transform: scale(1.06); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.fab-wiggle { animation: fab-wiggle 0.75s ease-in-out; }
+.fab-ping   { animation: fab-ping 2s ease-out infinite; }
+.fab-pop    { animation: fab-pop 0.35s ease-out both; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
