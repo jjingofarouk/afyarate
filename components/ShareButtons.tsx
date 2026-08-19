@@ -28,18 +28,6 @@ export default function ShareButtons({ title, url }: { title: string; url?: stri
     }
   }
 
-  async function nativeShare() {
-    if (typeof navigator !== "undefined" && navigator.share) {
-      try {
-        await navigator.share({ title, text, url: href });
-        return;
-      } catch {
-        // User cancelled or unsupported — fall through to copy.
-      }
-    }
-    await copyLink();
-  }
-
   const platforms = [
     {
       name: "WhatsApp",
@@ -79,16 +67,6 @@ export default function ShareButtons({ title, url }: { title: string; url?: stri
         Share
       </span>
 
-      <button
-        type="button"
-        onClick={nativeShare}
-        aria-label="Share"
-        title="Share"
-        className={`${base} bg-emerald-600 hover:bg-emerald-700`}
-      >
-        <NativeShareIcon />
-      </button>
-
       {platforms.map((p) => (
         <a
           key={p.name}
@@ -123,18 +101,6 @@ export default function ShareButtons({ title, url }: { title: string; url?: stri
 }
 
 /* ---- Brand / UI icons (24×24) ---- */
-
-function NativeShareIcon() {
-  return (
-    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"
-      />
-    </svg>
-  );
-}
 
 function WhatsAppIcon() {
   return (
