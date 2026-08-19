@@ -36,7 +36,7 @@ import Link from "next/link";
 import Newsletter from "@/components/Newsletter";
 
 export const metadata: Metadata = {
-  title: "The home for Uganda's health workers",
+  title: "Jobs, opportunities and more for Uganda's health workers",
   description:
     "The home for Uganda's health workers. Read patient ratings of doctors and nurses, find trusted hospitals and pharmacies, and browse current jobs, scholarships, grants and conferences across Uganda.",
 };
@@ -418,11 +418,11 @@ export default async function HomePage({
 
           <div className="relative z-10 w-full px-4 py-10 text-center sm:px-10 sm:py-16">
             <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-5xl">
-              <AnimatedWords text="The home for Uganda's health workers." startDelay={0.15} />
+              <AnimatedWords text="Jobs, opportunities and more for Uganda's health workers." startDelay={0.15} />
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base text-slate-200">
               <AnimatedWords
-                text="Browse jobs, scholarships, grants and conferences for health workers, check who patients rate highly, and find trusted hospitals and pharmacies across Uganda."
+                text="Jobs, scholarships, grants, fellowships and conferences — matched to your role and region. Plus verified practitioners, hospitals and pharmacies across Uganda."
                 startDelay={0.6}
                 wordDelay={0.018}
               />
