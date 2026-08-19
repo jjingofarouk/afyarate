@@ -245,7 +245,7 @@ function buildEmail(sub, post) {
 
             ${hasImage ? `<tr><td style="border:1px solid #e5e7eb;border-bottom:none;${imgRadius}padding:0;line-height:0;">
               <img src="${post.image_url}" alt="${post.title}" width="100%"
-                style="display:block;width:100%;height:200px;object-fit:cover;${imgRadius}">
+                style="display:block;width:100%;height:200px;object-fit:cover;object-position:top;${imgRadius}">
             </td></tr>` : ""}
 
             <tr><td style="border:1px solid #e5e7eb;border-bottom:none;${hasImage ? "" : badgeRadius}background:${color.bg};padding:8px 20px;">
