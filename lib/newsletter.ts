@@ -1,10 +1,10 @@
 export const OPPORTUNITY_TYPES = [
-  { label: "Jobs", tag: "jobs" },
-  { label: "Internships", tag: "internships" },
-  { label: "Scholarships", tag: "scholarships" },
-  { label: "Grants", tag: "grants" },
-  { label: "Fellowships", tag: "fellowships" },
-  { label: "Conferences", tag: "conferences" },
+  "Jobs",
+  "Internships",
+  "Scholarships",
+  "Grants",
+  "Fellowships",
+  "Conferences",
 ] as const;
 
 export const ROLE_OPTIONS = [

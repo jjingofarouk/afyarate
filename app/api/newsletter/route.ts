@@ -1,31 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-const EO_API = "https://api.emailoctopus.com";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_NAME_LENGTH = 120;
 
 function badRequest(message: string) {
   return NextResponse.json({ error: message }, { status: 400 });
 }
 
 /**
- * Newsletter subscription backed by EmailOctopus (emailoctopus.com).
- * Upserts the address onto the configured list using the API's bearer token.
- * The list's own double-opt-in setting decides whether the contact starts as
- * "pending" (a confirmation email is sent) or is subscribed immediately.
+ * Newsletter subscription backed by the site's own Supabase table
+ * (newsletter_subscribers): email, name and preference selections. Sending is
+ * handled separately once a digest pipeline exists.
  */
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.EMAILOCTOPUS_API_KEY;
-  const listId = process.env.EMAILOCTOPUS_LIST_ID;
-  if (!apiKey || !listId) {
-    console.error("Newsletter API: EMAILOCTOPUS_API_KEY or EMAILOCTOPUS_LIST_ID is not set");
-    return NextResponse.json(
-      { error: "The newsletter isn't set up yet. Please try again later." },
-      { status: 503 },
-    );
-  }
-
   let body: unknown;
   try {
     body = await req.json();
@@ -34,66 +24,45 @@ export async function POST(req: NextRequest) {
   }
   const b = body as {
     email_address?: unknown;
-    tags?: unknown;
-    fields?: unknown;
+    first_name?: unknown;
+    last_name?: unknown;
+    types?: unknown;
+    roles?: unknown;
+    regions?: unknown;
   };
-  const email = typeof b?.email_address === "string" ? b.email_address.trim() : "";
+
+  const email = typeof b.email_address === "string" ? b.email_address.trim().toLowerCase() : "";
   if (!email || !EMAIL_RE.test(email)) {
     return badRequest("Please enter a valid email address.");
   }
-  const tags = Array.isArray(b.tags)
-    ? b.tags.filter((t): t is string => typeof t === "string")
-    : [];
-  const fields =
-    b.fields && typeof b.fields === "object" && !Array.isArray(b.fields)
-      ? (b.fields as Record<string, unknown>)
-      : {};
-  const fieldsRecord: Record<string, string> = {};
-  for (const [k, v] of Object.entries(fields)) {
-    if (typeof v === "string" && v.trim()) fieldsRecord[k] = v.trim();
-  }
+  const firstName = typeof b.first_name === "string" ? b.first_name.trim().slice(0, MAX_NAME_LENGTH) : "";
+  const lastName = typeof b.last_name === "string" ? b.last_name.trim().slice(0, MAX_NAME_LENGTH) : "";
+  const strings = (v: unknown): string[] =>
+    Array.isArray(v)
+      ? v.filter((x): x is string => typeof x === "string").map((s) => s.trim()).filter(Boolean)
+      : [];
 
-  const listRes = await fetch(`${EO_API}/lists/${encodeURIComponent(listId)}`, {
-    headers: { Authorization: `Bearer ${apiKey}` },
-  });
-  const list = await listRes.json().catch(() => null);
-  const doubleOptIn = listRes.ok && typeof list?.double_opt_in === "boolean"
-    ? list.double_opt_in
-    : false;
-
-  const res = await fetch(`${EO_API}/lists/${encodeURIComponent(listId)}/contacts`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      email_address: email,
-      status: doubleOptIn ? "pending" : "subscribed",
-      ...(tags.length > 0 ? { tags: Object.fromEntries(tags.map((t) => [t, true])) } : {}),
-      ...(Object.keys(fieldsRecord).length > 0 ? { fields: fieldsRecord } : {}),
-    }),
+  const supabase = createServerClient();
+  const { error } = await supabase.from("newsletter_subscribers").insert({
+    email,
+    first_name: firstName || null,
+    last_name: lastName || null,
+    opportunity_types: strings(b.types),
+    roles: strings(b.roles),
+    regions: strings(b.regions),
+    status: "subscribed",
   });
 
-  if (res.ok) {
-    return NextResponse.json({ ok: true, double_opt_in: doubleOptIn });
+  if (error) {
+    // Already subscribed — idempotent, treat as success.
+    if (error.code === "23505" || /duplicate key/i.test(error.message)) {
+      return NextResponse.json({ ok: true });
+    }
+    console.error("Newsletter subscribe error:", error);
+    return NextResponse.json(
+      { error: "Couldn't subscribe you right now. Please try again in a moment." },
+      { status: 502 },
+    );
   }
-
-  // An existing (e.g. unsubscribed) contact still counts as a successful
-  // subscribe — the upsert either re-subscribes them or leaves them in place.
-  if (res.status === 409) {
-    return NextResponse.json({ ok: true, double_opt_in: doubleOptIn });
-  }
-
-  const err = await res.json().catch(() => ({}));
-  const detail = `${err?.title ?? ""} ${err?.detail ?? ""}`.toLowerCase();
-  if (/already|exists|subscribed/i.test(detail)) {
-    return NextResponse.json({ ok: true, double_opt_in: doubleOptIn });
-  }
-
-  console.error("EmailOctopus subscribe error:", res.status, err);
-  return NextResponse.json(
-    { error: "Couldn't subscribe you right now. Please try again in a moment." },
-    { status: 502 },
-  );
+  return NextResponse.json({ ok: true });
 }

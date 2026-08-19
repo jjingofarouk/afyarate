@@ -349,7 +349,28 @@ create policy "anyone can upload post images"
   with check (bucket_id = 'post-images');
 
 -- ----------------------------------------------------------------------------
--- 6. Grants for the anon/authenticated roles used by the publishable key
+-- 6. Newsletter subscribers — emails + preferences for job alerts
+-- ----------------------------------------------------------------------------
+create table if not exists public.newsletter_subscribers (
+  id bigint generated always as identity primary key,
+  email text not null unique,
+  first_name text,
+  last_name text,
+  opportunity_types text[] not null default '{}',
+  roles text[] not null default '{}',
+  regions text[] not null default '{}',
+  status text not null default 'subscribed',
+  created_at timestamptz not null default now()
+);
+
+alter table public.newsletter_subscribers enable row level security;
+
+drop policy if exists "anyone can subscribe to the newsletter" on public.newsletter_subscribers;
+create policy "anyone can subscribe to the newsletter"
+  on public.newsletter_subscribers for insert with check (true);
+
+-- ----------------------------------------------------------------------------
+-- 7. Grants for the anon/authenticated roles used by the publishable key
 -- ----------------------------------------------------------------------------
 grant usage on schema public to anon, authenticated;
 grant select on public.practitioners, public.licenses, public.ratings, public.posts,
@@ -360,5 +381,6 @@ grant select on public.facilities, public.facility_ratings,
 grant insert on public.ratings to anon, authenticated;
 grant insert on public.posts to anon, authenticated;
 grant insert on public.facility_ratings to anon, authenticated;
+grant insert on public.newsletter_subscribers to anon, authenticated;
 grant usage on all sequences in schema public to anon, authenticated;
 grant execute on function public.search_random(integer, integer, text, text, text, text) to anon, authenticated;

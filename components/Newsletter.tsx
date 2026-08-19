@@ -37,20 +37,21 @@ function Chip({
 }
 
 /**
- * EmailOctopus newsletter signup. Posts to /api/newsletter (server-side, so
- * the API key never reaches the browser) and shows inline success/error
- * states. Preferences are stored as EmailOctopus tags (opportunity types) and
- * custom fields (roles, regions) so the list can be segmented for campaigns.
+ * Newsletter signup. Posts to /api/newsletter (server-side), which saves the
+ * email, name and preference selections to the site's Supabase
+ * newsletter_subscribers table so they can be emailed later.
  */
 export default function Newsletter({
   title = "Get new jobs in your inbox",
-  description = "New nursing, midwifery, clinical and allied-health openings across Uganda, delivered to your inbox. Tell us what you want to hear about. No spam, unsubscribe anytime.",
+  description = "New nursing, midwifery, clinical and allied-health openings across Uganda, delivered to your inbox. Tell us what you want to hear about — no spam, unsubscribe anytime.",
   className = "",
 }: {
   title?: string;
   description?: string;
   className?: string;
 }) {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [types, setTypes] = useState<string[]>([]);
   const [roles, setRoles] = useState<string[]>([]);
@@ -78,21 +79,23 @@ export default function Newsletter({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email_address: trimmed,
-          tags: types,
-          fields: {
-            ...(roles.length > 0 ? { Roles: roles.join(", ") } : {}),
-            ...(regions.length > 0 ? { Regions: regions.join(", ") } : {}),
-          },
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          types,
+          roles,
+          regions,
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         setStatus("success");
         setMessage(
-          data?.double_opt_in
-            ? "Almost there — check your inbox and confirm your subscription to start receiving job alerts."
-            : "You're subscribed! New job and opportunity alerts will land in your inbox.",
+          firstName.trim()
+            ? `You're subscribed, ${firstName.trim()}! We'll email you when new opportunities match your preferences.`
+            : "You're subscribed! We'll email you when new opportunities match your preferences.",
         );
+        setFirstName("");
+        setLastName("");
         setEmail("");
       } else {
         setStatus("error");
@@ -103,6 +106,9 @@ export default function Newsletter({
       setMessage("Something went wrong. Please try again.");
     }
   }
+
+  const inputClass =
+    "w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/40";
 
   return (
     <div className={className}>
@@ -119,10 +125,43 @@ export default function Newsletter({
         </p>
       ) : (
         <form onSubmit={onSubmit} className="mt-5 space-y-4" noValidate>
-          <label htmlFor="newsletter-email" className="sr-only">
-            Email address
-          </label>
+          <div className="grid max-w-xl grid-cols-2 gap-2">
+            <div>
+              <label htmlFor="newsletter-first-name" className="sr-only">
+                First name
+              </label>
+              <input
+                id="newsletter-first-name"
+                type="text"
+                name="firstName"
+                autoComplete="given-name"
+                placeholder="First name"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label htmlFor="newsletter-last-name" className="sr-only">
+                Last name
+              </label>
+              <input
+                id="newsletter-last-name"
+                type="text"
+                name="lastName"
+                autoComplete="family-name"
+                placeholder="Last name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+          </div>
+
           <div className="flex max-w-xl flex-col gap-2 sm:flex-row">
+            <label htmlFor="newsletter-email" className="sr-only">
+              Email address
+            </label>
             <input
               id="newsletter-email"
               type="email"
@@ -133,7 +172,7 @@ export default function Newsletter({
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/40"
+              className={`${inputClass} flex-1`}
             />
             <button
               type="submit"
@@ -151,10 +190,10 @@ export default function Newsletter({
             <div className="mt-2 flex flex-wrap gap-2">
               {OPPORTUNITY_TYPES.map((o) => (
                 <Chip
-                  key={o.tag}
-                  label={o.label}
-                  selected={types.includes(o.tag)}
-                  onToggle={() => toggle(types, setTypes, o.tag)}
+                  key={o}
+                  label={o}
+                  selected={types.includes(o)}
+                  onToggle={() => toggle(types, setTypes, o)}
                 />
               ))}
             </div>
