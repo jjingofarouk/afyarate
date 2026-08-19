@@ -18,8 +18,8 @@ export async function generateMetadata({
   const facet = facets.find((f) => f.slug === slug);
   if (!facet) return {};
   return {
-    title: `${facet.label} — Jobs & Opportunities in Uganda`,
-    description: `Current jobs, scholarships, fellowships and grants at ${facet.label} in Uganda — ${facet.count} listing${facet.count === 1 ? "" : "s"} on ${SITE_NAME}.`,
+    title: `${facet.label}: Jobs & Opportunities in Uganda`,
+    description: `Current jobs, scholarships, fellowships and grants at ${facet.label} in Uganda. ${facet.count} listing${facet.count === 1 ? "" : "s"} on ${SITE_NAME}.`,
     alternates: { canonical: `/organizations/${facet.slug}` },
     openGraph: {
       title: `${facet.label} · ${SITE_NAME}`,
@@ -52,7 +52,7 @@ export default async function OrganizationPage({
 
       <header className="max-w-2xl">
         <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-          {facet.label} — Jobs &amp; Opportunities
+          {facet.label}: Jobs and Opportunities
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           {facet.count} {facet.count === 1 ? "listing is" : "listings are"} currently open

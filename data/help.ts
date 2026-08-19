@@ -72,7 +72,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "h2", text: "Open a practitioner's profile" },
       {
         type: "p",
-        text: "Each profile shows the practitioner's registration details: their council, registration number, licence number and licence expiry date — exactly as published by the official registry. Below that you'll find the average patient rating and the individual reviews left by patients.",
+        text: "Each profile shows the practitioner's registration details: their council, registration number, licence number and licence expiry date, exactly as published by the official registry. Below that you'll find the average patient rating and the individual reviews left by patients.",
       },
       { type: "h2", text: "Leave a rating" },
       {
@@ -137,7 +137,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     collection: "Getting Started",
     title: "Is Rate Musawo a healthcare provider?",
     summary:
-      "No. Rate Musawo is an independent directory and rating site — it does not provide medical care, diagnoses or treatment advice.",
+      "No. Rate Musawo is an independent directory and rating site, it does not provide medical care, diagnoses or treatment advice.",
     updated: "6 August 2026",
     related: ["how-we-verify-health-professionals", "reviews-faq"],
     blocks: [
@@ -171,7 +171,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     blocks: [
       {
         type: "p",
-        text: "Ratings on Rate Musawo are written by patients and members of the public about their own experiences with a health worker. Anyone can rate a practitioner — you don't need an account — so the feedback reflects a broad range of patient experiences.",
+        text: "Ratings on Rate Musawo are written by patients and members of the public about their own experiences with a health worker. Anyone can rate a practitioner, you don't need an account, so the feedback reflects a broad range of patient experiences.",
       },
       { type: "h2", text: "What appears on a profile" },
       {
@@ -185,7 +185,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "h2", text: "Ratings are community opinions" },
       {
         type: "p",
-        text: "Ratings are not fact-checked or endorsed by Rate Musawo, and they are not a measure of a practitioner's clinical competence. They reflect subjective experience — communication, professionalism, wait times — and should be read as one signal among many, alongside the practitioner's licence status and your own judgement.",
+        text: "Ratings are not fact-checked or endorsed by Rate Musawo, and they are not a measure of a practitioner's clinical competence. They reflect subjective experience, communication, professionalism, wait times, and should be read as one signal among many, alongside the practitioner's licence status and your own judgement.",
       },
     ],
   },
@@ -220,7 +220,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "h2", text: "Can I edit or remove my review?" },
       {
         type: "p",
-        text: "Ratings are not linked to an account, so there is no self-service edit. If you need a rating corrected or removed — for example because it contains something you did not intend to make public — contact us with the practitioner's profile URL and the details of the review, and we will review the request.",
+        text: "Ratings are not linked to an account, so there is no self-service edit. If you need a rating corrected or removed, for example because it contains something you did not intend to make public, contact us with the practitioner's profile URL and the details of the review, and we will review the request.",
       },
     ],
   },
@@ -229,7 +229,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     collection: "Ratings & Reviews",
     title: "How to write a helpful review",
     summary:
-      "Keep it relevant, specific and objective. Focus on your experience — communication, professionalism, wait times — not on diagnoses or treatment accuracy.",
+      "Keep it relevant, specific and objective. Focus on your experience, communication, professionalism, wait times, not on diagnoses or treatment accuracy.",
     updated: "6 August 2026",
     related: ["how-do-i-rate-a-health-worker", "reviews-faq"],
     blocks: [
@@ -240,11 +240,11 @@ export const HELP_ARTICLES: HelpArticle[] = [
       {
         type: "ul",
         items: [
-          "Keep it relevant — focus on the things you as a patient would most want to know: communication, professionalism, wait times, bedside manner.",
-          "Be specific — explain what you were looking for and how the practitioner did, rather than just saying 'great' or 'bad'.",
-          "Stay objective — describe your feelings about the care you received, but avoid making claims about whether a diagnosis or treatment was medically accurate.",
-          "Keep it concise — a short paragraph or two is plenty.",
-          "Don't guess — avoid speculating about why a practitioner did or didn't do something.",
+          "Keep it relevant, focus on the things you as a patient would most want to know: communication, professionalism, wait times, bedside manner.",
+          "Be specific, explain what you were looking for and how the practitioner did, rather than just saying 'great' or 'bad'.",
+          "Stay objective, describe your feelings about the care you received, but avoid making claims about whether a diagnosis or treatment was medically accurate.",
+          "Keep it concise, a short paragraph or two is plenty.",
+          "Don't guess, avoid speculating about why a practitioner did or didn't do something.",
         ],
       },
       {
@@ -258,14 +258,14 @@ export const HELP_ARTICLES: HelpArticle[] = [
     collection: "Ratings & Reviews",
     title: "Reviews FAQ",
     summary:
-      "How ratings are collected, moderated and displayed — and why a review might not be posted.",
+      "How ratings are collected, moderated and displayed, and why a review might not be posted.",
     updated: "6 August 2026",
     related: ["who-writes-the-reviews", "how-do-i-rate-a-health-worker", "how-to-write-a-helpful-review"],
     blocks: [
       { type: "h2", text: "Why should I trust the reviews on Rate Musawo?" },
       {
         type: "p",
-        text: "Reviews are written by real patients about their own experiences, and we publish positive, negative and in-between feedback. That said, ratings are community opinions — they are not independently verified, so read them as one signal alongside licence status and your own judgement.",
+        text: "Reviews are written by real patients about their own experiences, and we publish positive, negative and in-between feedback. That said, ratings are community opinions, they are not independently verified, so read them as one signal alongside licence status and your own judgement.",
       },
       { type: "h2", text: "Does Rate Musawo only post positive reviews?" },
       {
@@ -275,14 +275,14 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "h2", text: "Are reviews moderated?" },
       {
         type: "p",
-        text: "We review reported content and may remove reviews that violate our guidelines — profanity, hate speech, personal information, defamation, or claims about treatment accuracy. Most reviews appear immediately and are reviewed if reported.",
+        text: "We review reported content and may remove reviews that violate our guidelines, profanity, hate speech, personal information, defamation, or claims about treatment accuracy. Most reviews appear immediately and are reviewed if reported.",
       },
       { type: "h2", text: "When will a review not be posted?" },
       {
         type: "ul",
         items: [
           "Profanity, vulgarity or offensive content.",
-          "Another person's private information — full names, phone numbers, addresses, medical details.",
+          "Another person's private information, full names, phone numbers, addresses, medical details.",
           "Defamatory claims, including implying criminal conduct or professional misconduct without a reasonable basis.",
           "Promotional content, spam or links to unrelated products.",
           "Claims about the accuracy of a treatment or diagnosis, which we cannot verify.",
@@ -331,7 +331,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       },
       {
         type: "note",
-        text: "For decisions that really matter — emergencies, legal or credentialing purposes — always verify a practitioner's current licence status directly with the relevant council.",
+        text: "For decisions that really matter, emergencies, legal or credentialing purposes, always verify a practitioner's current licence status directly with the relevant council.",
       },
     ],
   },
@@ -348,17 +348,17 @@ export const HELP_ARTICLES: HelpArticle[] = [
         type: "p",
         text: "Rate Musawo combines two kinds of information with very different sources:",
       },
-      { type: "h2", text: "Licensing data — from official councils" },
+      { type: "h2", text: "Licensing data, from official councils" },
       {
         type: "p",
         text: "Registration and licence details are copied from data published by the Uganda Medical & Dental Practitioners Council (UMPDC), the Uganda Nurses & Midwives Council, and the Allied Health Professionals Council. We republish this data for convenience but do not independently verify it, and it may be delayed or contain errors from the source.",
       },
-      { type: "h2", text: "Ratings — from patients" },
+      { type: "h2", text: "Ratings, from patients" },
       {
         type: "p",
         text: "Ratings and comments are submitted by patients about their own experiences. They are not fact-checked or endorsed by us, and they are opinions rather than facts.",
       },
-      { type: "h2", text: "Listings — from the source organizations" },
+      { type: "h2", text: "Listings, from the source organizations" },
       {
         type: "p",
         text: "Job and opportunity listings are gathered from the websites of the organizations that post them, with a link back to the original source for applying.",
@@ -370,7 +370,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     collection: "Licensing Data",
     title: "What if information about me is wrong?",
     summary:
-      "If you're a practitioner and a fact on your profile is incorrect, contact us to review it — and raise the correction with the council that publishes it.",
+      "If you're a practitioner and a fact on your profile is incorrect, contact us to review it, and raise the correction with the council that publishes it.",
     updated: "6 August 2026",
     related: ["where-does-the-data-come-from", "how-we-verify-health-professionals"],
     blocks: [
@@ -416,7 +416,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "h2", text: "What's public" },
       {
         type: "p",
-        text: "Ratings, comments and display names are public by design — they're the core of the site. Only leave a display name or comment you're comfortable having public. If you leave the name blank, your review appears as 'Anonymous'.",
+        text: "Ratings, comments and display names are public by design, they're the core of the site. Only leave a display name or comment you're comfortable having public. If you leave the name blank, your review appears as 'Anonymous'.",
       },
       { type: "h2", text: "How we protect data" },
       {
@@ -438,7 +438,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     collection: "Jobs & Opportunities",
     title: "How do I find and apply to listings?",
     summary:
-      "Browse the job board by type — jobs, internships, scholarships, grants and more — and apply directly at the source organization.",
+      "Browse the job board by type: jobs, internships, scholarships, grants and more, and apply directly at the source organization.",
     updated: "6 August 2026",
     related: ["how-do-i-post-a-listing", "what-is-rate-musawo"],
     blocks: [
@@ -449,12 +449,12 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "h2", text: "Open a listing" },
       {
         type: "p",
-        text: "Each listing shows the organization, location, deadline, eligibility and a full description. Most listings include a link to the original source or an application email — apply directly through the organization, not through Rate Musawo.",
+        text: "Each listing shows the organization, location, deadline, eligibility and a full description. Most listings include a link to the original source or an application email, apply directly through the organization, not through Rate Musawo.",
       },
       { type: "h2", text: "Is applying free?" },
       {
         type: "p",
-        text: "Yes — browsing and applying for listings is free. We never charge to view or apply to a listing. If an organization asks you to pay to apply, treat it with caution; legitimate employers rarely charge application fees.",
+        text: "Yes. Browsing and applying for listings is free. We never charge to view or apply to a listing. If an organization asks you to pay to apply, treat it with caution; legitimate employers rarely charge application fees.",
       },
       {
         type: "note",
@@ -483,7 +483,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "h2", text: "Who can post?" },
       {
         type: "p",
-        text: "Anyone — hospitals, clinics, NGOs, universities, government bodies and individuals can post a legitimate healthcare opportunity. Please make sure the details are accurate, since people will be applying for real positions.",
+        text: "Anyone: hospitals, clinics, NGOs, universities, government bodies and individuals can post a legitimate healthcare opportunity. Please make sure the details are accurate, since people will be applying for real positions.",
       },
       {
         type: "note",

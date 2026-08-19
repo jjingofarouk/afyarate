@@ -30,8 +30,8 @@ function DeadlineChip({ date }: { date: string | null }) {
 /**
  * Compact per-type panel for the home page listings section: a small header
  * (type label + "view all") and the two most recent posts as rows. One panel
- * per listing type keeps every category — jobs, scholarships, grants,
- * conferences, fellowships, internships — visible without pushing the page
+ * per listing type keeps every category, jobs, scholarships, grants,
+ * conferences, fellowships, internships, visible without pushing the page
  * thousands of lines long.
  */
 export default function PostTypePanel({

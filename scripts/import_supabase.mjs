@@ -4,9 +4,9 @@
  *
  * - Collapses per-licence rows into one practitioner per (name + council),
  *   upserts them into `practitioners`, and upserts the full licence history
- *   into `licenses`. Upserts are idempotent — safe to re-run after a fresh
+ *   into `licenses`. Upserts are idempotent, safe to re-run after a fresh
  *   scrape.
- * - Never touches `ratings` — community ratings survive registry refreshes.
+ * - Never touches `ratings`, community ratings survive registry refreshes.
  *
  * Requires SUPABASE_DB_URL in .env.local (Direct or Session-pooler connection).
  *

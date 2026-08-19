@@ -1,5 +1,5 @@
 /**
- * "How it works" strip for the home page — a three-step, numbered walkthrough
+ * "How it works" strip for the home page, a three-step, numbered walkthrough
  * (not a row of cards) so the page mixes layout types: a horizontal connector
  * line links the steps, each with an icon badge and short copy.
  */

@@ -52,11 +52,11 @@ const FAQS = [
   },
   {
     q: "Who can leave a rating?",
-    a: "Anyone who has seen a health worker can leave feedback — patients, their families, or colleagues. Each rating is reviewed and clearly marked as verified or unverified.",
+    a: "Anyone who has seen a health worker can leave feedback: patients, their families, or colleagues. Each rating is reviewed and clearly marked as verified or unverified.",
   },
   {
     q: "Can I find a doctor near me?",
-    a: "Yes — search by name, profession, council or licence number. Every practitioner page shows their council, registration and licence status so you can check they are currently licensed.",
+    a: "Yes. Search by name, profession, council or licence number. Every practitioner page shows their council, registration and licence status so you can check they are currently licensed.",
   },
   {
     q: "How do I correct or update a listing?",
@@ -298,7 +298,7 @@ export default async function HomePage({
 }) {
   const { q } = await searchParams;
   // Fetched here (not just client-side) so the first page of results is
-  // already in the initial HTML — no client round-trip before anything shows.
+  // already in the initial HTML, no client round-trip before anything shows.
   // Each call below gets its own Supabase client (see lib/supabase/server.ts),
   // so these are safe to run in parallel.
   const [ready, facilitiesReadyRaw] = await Promise.all([isDbReady(), isFacilitiesReady()]);
@@ -343,7 +343,7 @@ export default async function HomePage({
   const pharmacies = topPharmacies?.items ?? [];
 
   // Group listings by type so every category gets a visible slice of the
-  // board — jobs lead, then a panel per type (scholarships, grants,
+  // board, jobs lead, then a panel per type (scholarships, grants,
   // conferences, fellowships, internships, opportunities, …).
   const topJobs = allPosts.filter((p) => p.type === "job").slice(0, 4);
   const typePanels = POST_TYPES.filter((t) => t !== "job")
@@ -403,7 +403,7 @@ export default async function HomePage({
 
   return (
     <>
-      {/* Hero — full-bleed photo, edge to edge, with text overlaid */}
+      {/* Hero, full-bleed photo, edge to edge, with text overlaid */}
       <FadeIn>
         <section className="relative flex min-h-[420px] items-center overflow-hidden sm:min-h-[480px] lg:min-h-[600px]">
           <MotionImg
@@ -422,7 +422,7 @@ export default async function HomePage({
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base text-slate-200">
               <AnimatedWords
-                text="Jobs, scholarships, grants, fellowships and conferences — matched to your role and region. Plus verified practitioners, hospitals and pharmacies across Uganda."
+                text="Jobs, scholarships, grants, fellowships and conferences, matched to your role and region. Plus verified practitioners, hospitals and pharmacies across Uganda."
                 startDelay={0.6}
                 wordDelay={0.018}
               />
@@ -445,7 +445,7 @@ export default async function HomePage({
         </section>
       </FadeIn>
 
-      {/* Jump-to nav — makes the section stack obvious at a glance */}
+      {/* Jump-to nav, makes the section stack obvious at a glance */}
       {ready && (
         <HomeSection tone="slate" compact>
           <nav
@@ -471,7 +471,7 @@ export default async function HomePage({
         </HomeSection>
       )}
 
-      {/* Listings — hoisted to slot 2; asymmetric editorial layout */}
+      {/* Listings, hoisted to slot 2; asymmetric editorial layout */}
       {allPosts.length > 0 && (
         <section
           id="listings"
@@ -492,7 +492,7 @@ export default async function HomePage({
                 </div>
                 <div className="sm:text-right">
                   <p className="max-w-xs text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                    Fresh listings for Uganda's health workforce — every career stage, every region.
+                    Fresh listings for Uganda's health workforce, covering every career stage, every region.
                   </p>
                   <Link
                     href="/posts"
@@ -527,7 +527,7 @@ export default async function HomePage({
               )}
             </div>
 
-            {/* Latest jobs — staggered cards */}
+            {/* Latest jobs, staggered cards */}
             {topJobs.length > 0 && (
               <div className="mt-10">
                 <SlideIn from="bottom">
@@ -582,14 +582,14 @@ export default async function HomePage({
         </section>
       )}
 
-      {/* Newsletter — job alerts by email */}
+      {/* Newsletter, job alerts by email */}
       <HomeSection
         id="newsletter"
         tone="emerald"
         eyebrow="Job alerts"
         eyebrowIcon={<MailIcon />}
         title="New jobs, straight to your inbox"
-        description="Never miss an opening — subscribe and get fresh jobs, scholarships, grants and conferences across Uganda delivered by email."
+        description="Never miss an opening. Subscribe and get fresh jobs, scholarships, grants and conferences across Uganda delivered by email."
       >
         <SlideIn from="bottom">
           <div className="mx-auto max-w-2xl rounded-2xl border border-emerald-100 bg-white/70 p-6 sm:p-8 dark:border-emerald-900/40 dark:bg-slate-900/60">
@@ -598,14 +598,14 @@ export default async function HomePage({
         </SlideIn>
       </HomeSection>
 
-      {/* Section 2 — the ratings of doctors */}
+      {/* Section 2, the ratings of doctors */}
       <HomeSection
         id="ratings"
         tone="amber"
         eyebrow="Community ratings"
         eyebrowIcon={<StarIcon />}
         title="Top-rated health workers"
-        description="See which doctors, nurses, midwives and clinical officers patients rate highest — verified licences with genuine feedback, then add your own."
+        description="See which doctors, nurses, midwives and clinical officers patients rate highest, with verified licences with genuine feedback, then add your own."
         action={{ href: "/practitioners", label: "See all practitioners" }}
       >
         {topRated.length > 0 ? (
@@ -623,7 +623,7 @@ export default async function HomePage({
                   Have you seen a health worker recently?
                 </p>
                 <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                  Help other patients choose well — rate the care you received.
+                  Help other patients choose well, rate the care you received.
                 </p>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-3">
@@ -661,14 +661,14 @@ export default async function HomePage({
         )}
       </HomeSection>
 
-      {/* Section 3 — the verified registry search */}
+      {/* Section 3, the verified registry search */}
       <HomeSection
         id="practitioners"
         tone="white"
         eyebrow="Verified registry"
         eyebrowIcon={<UsersIcon />}
         title="Search licensed practitioners"
-        description="Search every licensed health professional in Uganda by name, profession, council or licence number — and check their registration status."
+        description="Search every licensed health professional in Uganda by name, profession, council or licence number and check their registration status."
         action={{ href: "/practitioners", label: "Browse by profession" }}
       >
         {!ready ? (
@@ -716,7 +716,7 @@ export default async function HomePage({
         )}
       </HomeSection>
 
-      {/* Section 4 — hospitals & pharmacies, both clearly represented */}
+      {/* Section 4, hospitals & pharmacies, both clearly represented */}
       {facilitiesReady && (hospitals.length > 0 || pharmacies.length > 0) && (
         <HomeSection
           id="facilities"
@@ -724,7 +724,7 @@ export default async function HomePage({
           eyebrow="Facilities"
           eyebrowIcon={<BuildingIcon />}
           title="Hospitals & pharmacies"
-          description="Find hospitals and pharmacies across Uganda — search by name or city, check what patients say, and rate the care you received."
+          description="Find hospitals and pharmacies across Uganda. Search by name or city, check what patients say, and rate the care you received."
           action={{ href: "/facilities", label: "Browse all facilities" }}
         >
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
@@ -746,7 +746,7 @@ export default async function HomePage({
         </HomeSection>
       )}
 
-      {/* Section 5 — explore */}
+      {/* Section 5, explore */}
       <HomeSection
         id="explore"
         tone="slate"
@@ -788,7 +788,7 @@ export default async function HomePage({
         </div>
       </HomeSection>
 
-      {/* FAQ — mirrors the FAQPage structured data below */}
+      {/* FAQ, mirrors the FAQPage structured data below */}
       <HomeSection
         id="faq"
         tone="white"

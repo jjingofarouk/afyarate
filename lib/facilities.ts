@@ -120,7 +120,7 @@ export async function searchFacilities(
   };
 }
 
-// cache(): dedupes within a single request — generateMetadata() and the page
+// cache(): dedupes within a single request, generateMetadata() and the page
 // body both look up the same facility, and this collapses that back to one
 // Supabase call. Scoped per-request only, so a rating submitted via
 // router.refresh() still shows up immediately (unlike a cross-request cache).

@@ -16,12 +16,12 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Rate Uganda's Hospitals & Pharmacies",
   description:
-    "Find and rate hospitals, clinics and pharmacies across Uganda — search by name, city or specialty, read patient ratings and leave your own.",
+    "Find and rate hospitals, clinics and pharmacies across Uganda. Search by name, city or specialty, read patient ratings and leave your own.",
   alternates: { canonical: "/facilities" },
   openGraph: {
     title: "Rate Uganda's Hospitals & Pharmacies · Rate Musawo",
     description:
-      "Find and rate hospitals, clinics and pharmacies across Uganda — search by name, city or specialty.",
+      "Find and rate hospitals, clinics and pharmacies across Uganda. Search by name, city or specialty.",
     type: "website",
   },
 };
@@ -95,7 +95,7 @@ export default async function FacilitiesPage({
             Rate Uganda&apos;s Hospitals &amp; Pharmacies
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-            Hospitals, clinics and pharmacies from across Uganda — search by name, city or
+            Hospitals, clinics and pharmacies from across Uganda. Search by name, city or
             specialty, check what patients say, and leave your own rating.
           </p>
         </header>

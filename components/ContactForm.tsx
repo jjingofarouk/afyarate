@@ -31,7 +31,7 @@ export default function ContactForm() {
           from_name: "Rate Musawo",
           subject: subject || "Message from Rate Musawo",
           message,
-          botcheck: "", // honeypot — must stay empty
+          botcheck: "", // honeypot, must stay empty
         }),
       });
       const data = await res.json();

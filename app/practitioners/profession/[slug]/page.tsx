@@ -29,7 +29,7 @@ function faqsFor(profession: string, count: number) {
     },
     {
       q: `Are there ${profession} jobs and opportunities in Uganda?`,
-      a: `Yes — hospitals, clinics, universities, NGOs and government regularly advertise ${profession} roles in Uganda. Browse the current ${profession} jobs and opportunities section to see what is open now.`,
+      a: `Yes: hospitals, clinics, universities, NGOs and government regularly advertise ${profession} roles in Uganda. Browse the current ${profession} jobs and opportunities section to see what is open now.`,
     },
   ];
 }
@@ -44,7 +44,7 @@ export async function generateMetadata({
   const prof = counts.find((c) => slugify(c.profession) === slug);
   if (!prof) return { title: "Profession not found" };
   const year = new Date().getFullYear();
-  const title = `${prof.profession}s in Uganda — Licensed ${prof.profession}s (${year})`;
+  const title = `${prof.profession}s in Uganda: Licensed ${prof.profession}s (${year})`;
   const description = `Find ${prof.count.toLocaleString()} registered ${prof.profession}s in Uganda with patient ratings and licence details. Verify their licence, read reviews and see ${prof.profession} jobs.`;
   return {
     title,
@@ -189,7 +189,7 @@ export default async function ProfessionPractitionersPage({
                   href={`/posts/${j.slug}`}
                   className="text-sm text-emerald-700 underline hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300"
                 >
-                  {j.title} — {j.organization}
+                  {j.title} at {j.organization}
                 </Link>
               </li>
             ))}

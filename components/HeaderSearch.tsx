@@ -29,7 +29,7 @@ export default function HeaderSearch() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Debounced live suggestions as the user types — same /api/posts search
+  // Debounced live suggestions as the user types, same /api/posts search
   // the board pages already use, just capped to a handful of results.
   useEffect(() => {
     const query = q.trim();
@@ -103,7 +103,7 @@ export default function HeaderSearch() {
       setActiveIndex((i) => Math.max(i - 1, -1));
     } else if (e.key === "Enter" && activeIndex >= 0) {
       // With nothing highlighted, fall through to the form's normal GET
-      // submit (?q=...) — works the same with JS disabled.
+      // submit (?q=...), works the same with JS disabled.
       e.preventDefault();
       goToIndex(activeIndex);
     } else if (e.key === "Escape") {

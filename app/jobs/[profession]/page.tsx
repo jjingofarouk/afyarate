@@ -46,7 +46,7 @@ export async function generateMetadata({
 
   const year = new Date().getFullYear();
   const title = `${facet.label} Jobs in Uganda (${year})`;
-  const description = `Find ${facet.label} job vacancies in Uganda — ${facet.count} current ${facet.label} job${facet.count === 1 ? "" : "s"} listed on ${SITE_NAME}. Hospitals, NGOs, government and universities.`;
+  const description = `Find ${facet.label} job vacancies in Uganda. ${facet.count} current ${facet.label} job${facet.count === 1 ? "" : "s"} listed on ${SITE_NAME}. Hospitals, NGOs, government and universities.`;
 
   return {
     title,
@@ -123,7 +123,7 @@ export default async function JobProfessionPage({
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           {facet.count} {facet.count === 1 ? "vacancy is" : "vacancies are"} currently open for{" "}
-          {facet.label}s in Uganda — across hospitals, clinics, universities, NGOs and government.
+          {facet.label}s in Uganda, across hospitals, clinics, universities, NGOs and government.
           New listings are added every week.
         </p>
       </header>

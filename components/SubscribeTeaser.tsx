@@ -48,7 +48,7 @@ export default function SubscribeTeaser() {
               Don&apos;t miss the right opportunity
             </h3>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Get matched jobs, scholarships and grants delivered to your inbox — tailored to your role and region.
+              Get matched jobs, scholarships and grants delivered to your inbox, tailored to your role and region.
             </p>
           </div>
 

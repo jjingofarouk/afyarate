@@ -4,7 +4,7 @@ import { SITE_NAME } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Help Center",
-  description: `Help Center for ${SITE_NAME} — articles about searching the registry, patient ratings, licensing data, privacy, and the job board.`,
+  description: `Help Center for ${SITE_NAME}: articles about searching the registry, patient ratings, licensing data, privacy, and the job board.`,
   alternates: { canonical: "/help" },
 };
 

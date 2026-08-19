@@ -42,7 +42,7 @@ export default function PostBoard({
   const [posts, setPosts] = useState(initialPosts);
   const [total, setTotal] = useState(initialTotal);
   // Two distinct loading states: a fresh search replaces the whole grid, a
-  // "load more" appends to it — conflating them made the grid flicker
+  // "load more" appends to it, conflating them made the grid flicker
   // between old and new results while a search was in flight.
   const [searching, setSearching] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -93,7 +93,7 @@ export default function PostBoard({
         setTotal(data.total ?? 0);
       } catch (e) {
         if ((e as Error).name !== "AbortError") {
-          setError("Couldn't load listings — please try again.");
+          setError("Couldn't load listings, please try again.");
         }
       } finally {
         setSearching(false);
@@ -103,7 +103,7 @@ export default function PostBoard({
   );
 
   // Debounced re-search whenever the query, sort or filters change. Skipped on
-  // mount — the server already rendered the first page for that state.
+  // mount, the server already rendered the first page for that state.
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -134,7 +134,7 @@ export default function PostBoard({
       const data = await res.json();
       setPosts((prev) => [...prev, ...(data.items ?? [])]);
     } catch {
-      setError("Couldn't load more listings — please try again.");
+      setError("Couldn't load more listings, please try again.");
     } finally {
       setLoadingMore(false);
     }

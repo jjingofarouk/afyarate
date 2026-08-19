@@ -4,11 +4,11 @@
  *   1. Fetch the source page and read its og:image / twitter:image.
  *   2. Download it and re-host in the `post-images` storage bucket.
  *   3. Fall back to a deterministic type-colored SVG placeholder when no
- *      (or an unusable) image is found — so no card is ever blank.
+ *      (or an unusable) image is found, so no card is ever blank.
  * Then update image_url in the DB.
  *
- * Uploads use the publishable (anon) key — the bucket has an anon insert
- * policy — and rows are updated via SUPABASE_DB_URL since anon can't UPDATE.
+ * Uploads use the publishable (anon) key, the bucket has an anon insert
+ * policy, and rows are updated via SUPABASE_DB_URL since anon can't UPDATE.
  *
  * Usage:
  *   node scripts/add_post_images.mjs              # all imageless published posts

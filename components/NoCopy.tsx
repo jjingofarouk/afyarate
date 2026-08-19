@@ -1,5 +1,5 @@
 /**
- * Blocks copy and cut only — selection and the native context menu are
+ * Blocks copy and cut only, selection and the native context menu are
  * left intact so mobile users can long-press and see the "Copy" button,
  * which then fires the copy event we intercept and explain with a toast.
  */

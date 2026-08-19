@@ -13,7 +13,7 @@ import { SITE_URL } from "@/lib/site";
 
 const CURRENCY = "UGX";
 
-/** Ugandan towns/cities/districts → Uganda region. Real, public data — used to
+/** Ugandan towns/cities/districts → Uganda region. Real, public data, used to
  *  populate `addressRegion` (Google warns when it's missing). */
 const TOWN_REGIONS: Record<string, string> = {
   // Central Region
@@ -164,7 +164,7 @@ export interface JobLocation {
 /**
  * Break a free-text location ("Kawempe-Kazo, Kampala", "Plot 1495, Kira Road,
  * Bukoto, Kampala, Uganda") into structured address parts. Only returns values
- * actually present in the string — never invents an address.
+ * actually present in the string, never invents an address.
  */
 export function parseJobLocation(raw: string | null): JobLocation {
   if (!raw) return {};

@@ -122,7 +122,7 @@ function slugMatches(slug: string | undefined, value: string | null): boolean {
 }
 
 /** Sort key for "closing soon": open listings first (soonest deadline first),
- *  then rolling (no deadline), then closed — most recently closed first. Never
+ *  then rolling (no deadline), then closed, most recently closed first. Never
  *  drops closed listings, just moves them to the back. */
 function closingSoonKey(p: Post): [number, number] {
   if (!p.deadline) return [1, 0];
@@ -161,17 +161,15 @@ const POST_TYPES = new Set([
 
 // Module-scoped caches: survive for the lifetime of a warm Worker isolate, so
 // the board and detail pages stop hitting Supabase on every request. Reset on
-// cold start — fine, this is a best-effort cut in query volume, not a
+// cold start, fine, this is a best-effort cut in query volume, not a
 // guarantee. New/edited listings appear once the TTL elapses.
 const POSTS_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const POST_TTL_MS = 10 * 60 * 1000; // 10 minutes
 let postsCache: { data: Post[]; expires: number } | null = null;
 const postCache = new Map<string, { data: Post | null; expires: number }>();
 
-// Card/list views (and the facet builders above) only ever read these fields —
-// never the long detail-only ones (description, eligibility, howToApply...).
-// Selecting just this set keeps the cached array — and every page's payload —
-// a fraction of the size of a full `select("*")`.
+// Card/list views (and the facet builders above) only ever read these fields, // never the long detail-only ones (description, eligibility, howToApply...).
+// Selecting just this set keeps the cached array, and every page's payload, // a fraction of the size of a full `select("*")`.
 const LIST_COLUMNS =
   "id, slug, type, title, organization, category, profession, location, country, " +
   "deadline, salary, featured, status, published_at, image_url, tags";

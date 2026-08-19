@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Browse Health Jobs by Location in Uganda",
   description:
-    "Browse medical and health jobs, internships, scholarships, grants and fellowships in Uganda by location — Kampala, Mbarara, Gulu, Jinja, Arua and more.",
+    "Browse medical and health jobs, internships, scholarships, grants and fellowships in Uganda by location: Kampala, Mbarara, Gulu, Jinja, Arua and more.",
   alternates: { canonical: "/locations" },
   openGraph: {
     title: "Browse Health Jobs by Location in Uganda · Rate Musawo",
@@ -55,7 +55,7 @@ export default async function LocationsPage() {
         crumb="Locations"
         listLabel="location"
         title="Browse Jobs &amp; Opportunities by Location in Uganda"
-        blurb={`${facets.length} locations across Uganda currently have open roles, training or funding — pick one to see every live opportunity there. We update listings daily.`}
+        blurb={`${facets.length} locations across Uganda currently have open roles, training or funding. Pick one to see every live opportunity there. We update listings daily.`}
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </>

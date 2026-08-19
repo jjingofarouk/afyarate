@@ -44,7 +44,7 @@ export default function PostCard({ post }: { post: Post }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={post.imageUrl || `/opportunities/${post.type}.svg`}
-          alt={`${post.title} — ${post.organization}`}
+          alt={`${post.title} at ${post.organization}`}
           width={1200}
           height={750}
           loading="lazy"

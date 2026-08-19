@@ -32,7 +32,7 @@ export default function AdminNav() {
     try {
       await fetch("/api/admin/logout", { method: "POST", credentials: "same-origin" });
     } catch {
-      // ignore — still redirect
+      // ignore, still redirect
     }
     router.push("/admin/login");
     router.refresh();

@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 const POST_SORTS = new Set<PostSort>(["featured", "newest", "closingSoon"]);
 
 // Search + "Load more" pagination for the boards on /posts, /[type],
-// /professions/[slug], /locations/[slug] and /organizations/[slug] — reuses
+// /professions/[slug], /locations/[slug] and /organizations/[slug], reuses
 // getPosts' in-memory cache under the hood, so this doesn't add new Supabase
 // load per keystroke or click.
 export async function GET(req: NextRequest) {

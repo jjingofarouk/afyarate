@@ -9,12 +9,12 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: `Medical & Health Jobs in Uganda by Profession (${new Date().getFullYear()})`,
   description:
-    `Browse current medical and health job vacancies in Uganda by profession — doctors, nurses, clinical officers, midwives, lab technicians and more. Updated daily on ${SITE_NAME}.`,
+    `Browse current medical and health job vacancies in Uganda by profession: doctors, nurses, clinical officers, midwives, lab technicians and more. Updated daily on ${SITE_NAME}.`,
   alternates: { canonical: "/jobs" },
   openGraph: {
     title: `Health Jobs in Uganda by Profession · ${SITE_NAME}`,
     description:
-      "Find health sector job openings in Uganda filtered by your profession — doctors, nurses, lab techs, midwives and more.",
+      "Find health sector job openings in Uganda filtered by your profession: doctors, nurses, lab techs, midwives and more.",
     type: "website",
   },
 };
@@ -75,7 +75,7 @@ export default async function JobsPage() {
         crumb="Jobs by Profession"
         listLabel="profession"
         title="Browse Medical &amp; Health Jobs by Profession in Uganda"
-        blurb={`${facets.length} profession${facets.length === 1 ? "" : "s"} currently have open job vacancies in Uganda — pick yours to see every live job listing for that role, updated daily.`}
+        blurb={`${facets.length} profession${facets.length === 1 ? "" : "s"} currently have open job vacancies in Uganda. Pick yours to see every live job listing for that role, updated daily.`}
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </>

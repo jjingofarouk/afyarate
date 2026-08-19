@@ -133,13 +133,13 @@ export default function NewPostPage() {
       </p>
 
       <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-relaxed text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
-        <p className="font-semibold">Before you post — please check:</p>
+        <p className="font-semibold">Before you post, please check:</p>
         <ul className="mt-2 list-disc space-y-1.5 pl-5">
           <li>The listing is a genuine job, internship, scholarship, grant, fellowship, conference or opportunity in healthcare (Uganda or remote).</li>
           <li>You have a real contact email so we can reach you if your listing needs changes.</li>
-          <li>The title and organisation are specific and correct — no vague or duplicate posts.</li>
+          <li>The title and organisation are specific and correct. No vague or duplicate posts.</li>
           <li>Include the essentials: role, requirements, deadline and how to apply.</li>
-          <li>Never ask applicants to pay money or registration fees — posts like that will be rejected.</li>
+          <li>Never ask applicants to pay money or registration fees. Posts like that will be rejected.</li>
           <li>Photos must be relevant and one you have the right to use (max 4 MB).</li>
         </ul>
         <p className="mt-3 border-t border-amber-200 pt-3 text-xs dark:border-amber-900/40">
@@ -161,7 +161,7 @@ export default function NewPostPage() {
               required
               value={form.title ?? ""}
               onChange={set("title")}
-              placeholder="e.g. Registered Nurse — Mulago Hospital"
+              placeholder="e.g. Registered Nurse at Mulago Hospital"
               className={`mt-1.5 ${inputClass}`}
             />
           </div>
@@ -207,7 +207,7 @@ export default function NewPostPage() {
               className={`mt-1.5 ${inputClass}`}
             />
             <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
-              Only used to contact you about this submission — never shown publicly.
+              Only used to contact you about this submission, never shown publicly.
             </p>
           </div>
 
@@ -219,7 +219,7 @@ export default function NewPostPage() {
               id="submitter_name"
               value={form.submitter_name ?? ""}
               onChange={set("submitter_name")}
-              placeholder="Optional — so we know who to talk to"
+              placeholder="Optional, so we know who to talk to"
               className={`mt-1.5 ${inputClass}`}
             />
           </div>

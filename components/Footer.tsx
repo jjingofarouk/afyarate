@@ -196,7 +196,7 @@ export default async function Footer() {
         <div className="mb-10 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-6 sm:p-8 dark:border-emerald-900/40 dark:bg-emerald-950/30">
           <Newsletter
             title="New jobs & opportunities, straight to your inbox"
-            description="Fresh nursing, midwifery, clinical and allied-health openings across Uganda — plus scholarships, grants and conferences. No spam, unsubscribe anytime."
+            description="Fresh nursing, midwifery, clinical and allied-health openings across Uganda, plus scholarships, grants and conferences. No spam, unsubscribe anytime."
             roleOptions={roleOptions}
             locationOptions={locationOptions}
           />

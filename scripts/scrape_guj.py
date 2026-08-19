@@ -74,7 +74,7 @@ MONTHS = {
 # ---------------------------------------------------------------------------
 def fetch(url, data=None):
     """GET (or POST when data given) and return the decoded body."""
-    # Some job URLs contain literal non-ASCII chars (e.g. an en dash) — encode them.
+    # Some job URLs contain literal non-ASCII chars (e.g. an en dash), encode them.
     url = urllib.parse.quote(url, safe="/:?=&%-._~#+")
     req = urllib.request.Request(
         url,
@@ -200,7 +200,7 @@ def clean_description(desc):
     """Strip the leading metadata blob and the trailing application section."""
     if not desc:
         return ""
-    # Metadata prefix always ends at "<deadline ISO> <positions> " — cut there.
+    # Metadata prefix always ends at "<deadline ISO> <positions> ", cut there.
     m = re.search(r"\d{4}-\d{2}-\d{2}T[^ ]+\s+\d+\s", desc)
     if m:
         desc = desc[m.end():]

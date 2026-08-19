@@ -9,7 +9,7 @@ const base =
 export default function ShareButtons({ title, url }: { title: string; url?: string }) {
   const [copied, setCopied] = useState(false);
 
-  const text = `${title} — ${SITE_NAME}`;
+  const text = `${title} | ${SITE_NAME}`;
   const q = (s: string) => encodeURIComponent(s);
 
   async function copyLink() {

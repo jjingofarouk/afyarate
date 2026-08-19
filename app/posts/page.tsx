@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Jobs & Opportunities for Health Workers in Uganda",
-  description: `${SITE_NAME} job board — jobs, internships, scholarships, grants, fellowships and opportunities for doctors, nurses, midwives, clinical officers and allied health professionals in Uganda. Updated daily.`,
+  description: `${SITE_NAME} job board: jobs, internships, scholarships, grants, fellowships and opportunities for doctors, nurses, midwives, clinical officers and allied health professionals in Uganda. Updated daily.`,
   alternates: {
     canonical: "/posts",
     types: { "application/rss+xml": "/posts/feed.xml" },
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Jobs & Opportunities for Health Workers in Uganda · Rate Musawo",
     description:
-      "Jobs, internships, scholarships, grants and fellowships for healthcare professionals in Uganda — updated daily.",
+      "Jobs, internships, scholarships, grants and fellowships for healthcare professionals in Uganda. Updated daily.",
     type: "website",
   },
 };

@@ -2,7 +2,7 @@
 /**
  * Replace the generic gradient-placeholder SVG (from the old
  * add_post_images.mjs fallback) with a real, curated Unsplash photo on every
- * published post that still has one — spans all listing types, not just
+ * published post that still has one, spans all listing types, not just
  * jobs (fellowships, grants, scholarships, "other" training programs, etc).
  *
  * Classification is type-aware:
@@ -16,10 +16,10 @@
  *                             admin/program/data/epidemiology keywords
  *
  * Most buckets reuse photos already uploaded (and content-verified) by
- * add_unsplash_listing_images.mjs — passed in as REUSED_URLS below, so this
+ * add_unsplash_listing_images.mjs, passed in as REUSED_URLS below, so this
  * script only downloads+uploads the handful of genuinely new photos. Every
  * new photo id was fetched at full resolution and visually inspected before
- * being added here (see conversation history — a prior mislabeling mistake
+ * being added here (see conversation history, a prior mislabeling mistake
  * during batch verification is why this one re-checks each id individually
  * instead of trusting a remembered label).
  *
@@ -64,7 +64,7 @@ const REUSED = {
   office: [`${BASE}/unsplash-office-generic-msygkqsq.jpg`],
 };
 
-// New photos this batch needs — downloaded once, re-hosted, then reused.
+// New photos this batch needs, downloaded once, re-hosted, then reused.
 const NEW_PHOTOS = {
   education: { id: "1523240795612-9a054b0db644", name: "education-library" },
   training: { id: "1531482615713-2afd69097998", name: "training-workshop" },
@@ -84,8 +84,7 @@ const CLASSIFIERS = [
     /medical officer|clinical officer|physician|gynaecolog|gynecolog|p[ae]diatrician|clinic manager|clinic coordinator|team lead|ipc coordinator/i,
     "doctor",
   ],
-  // Admin/program-type roles common among fellowship-adjacent job posts —
-  // no dedicated photo category, generic office/collaboration reads fine.
+  // Admin/program-type roles common among fellowship-adjacent job posts, // no dedicated photo category, generic office/collaboration reads fine.
   [
     /dean\b|program (manager|officer)|administrat|data (officer|manager)|community mobili[sz]|education and registration|nutrition|food safety/i,
     "office",

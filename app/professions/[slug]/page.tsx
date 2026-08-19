@@ -19,7 +19,7 @@ export async function generateMetadata({
   if (!facet) return {};
   return {
     title: `${facet.label} Jobs in Uganda (${new Date().getFullYear()})`,
-    description: `Find ${facet.label} jobs, fellowships, scholarships and grants in Uganda — ${facet.count} current ${facet.label} opportunity${facet.count === 1 ? "" : "s"} on ${SITE_NAME}.`,
+    description: `Find ${facet.label} jobs, fellowships, scholarships and grants in Uganda. ${facet.count} current ${facet.label} opportunity${facet.count === 1 ? "" : "s"} on ${SITE_NAME}.`,
     alternates: { canonical: `/professions/${facet.slug}` },
     openGraph: {
       title: `${facet.label} Jobs in Uganda · ${SITE_NAME}`,
@@ -89,7 +89,7 @@ export default async function ProfessionPage({
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           {facet.count} {facet.count === 1 ? "listing is" : "listings are"} currently open
-          for {facet.label} roles and training in Uganda — from hospitals, universities,
+          for {facet.label} roles and training in Uganda, from hospitals, universities,
           NGOs and government. Check back often as we add new opportunities every week.
         </p>
       </header>

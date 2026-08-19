@@ -23,7 +23,7 @@ unauthenticated search endpoint.
 Memory is bounded: only a handful of pages are in flight at a time and each
 completed future is dropped as soon as it is written, so RSS stays flat at a
 few MB regardless of how many pages have been scraped (it never accumulates
-all 121k records in RAM — they stream to disk).
+all 121k records in RAM, they stream to disk).
 
 Usage:
     python3 scripts/scrape.py                     # full run (resumes)
@@ -90,7 +90,7 @@ def fetch_page(page):
         except Exception as err:  # noqa: BLE001 - retry any network error
             last_err = err
             wait = min(2 ** attempt, 60)
-            print(f"    page {page}: {err} — retry in {wait}s", file=sys.stderr)
+            print(f"    page {page}: {err}, retry in {wait}s", file=sys.stderr)
             time.sleep(wait)
     raise RuntimeError(f"page {page} failed after retries: {last_err}")
 

@@ -19,7 +19,7 @@ function deadlineIso(deadline: string | null): string | undefined {
   return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
 }
 
-/** Schema.org entity for a listing — different types get the most relevant schema. */
+/** Schema.org entity for a listing, different types get the most relevant schema. */
 function postSchema(post: Post): Record<string, unknown> {
   const location = post.location ?? "Uganda";
   const base: Record<string, unknown> = {
@@ -83,7 +83,7 @@ export async function generateMetadata({
       post.profession ?? "healthcare professionals"
     }.${post.deadline ? ` Deadline: ${post.deadline}.` : " Rolling deadline."}`;
   return {
-    title: `${post.title} — ${typeLabel} at ${post.organization}`,
+    title: `${post.title}: ${typeLabel} at ${post.organization}`,
     description: desc.slice(0, 160),
     alternates: { canonical: `/posts/${post.slug}` },
     openGraph: {
@@ -94,7 +94,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${post.title} — ${typeLabel} at ${post.organization}`,
+      title: `${post.title}: ${typeLabel} at ${post.organization}`,
       description: desc.slice(0, 200),
       images: post.imageUrl ? [post.imageUrl] : undefined,
     },

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Sets image_url on every post to a category illustration based on its
- * `type` (public/opportunities/{type}.svg — generated, on-brand, no
+ * `type` (public/opportunities/{type}.svg, generated, on-brand, no
  * fabricated/scraped photos of specific organizations).
  *
  * Requires SUPABASE_DB_URL in .env.local.

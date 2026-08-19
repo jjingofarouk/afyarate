@@ -44,7 +44,7 @@ export async function cachePut(url: string, response: Response): Promise<void> {
   try {
     await cache.put(url, response.clone());
   } catch {
-    // Non-fatal — worst case the next request re-fetches from Supabase.
+    // Non-fatal, worst case the next request re-fetches from Supabase.
   }
 }
 
@@ -55,7 +55,7 @@ export async function cachePurge(url: string): Promise<void> {
   try {
     await cache.delete(url);
   } catch {
-    // Ignore — stale content will expire via max-age.
+    // Ignore, stale content will expire via max-age.
   }
 }
 

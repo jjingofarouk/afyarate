@@ -288,6 +288,6 @@ export async function deleteStorageImage(image: string | null | undefined): Prom
     const { error } = await supabase.storage.from("post-images").remove([path]);
     if (error) throw error;
   } catch {
-    // Non-fatal — an orphaned object is harmless; the row is still updated.
+    // Non-fatal, an orphaned object is harmless; the row is still updated.
   }
 }

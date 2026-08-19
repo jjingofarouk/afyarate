@@ -205,7 +205,7 @@ export default function PostForm({ post }: { post?: Post }) {
           <label className={labelClass} htmlFor="title">
             Title *
           </label>
-          <input id="title" required value={form.title ?? ""} onChange={set("title")} placeholder="e.g. Registered Nurse — Mulago Hospital" className={`mt-1.5 ${inputClass}`} />
+          <input id="title" required value={form.title ?? ""} onChange={set("title")} placeholder="e.g. Registered Nurse at Mulago Hospital" className={`mt-1.5 ${inputClass}`} />
         </div>
 
         <div>
@@ -387,7 +387,7 @@ export default function PostForm({ post }: { post?: Post }) {
             rows={3}
             value={form.required_documents ?? ""}
             onChange={set("required_documents")}
-            placeholder="What applicants must submit (CV, cover letter, certificates…) — one per line"
+            placeholder="What applicants must submit (CV, cover letter, certificates…), one per line"
             className={`mt-1.5 ${inputClass} resize-y`}
           />
         </div>
@@ -429,7 +429,7 @@ export default function PostForm({ post }: { post?: Post }) {
             </div>
           ) : (
             <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
-              {removeImage ? "Photo removed — save to confirm." : "JPG, PNG or WebP up to 4 MB."}
+              {removeImage ? "Photo removed, save to confirm." : "JPG, PNG or WebP up to 4 MB."}
             </p>
           )}
           {imageError && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{imageError}</p>}

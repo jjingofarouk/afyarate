@@ -9,7 +9,7 @@
 create extension if not exists pg_trgm;
 
 -- ----------------------------------------------------------------------------
--- 1. Practitioners — one row per person (collapsed from licence records)
+-- 1. Practitioners, one row per person (collapsed from licence records)
 -- ----------------------------------------------------------------------------
 create table if not exists public.practitioners (
   id bigint primary key,               -- source record id (data-key), stable
@@ -33,7 +33,7 @@ create table if not exists public.practitioners (
 alter table public.practitioners add column if not exists profession text;
 
 -- ----------------------------------------------------------------------------
--- 2. Licenses — full licence history per practitioner (portal stores one row
+-- 2. Licenses, full licence history per practitioner (portal stores one row
 --    per annual licence, so a person usually has several)
 -- ----------------------------------------------------------------------------
 create table if not exists public.licenses (
@@ -51,7 +51,7 @@ create table if not exists public.licenses (
 );
 
 -- ----------------------------------------------------------------------------
--- 3. Ratings — community ratings, one per submission
+-- 3. Ratings, community ratings, one per submission
 -- ----------------------------------------------------------------------------
 create table if not exists public.ratings (
   id bigint generated always as identity primary key,
@@ -64,7 +64,7 @@ create table if not exists public.ratings (
 );
 
 -- ----------------------------------------------------------------------------
--- 3b. Posts — curated listings board (jobs, opportunities, grants,
+-- 3b. Posts, curated listings board (jobs, opportunities, grants,
 --     scholarships, fellowships…). One table for all listing kinds; a new
 --     listing kind is just a new `type` value, no schema change.
 -- ----------------------------------------------------------------------------
@@ -125,7 +125,7 @@ alter table public.posts add constraint posts_status_check
   check (status in ('draft','published','expired','archived','rejected'));
 
 -- ----------------------------------------------------------------------------
--- 3c. Facilities — hospitals & pharmacies across Uganda (source: Uganda
+-- 3c. Facilities, hospitals & pharmacies across Uganda (source: Uganda
 --     Healthcare Directory). Ratable like practitioners; a new facility kind
 --     is just a new `kind` value, no schema change.
 -- ----------------------------------------------------------------------------
@@ -309,7 +309,7 @@ create policy "published posts are publicly readable"
   using (status = 'published');
 
 -- Anyone may submit a listing, but only as a draft (featured/views locked at
--- defaults) — nothing goes live until an admin reviews and publishes it.
+-- defaults), nothing goes live until an admin reviews and publishes it.
 drop policy if exists "anyone can submit a listing as draft" on public.posts;
 create policy "anyone can submit a listing as draft"
   on public.posts for insert
@@ -330,7 +330,7 @@ create policy "anyone can add a facility rating"
   on public.facility_ratings for insert with check (true);
 
 -- ----------------------------------------------------------------------------
--- 5b. Storage — public bucket for listing photos. Public read (photos render
+-- 5b. Storage, public bucket for listing photos. Public read (photos render
 --     once a listing is published); anyone may upload (the moderation queue
 --     keeps unmoderated images off the live board).
 -- ----------------------------------------------------------------------------
@@ -349,7 +349,7 @@ create policy "anyone can upload post images"
   with check (bucket_id = 'post-images');
 
 -- ----------------------------------------------------------------------------
--- 6. Newsletter subscribers — emails + preferences for job alerts
+-- 6. Newsletter subscribers, emails + preferences for job alerts
 -- ----------------------------------------------------------------------------
 create table if not exists public.newsletter_subscribers (
   id bigint generated always as identity primary key,

@@ -1,5 +1,5 @@
 /**
- * Rate Musawo — local newsletter sender.
+ * Rate Musawo, local newsletter sender.
  * Usage:  node scripts/send_newsletter.mjs [--dry] [--to email] [--reset]
  *
  * Sends ONE featured opportunity per subscriber based on their preferences.
@@ -186,7 +186,7 @@ function timePeriodLabel() {
   return "Latest match";
 }
 
-// Computus — Western Easter Sunday
+// Computus, Western Easter Sunday
 function easterSunday(year) {
   const a = year % 19, b = Math.floor(year / 100), c = year % 100;
   const d = Math.floor(b / 4), e = b % 4, g = Math.floor((b + 8) / 25);
@@ -593,7 +593,7 @@ function isExpired(post) {
 
 // ── Main ───────────────────────────────────────────────────────────────────
 async function main() {
-  console.log(`\nRate Musawo Newsletter — ${DRY_RUN ? "DRY RUN" : "LIVE SEND"}`);
+  console.log(`\nRate Musawo Newsletter, ${DRY_RUN ? "DRY RUN" : "LIVE SEND"}`);
 
   if (RESET) {
     if (!TO_ONLY) {
@@ -624,7 +624,7 @@ async function main() {
 
   const posts = allPosts.filter((p) => !isExpired(p));
   const expiredCount = allPosts.length - posts.length;
-  console.log(`Found ${posts.length} active post(s) (${expiredCount} skipped — deadline passed).`);
+  console.log(`Found ${posts.length} active post(s) (${expiredCount} skipped, deadline passed).`);
   if (!posts.length) { console.log("Nothing to send."); return; }
 
   const [{ data: subscribers, error: subErr }, sentMap] = await Promise.all([
@@ -650,7 +650,7 @@ async function main() {
     const post = pickBestPost(posts, sub, alreadySent);
 
     if (!post) {
-      console.log(`  SKIP   ${sub.email} — no matching post (or all already sent)`);
+      console.log(`  SKIP   ${sub.email}, no matching post (or all already sent)`);
       skipped++;
       continue;
     }
@@ -658,7 +658,7 @@ async function main() {
     const { subject, html } = buildEmail(sub, post);
 
     if (DRY_RUN) {
-      console.log(`  [DRY]  ${sub.email} — "${post.title}" (${post.type})`);
+      console.log(`  [DRY]  ${sub.email}, "${post.title}" (${post.type})`);
       sent++;
       continue;
     }
@@ -678,7 +678,7 @@ async function main() {
       console.error(`  ERROR  ${sub.email}: ${err.message}`);
       continue;
     }
-    // Record outside the send try/catch — a DB glitch here never marks the send as failed
+    // Record outside the send try/catch, a DB glitch here never marks the send as failed
     await recordSend(sub.email, post.slug);
 
     await new Promise((r) => setTimeout(r, 300));

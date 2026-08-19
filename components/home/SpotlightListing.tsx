@@ -12,7 +12,7 @@ function daysUntil(date: string): number {
  * A tall, full-width "spotlight" banner for a single standout listing: the
  * photo fills the whole band (top-anchored so heads are never cropped out)
  * with copy overlaid at the bottom. Gives the listings section a non-card
- * rhythm by featuring the newest/featured post prominently — with a lot of
+ * rhythm by featuring the newest/featured post prominently, with a lot of
  * vertical presence on desktop.
  */
 export default function SpotlightListing({ post }: { post: Post }) {
@@ -27,7 +27,7 @@ export default function SpotlightListing({ post }: { post: Post }) {
     >
       <img
         src={post.imageUrl || `/opportunities/${post.type}.svg`}
-        alt={`${post.title} — ${post.organization}`}
+        alt={`${post.title} at ${post.organization}`}
         width={1200}
         height={750}
         loading="lazy"

@@ -193,9 +193,9 @@ function Manager() {
                       </p>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{post.deadline ?? "—"}</td>
+                  <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{post.deadline ?? "-"}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
-                    {post.featured ? "⭐" : "—"}
+                    {post.featured ? "⭐" : "-"}
                   </td>
                   <td className="px-4 py-3">
                     {post.submitterEmail ? (

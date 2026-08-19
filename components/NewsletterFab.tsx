@@ -121,7 +121,7 @@ export default function NewsletterFab() {
             wiggle ? "fab-wiggle" : "",
           ].join(" ")}
         >
-          {/* Icon slot — emoji or bell */}
+          {/* Icon slot, emoji or bell */}
           <span className="flex size-4 shrink-0 items-center justify-center leading-none">
             {current.emoji ? (
               <span className="text-[15px] leading-none select-none" aria-hidden>
@@ -153,7 +153,7 @@ export default function NewsletterFab() {
             onClick={() => setOpen(false)}
             className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
           />
-          {/* Sheet — fixed height, header sticky, body scrolls */}
+          {/* Sheet, fixed height, header sticky, body scrolls */}
           <div
             role="dialog"
             aria-modal="true"
@@ -179,7 +179,7 @@ export default function NewsletterFab() {
             <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
               <Newsletter
                 title=""
-                description="Fresh jobs, scholarships, grants and conferences across Uganda — tailored to your preferences."
+                description="Fresh jobs, scholarships, grants, and conferences across Uganda tailored to your preferences."
                 onSuccess={() => setOpen(false)}
               />
             </div>

@@ -47,7 +47,7 @@ export default function RatingForm({ practitionerId }: { practitionerId: number 
       setReviewerName("");
       router.refresh();
     } catch {
-      setMessage({ kind: "err", text: "Network error — please try again." });
+      setMessage({ kind: "err", text: "Network error, please try again." });
     } finally {
       setSubmitting(false);
     }
@@ -91,7 +91,7 @@ export default function RatingForm({ practitionerId }: { practitionerId: number 
           onChange={(e) => setComment(e.target.value)}
           maxLength={1000}
           rows={3}
-          placeholder="Share your experience — professionalism, communication, wait times…"
+          placeholder="Share your experience, professionalism, communication, wait times…"
           className="w-full resize-y rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-emerald-900/40"
         />
       </div>

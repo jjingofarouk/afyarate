@@ -102,7 +102,7 @@ export async function searchPractitioners(
 
   if (sort === "random") {
     // Randomised slice so browsing shows a mix of councils/specialties.
-    // The row RPC and the count query are independent — run together.
+    // The row RPC and the count query are independent, run together.
     const [{ data, error }, { count: c, error: cErr }] = await Promise.all([
       supabase.rpc("search_random", {
         p_limit: pageSize,
@@ -177,7 +177,7 @@ export async function getTopRatedPractitioners(limit = 8): Promise<Practitioner[
   return ((data ?? []) as Row[]).map(mapPractitioner);
 }
 
-// cache(): dedupes within a single request — generateMetadata() and the page
+// cache(): dedupes within a single request, generateMetadata() and the page
 // body both look up the same practitioner, and this collapses that back to
 // one Supabase call. Scoped per-request only, so a rating submitted via
 // router.refresh() still shows up immediately (unlike a cross-request cache).
@@ -255,8 +255,7 @@ export async function getPractitionerIdsPage(
 }
 
 // Module-scoped: survives for the lifetime of a warm Worker isolate, so
-// repeat requests it handles skip Supabase entirely. Resets on cold start —
-// that's fine, this is a best-effort cut in query volume, not a guarantee.
+// repeat requests it handles skip Supabase entirely. Resets on cold start, // that's fine, this is a best-effort cut in query volume, not a guarantee.
 const COUNCILS_TTL_MS = 15 * 60 * 1000; // council list changes essentially never
 let councilsCache: { data: string[]; expires: number } | null = null;
 
@@ -272,7 +271,7 @@ export async function getCouncils(): Promise<string[]> {
   return councils;
 }
 
-// Profession list changes even less often than councils — same cache approach.
+// Profession list changes even less often than councils, same cache approach.
 let professionsCache: { data: string[]; expires: number } | null = null;
 
 export async function getProfessions(): Promise<string[]> {

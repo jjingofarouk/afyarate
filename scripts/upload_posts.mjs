@@ -2,7 +2,7 @@
 /**
  * Upsert curated listings (jobs, opportunities, grants, scholarships…) into
  * Supabase's `posts` table. Reads newline-delimited JSON (JSONL), one record
- * per line — same shape as the app's Post type (snake_case or camelCase keys).
+ * per line, same shape as the app's Post type (snake_case or camelCase keys).
  *
  * Idempotent: upserts on `slug`, so re-running the same file updates rather
  * than duplicates. Auto-computes `slug` and `search_text` when missing.
@@ -115,7 +115,7 @@ const rows = records.map((r) => {
   };
 });
 
-// Sanity: duplicate slugs would blow up the upsert — fail loudly instead.
+// Sanity: duplicate slugs would blow up the upsert, fail loudly instead.
 const seen = new Set();
 for (const row of rows) {
   if (seen.has(row.slug)) throw new Error(`Duplicate slug: ${row.slug}`);

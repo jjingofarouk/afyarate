@@ -5,7 +5,7 @@
  * Reads data/facilities/hospitals.json + data/facilities/pharmacies.json
  * (originally exported from the Uganda Healthcare Directory). Normalises each
  * entry (name, slug, city/region from the address, phone, image), dedupes by
- * slug, and upserts. Idempotent — safe to re-run after a fresh export; never
+ * slug, and upserts. Idempotent, safe to re-run after a fresh export; never
  * touches `facility_ratings`, so community ratings survive refreshes.
  *
  * Requires SUPABASE_DB_URL in .env.local (Direct or Session-pooler connection).
@@ -87,7 +87,7 @@ function loadFile(file) {
   try {
     return JSON.parse(raw);
   } catch {
-    console.error(`Failed to parse ${file} — expected a JSON array.`);
+    console.error(`Failed to parse ${file}, expected a JSON array.`);
     process.exit(1);
   }
 }

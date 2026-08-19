@@ -40,7 +40,7 @@ export async function GET(req: NextRequest, { params }: { params: Params }) {
 }
 
 /**
- * PATCH — update content and/or apply a moderation action:
+ * PATCH, update content and/or apply a moderation action:
  *   action: "publish" | "reject" | "unpublish" | "archive" | "expire"
  *   + optional content fields (partial), rejection_reason (for reject),
  *     featured (bool), delete_image_path (remove an uploaded photo).
@@ -66,8 +66,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Params }) {
       changes.image_url = null;
     }
 
-    // Sanitize + merge any content fields present in the body (partial mode —
-    // moderation actions don't have to resend the full listing).
+    // Sanitize + merge any content fields present in the body (partial mode, // moderation actions don't have to resend the full listing).
     const { delete_image_path: _ignored, action: _action, rejection_reason: _rr, ...content } = b;
     Object.assign(changes, sanitizePostInput(content, { partial: true }));
 

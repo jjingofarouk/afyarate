@@ -90,7 +90,7 @@ export default function PractitionerSearch({
     }
   }, []);
 
-  // Initial load — skipped when the server already sent first-page results,
+  // Initial load, skipped when the server already sent first-page results,
   // so there's no client round-trip before anything appears.
   useEffect(() => {
     if (initialData) return;
@@ -100,7 +100,7 @@ export default function PractitionerSearch({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runSearch]);
 
-  // Debounced search on filter change — skipped on mount itself, since either
+  // Debounced search on filter change, skipped on mount itself, since either
   // the "initial load" effect above or the server-provided initialData
   // already covers the first render.
   useEffect(() => {
@@ -232,7 +232,7 @@ export default function PractitionerSearch({
         </div>
       )}
 
-      {/* Grid — one card per row on mobile for spaciousness, scaling up from there */}
+      {/* Grid, one card per row on mobile for spaciousness, scaling up from there */}
       {loading ? (
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: PAGE_SIZE }).map((_, i) => (

@@ -11,7 +11,7 @@ const SESSION_SECONDS = Math.floor(SESSION_MS / 1000);
 
 /**
  * Admin sessions are stateless, signed tokens: `admin.<expiry>.<hmac>`.
- * The HMAC secret is the ADMIN_PASSCODE itself — possession of the passcode is
+ * The HMAC secret is the ADMIN_PASSCODE itself, possession of the passcode is
  * the definition of "is admin", so a signed cookie is as strong as the
  * passcode. No database or external session store needed.
  */
@@ -53,7 +53,7 @@ export function isAdminRequest(req: NextRequest): boolean {
   return verifyAdminSession(req.cookies.get(ADMIN_COOKIE)?.value);
 }
 
-/** Guard for server components/layouts — redirects to the login page. */
+/** Guard for server components/layouts, redirects to the login page. */
 export async function requireAdmin(): Promise<void> {
   if (!(await isAdminAuthed())) redirect("/admin/login");
 }

@@ -120,7 +120,7 @@ function ChipGroup({
 
 export default function Newsletter({
   title = "Get new jobs in your inbox",
-  description = "New nursing, midwifery, clinical and allied-health openings across Uganda, delivered to your inbox. Tell us what you want to hear about — no spam, unsubscribe anytime.",
+  description = "New nursing, midwifery, clinical and allied-health openings across Uganda, delivered to your inbox. Tell us what you want to hear about. No spam, unsubscribe anytime.",
   className = "",
   defaultTypes = [],
   defaultRoles = [],
@@ -318,7 +318,7 @@ export default function Newsletter({
             )}
           </div>
 
-          {/* Sticky submit bar — always visible as user scrolls through chips */}
+          {/* Sticky submit bar, always visible as user scrolls through chips */}
           <div className="sticky top-0 z-10 -mx-1 flex items-center gap-3 bg-white py-3 dark:bg-slate-900">
             <button
               type="submit"

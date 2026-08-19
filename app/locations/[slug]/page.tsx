@@ -22,7 +22,7 @@ export async function generateMetadata({
   if (!facet) return {};
   return {
     title: `Healthcare Jobs in ${facet.label} (${new Date().getFullYear()})`,
-    description: `Find jobs, internships, scholarships and grants for health workers in ${facet.label}, Uganda — ${facet.count} current listings on ${SITE_NAME}.`,
+    description: `Find jobs, internships, scholarships and grants for health workers in ${facet.label}, Uganda. ${facet.count} current listings on ${SITE_NAME}.`,
     alternates: { canonical: `/locations/${facet.slug}` },
     openGraph: {
       title: `Healthcare Jobs in ${facet.label} · ${SITE_NAME}`,

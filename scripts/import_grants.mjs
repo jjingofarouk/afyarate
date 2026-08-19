@@ -83,7 +83,7 @@ const raw = [
     profession: null,
     deadline: "2026-09-30",
     url: "https://www.frontiersin.org/research-topics/78943/a-lifecycle-perspective-on-the-health-and-care-workforce-and-labour-market-dynamics",
-    summary: "Open call for research contributions on health and care workforce dynamics; relevant to Uganda-based health workforce researchers. Not a cash grant — a peer-reviewed publication opportunity, listed here as it's frequently paired with small research/travel grants.",
+    summary: "Open call for research contributions on health and care workforce dynamics; relevant to Uganda-based health workforce researchers. Not a cash grant, a peer-reviewed publication opportunity, listed here as it's frequently paired with small research/travel grants.",
     src: "CARTA / Frontiers",
   },
 ];

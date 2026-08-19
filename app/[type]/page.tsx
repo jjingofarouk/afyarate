@@ -19,7 +19,7 @@ const META: Record<PostType, { short: string; blurb: string }> = {
   job: {
     short: "Jobs",
     blurb:
-      "Jobs in hospitals, clinics, universities, NGOs and government in Uganda — for doctors, nurses, clinical officers, midwives, lab technicians and allied health professionals.",
+      "Jobs in hospitals, clinics, universities, NGOs and government in Uganda: for doctors, nurses, clinical officers, midwives, lab technicians and allied health professionals.",
   },
   internship: {
     short: "Internships",
@@ -29,17 +29,17 @@ const META: Record<PostType, { short: string; blurb: string }> = {
   scholarship: {
     short: "Scholarships",
     blurb:
-      "Undergraduate, master's and PhD scholarships open to Ugandans — local and abroad, including Commonwealth, Chevening, Fulbright and Makerere-based schemes.",
+      "Undergraduate, master's and PhD scholarships open to Ugandans, local and abroad, including Commonwealth, Chevening, Fulbright and Makerere-based schemes.",
   },
   grant: {
     short: "Grants",
     blurb:
-      "Research and implementation grants for Ugandan health scientists, institutions and innovators — from global health security to AI and family planning.",
+      "Research and implementation grants for Ugandan health scientists, institutions and innovators, including health security to AI and family planning.",
   },
   fellowship: {
     short: "Fellowships",
     blurb:
-      "Master's, PhD and post-doctoral fellowships for Ugandan and African health researchers — including CARTA, SANTHE, Fogarty and Makerere programmes.",
+      "Master's, PhD and post-doctoral fellowships for Ugandan and African health researchers, including CARTA, SANTHE, Fogarty and Makerere programmes.",
   },
   conference: {
     short: "Conferences",
@@ -54,7 +54,7 @@ const META: Record<PostType, { short: string; blurb: string }> = {
   other: {
     short: "Other",
     blurb:
-      "Additional training, workshops and opportunities for the Ugandan health workforce — including CPD series and manuscript-writing support.",
+      "Additional training, workshops and opportunities for the Ugandan health workforce, including CPD series and manuscript-writing support.",
   },
 };
 
@@ -115,7 +115,7 @@ export default async function TypePage({
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           {meta.blurb} Below {count === 1 ? "is the current listing" : `are the ${count} current ${meta.short.toLowerCase()}`}{" "}
-          we&apos;ve found. Check back soon — we update daily.
+          we&apos;ve found. Check back soon. We update daily.
         </p>
       </header>
 

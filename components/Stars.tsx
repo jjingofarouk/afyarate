@@ -31,7 +31,7 @@ export function Stars({
       </span>
       {count !== undefined && (
         <span className="text-xs text-slate-500 dark:text-slate-400">
-          {value ? value.toFixed(1) : "—"} ({count})
+          {value ? value.toFixed(1) : "-"} ({count})
         </span>
       )}
     </span>

@@ -111,7 +111,7 @@ export interface Post {
 }
 
 // ---------------------------------------------------------------------------
-// Facilities — hospitals & pharmacies, ratable like practitioners.
+// Facilities, hospitals & pharmacies, ratable like practitioners.
 // ---------------------------------------------------------------------------
 
 export const FACILITY_KINDS = ["hospital", "pharmacy"] as const;

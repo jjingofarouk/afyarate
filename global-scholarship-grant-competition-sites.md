@@ -1,4 +1,4 @@
-# Master List — Grants, Fellowships, Jobs, Conferences & Competitions Sites
+# Master List, Grants, Fellowships, Jobs, Conferences & Competitions Sites
 
 A pool of websites that regularly post grants, fellowships, scholarships, jobs, conferences, and competitions. Organized by category, with a dedicated Uganda/East Africa section as requested. This builds on the original list you uploaded (those links are not repeated below unless a category grouping made sense).
 
@@ -23,23 +23,23 @@ A pool of websites that regularly post grants, fellowships, scholarships, jobs, 
 - https://ngojobsuganda.com/
 - https://www.ngojobsuganda.info/
 - https://jobs.reliefweb.int/ (filter by Uganda)
-- https://ureports.ug/ (UNICEF U-Report Uganda — youth opportunities)
+- https://ureports.ug/ (UNICEF U-Report Uganda, youth opportunities)
 - https://www.unjobs.org/duty_stations/uganda
 - https://www.linkedin.com/jobs/uganda-jobs
 - https://www.indeed.com/l-uganda-jobs.html
 - https://uganda.jobsdb.com/ (regional job aggregator if active)
 - https://www.gozup.com/ (Uganda opportunities/culture)
 - https://mubs.ac.ug/careers (Makerere University Business School careers/expo notices)
-- https://www.mak.ac.ug/notices (Makerere University notices — includes scholarships/calls)
-- https://www.ubos.org/ (Uganda Bureau of Statistics — tenders/jobs)
-- https://www.education.go.ug/ (Ministry of Education & Sports — scholarships/circulars)
-- https://www.psc.go.ug/ (Public Service Commission Uganda — govt jobs)
+- https://www.mak.ac.ug/notices (Makerere University notices, includes scholarships/calls)
+- https://www.ubos.org/ (Uganda Bureau of Statistics, tenders/jobs)
+- https://www.education.go.ug/ (Ministry of Education & Sports, scholarships/circulars)
+- https://www.psc.go.ug/ (Public Service Commission Uganda, govt jobs)
 - https://www.parliament.go.ug/ (jobs/tenders)
-- https://www.finance.go.ug/ (Ministry of Finance — scholarship/bursary notices, e.g. bilateral scholarships)
+- https://www.finance.go.ug/ (Ministry of Finance, scholarship/bursary notices, e.g. bilateral scholarships)
 - https://www.mildmay.or.ug/careers
 - https://www.trademarkafrica.com/careers
-- https://ngoforum.or.ug/ (Uganda National NGO Forum — jobs/opportunities)
-- https://www.acode-u.org/ (ACODE — opportunities and calls)
+- https://ngoforum.or.ug/ (Uganda National NGO Forum, jobs/opportunities)
+- https://www.acode-u.org/ (ACODE, opportunities and calls)
 - https://kampalapost.com/ (jobs/tenders section)
 - https://www.softpower.ug/ (jobs and opportunities aggregator)
 - https://www.jobsuganda.net/
@@ -47,8 +47,8 @@ A pool of websites that regularly post grants, fellowships, scholarships, jobs, 
 ## 2. Africa-Wide Opportunity Aggregators
 
 - https://www.opportunitydesk.org/
-- https://opportunitiesforyoungugandans.com/ (if active — check periodically)
-- https://opportunitiesforyouth.com/ (if active — check periodically)
+- https://opportunitiesforyoungugandans.com/ (if active, check periodically)
+- https://opportunitiesforyouth.com/ (if active, check periodically)
 
 - https://opportunitiesforafricans.com/
 - https://www.youthopportunitieshub.com/
@@ -106,7 +106,7 @@ A pool of websites that regularly post grants, fellowships, scholarships, jobs, 
 - https://philanthropy.com/jobs (Chronicle of Philanthropy)
 - https://www.devpolicy.org/jobs/
 - https://www.globalgiving.org/
-- https://www.candid.org/ (formerly Foundation Center — grants database)
+- https://www.candid.org/ (formerly Foundation Center, grants database)
 - https://foundationcenter.org/
 - https://www.grantstation.com/
 - https://grantspace.candid.org/
@@ -127,7 +127,7 @@ A pool of websites that regularly post grants, fellowships, scholarships, jobs, 
 - https://www.echoinggreen.org/
 - https://www.ashoka.org/
 - https://www.draperrichards.org/
-- https://www.miles.education/ (check relevance) — remove if irrelevant
+- https://www.miles.education/ (check relevance), remove if irrelevant
 - https://www.wgapps.org/ (World Bank Group Analyst/Young Professionals Program)
 - https://www.worldbank.org/en/about/careers/programs-and-internships
 - https://www.imf.org/en/About/Careers
@@ -137,8 +137,8 @@ A pool of websites that regularly post grants, fellowships, scholarships, jobs, 
 - https://www.4life.org/ (verify relevance)
 - https://www.wangarimaathaifoundation.org/
 - https://www.queenselizabethscholars.ca/ (Queen Elizabeth Scholars)
-- https://globalaffairs.gc.ca/ (Canada — includes scholarships)
-- https://daad.de/en/ (DAAD — German Academic Exchange Service)
+- https://globalaffairs.gc.ca/ (Canada, includes scholarships)
+- https://daad.de/en/ (DAAD, German Academic Exchange Service)
 - https://www.daad.de/en/study-and-research-in-germany/scholarships/
 - https://www.campusfrance.org/en
 - https://www.chinesescholarshipcouncil.com/
@@ -227,7 +227,7 @@ A pool of websites that regularly post grants, fellowships, scholarships, jobs, 
 - https://www.upwork.com/
 - https://www.freelancer.com/
 - https://wellfound.com/ (formerly AngelList Talent)
-- https://stackoverflow.com/jobs (if still active — verify)
+- https://stackoverflow.com/jobs (if still active, verify)
 - https://himalayas.app/
 - https://justremote.co/
 - https://nodesk.co/
@@ -246,22 +246,22 @@ A pool of websites that regularly post grants, fellowships, scholarships, jobs, 
 - https://www.doctorsofworld.org.uk/get-involved/volunteer/
 - https://www.medicalelective.com/
 - https://healthjobsuk.com/
-- https://uma.co.ug/ (Uganda Medical Association — notices/opportunities)
-- https://www.health.go.ug/ (Ministry of Health Uganda — circulars, scholarships)
+- https://uma.co.ug/ (Uganda Medical Association, notices/opportunities)
+- https://www.health.go.ug/ (Ministry of Health Uganda, circulars, scholarships)
 
 ## 10. Regional (East Africa) Grant/Opportunity Portals
 
-- https://www.eac.int/ (East African Community — tenders/opportunities)
+- https://www.eac.int/ (East African Community, tenders/opportunities)
 - https://www.kenyajobs.com/
 - https://www.brightermonday.co.ke/
 - https://www.myjobmag.co.ke/
 - https://tanzania.jobs/
-- https://www.brightermonday.rw/ (if applicable — verify)
+- https://www.brightermonday.rw/ (if applicable, verify)
 - https://www.rwandajob.com/
 
 ---
 
 ### Notes
 - Some URLs above may need periodic verification, since opportunity-aggregator sites (especially smaller regional ones) change domains or go offline more often than institutional sites.
-- I've grouped by category rather than alphabetically so you can prioritize scraping/monitoring — e.g., for OpiCalc/HospiX you'd likely care most about sections 6, 8, and 9; for ZunoBotics grant hunting, sections 3, 4, 5, and the Uganda/Africa sections; for PLAB, section 9.
+- I've grouped by category rather than alphabetically so you can prioritize scraping/monitoring, e.g., for OpiCalc/HospiX you'd likely care most about sections 6, 8, and 9; for ZunoBotics grant hunting, sections 3, 4, 5, and the Uganda/Africa sections; for PLAB, section 9.
 - Want me to also produce a de-duplicated, single-column CSV/plaintext version (merged with your original uploaded list) for direct import into a scraper or spreadsheet?

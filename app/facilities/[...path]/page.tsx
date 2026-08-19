@@ -402,7 +402,7 @@ export async function generateMetadata({
     const facility = await getFacility(path[0]);
     if (!facility) return { title: "Not found" };
     const kind = FACILITY_KIND_LABELS[facility.kind].label;
-    const title = `${facility.name} — ${kind} in ${facility.city ?? "Uganda"}`;
+    const title = `${facility.name}, ${kind} in ${facility.city ?? "Uganda"}`;
     const description = `${facility.name}, a ${kind.toLowerCase()} ${
       facility.city ? `in ${facility.city}` : "in Uganda"
     }. ${

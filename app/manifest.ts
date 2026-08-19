@@ -3,7 +3,7 @@ import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: `${SITE_NAME} — Rate Uganda's Health Workers`,
+    name: `${SITE_NAME}: Rate Uganda's Health Workers`,
     short_name: SITE_NAME,
     description: SITE_DESCRIPTION,
     start_url: "/",

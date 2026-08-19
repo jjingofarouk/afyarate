@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Browse Health Jobs by Profession in Uganda",
   description:
-    "Browse medical and health jobs, internships, scholarships, grants and fellowships in Uganda by profession — doctors, nurses, clinical officers, midwives, lab technicians and more.",
+    "Browse medical and health jobs, internships, scholarships, grants and fellowships in Uganda by profession: doctors, nurses, clinical officers, midwives, lab technicians and more.",
   alternates: { canonical: "/professions" },
   openGraph: {
     title: "Browse Health Jobs by Profession in Uganda · Rate Musawo",
@@ -55,7 +55,7 @@ export default async function ProfessionsPage() {
         crumb="Professions"
         listLabel="profession"
         title="Browse Jobs &amp; Opportunities by Profession in Uganda"
-        blurb={`${facets.length} professions currently have open roles, training or funding — pick one to see every live opportunity for that role. We update listings daily.`}
+        blurb={`${facets.length} professions currently have open roles, training or funding. Pick one to see every live opportunity for that role. We update listings daily.`}
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
     </>

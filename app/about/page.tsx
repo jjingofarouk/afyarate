@@ -40,7 +40,7 @@ export default function AboutPage() {
         <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Ratings</h2>
         <p>
           Anyone can rate a practitioner from 1 to 5 stars and leave a short comment.
-          Ratings are community opinions and should be read with that in mind — they
+          Ratings are community opinions and should be read with that in mind, and they
           are not medical advice, not a substitute for professional judgement, and
           not an official endorsement. Offensive or clearly false content may be
           removed by moderators.

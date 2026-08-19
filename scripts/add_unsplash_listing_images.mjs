@@ -21,7 +21,7 @@
  * Each distinct Unsplash photo is downloaded once and re-hosted in the
  * `post-images` Supabase bucket (same pattern as add_post_images.mjs /
  * curate_listing.mjs), then its public URL is reused for every post that
- * maps to it — so a 50-post run only uploads a dozen or so unique files.
+ * maps to it, so a 50-post run only uploads a dozen or so unique files.
  *
  * Usage:
  *   node scripts/add_unsplash_listing_images.mjs              # all imageless published posts
@@ -50,7 +50,7 @@ const UA =
 // --- curated, individually content-verified Unsplash photos -----------------
 // Each entry: Unsplash photo id (the hash after "photo-") + a short slug used
 // only for the re-hosted filename. Verified by downloading and visually
-// inspecting a preview crop of every id before adding it here — a couple of
+// inspecting a preview crop of every id before adding it here, a couple of
 // half-remembered ids that looked plausible turned out to be a dog and a
 // hospital-branding photo of a real named Canadian hospital, both discarded.
 const PHOTOS = {

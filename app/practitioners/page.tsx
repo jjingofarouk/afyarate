@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Browse Uganda's Licensed Health Professionals by Profession",
   description:
-    "Search every licensed doctor, nurse, clinical officer, midwife, pharmacist, dentist and allied health professional in Uganda by profession — with patient ratings.",
+    "Search every licensed doctor, nurse, clinical officer, midwife, pharmacist, dentist and allied health professional in Uganda by profession, with patient ratings.",
   alternates: { canonical: "/practitioners" },
   openGraph: {
     title: "Browse Uganda's Licensed Health Professionals · Rate Musawo",
@@ -75,8 +75,7 @@ export default async function PractitionersHubPage({
           Browse Uganda&apos;s Licensed Health Professionals by Profession
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-          {SITE_DESCRIPTION} Pick a profession below to see registered, licensed practitioners —
-          each with patient ratings, council and licence information.
+          {SITE_DESCRIPTION} Pick a profession below to see registered, licensed practitioners, each with patient ratings, council and licence information.
         </p>
       </header>
 
@@ -124,7 +123,7 @@ export default async function PractitionersHubPage({
         </a>
         {jobProfessions.length > 0 && (
           <>
-            {" "}— currently open for{" "}
+            {" "}- currently open for{" "}
             {jobProfessions.slice(0, 5).map((p, i) => (
               <span key={p.slug}>
                 {i > 0 && ", "}

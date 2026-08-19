@@ -25,12 +25,12 @@ export async function generateMetadata({
   const { id } = await params;
   const p = await getPractitioner(Number(id));
   if (!p) return { title: "Not found" };
-  const title = `${p.name} — ${p.council ?? "Health professional"}`;
+  const title = `${p.name}, ${p.council ?? "Health professional"}`;
   const description = `${p.name} (${p.council ?? "registered in Uganda"}). ${
     p.ratingCount > 0
       ? `Rated ${p.avgRating?.toFixed(1)}/5 from ${p.ratingCount} patient rating${p.ratingCount > 1 ? "s" : ""}.`
       : "Patient ratings and licence information."
-  } Licence ${p.licenceStatus ?? "status"} — registration no. ${p.registrationNo ?? "n/a"}.`;
+  } Licence ${p.licenceStatus ?? "status"}, registration no. ${p.registrationNo ?? "n/a"}.`;
   const url = `${SITE_URL}/practitioners/${p.id}`;
   const image = p.imageUrl || `${SITE_URL}/logo.png`;
 
@@ -67,7 +67,7 @@ function Field({ label, value }: { label: string; value: string | null }) {
   );
 }
 
-/** Postgres returns timestamptz with an explicit UTC offset already — parse as-is. */
+/** Postgres returns timestamptz with an explicit UTC offset already, parse as-is. */
 function formatRatingDate(iso: string): string | null {
   if (!iso) return null;
   const d = new Date(iso);
@@ -102,7 +102,7 @@ export default async function PractitionerPage({
   const { id } = await params;
   const numId = Number(id);
   // All three are keyed off the same id (no need to wait for practitioner to
-  // resolve before starting the other two) — fetch in parallel.
+  // resolve before starting the other two), fetch in parallel.
   const [practitioner, licenses, ratings] = await Promise.all([
     getPractitioner(numId),
     getLicenses(numId),
