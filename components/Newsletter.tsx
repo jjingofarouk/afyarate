@@ -1,11 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import {
-  OPPORTUNITY_TYPES,
-  ROLE_OPTIONS,
-  REGION_OPTIONS,
-} from "@/lib/newsletter";
+import { useState, useEffect } from "react";
+import { OPPORTUNITY_TYPES } from "@/lib/newsletter";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -47,12 +43,16 @@ export default function Newsletter({
   className = "",
   defaultTypes = [],
   defaultRoles = [],
+  roleOptions: roleOptionsProp,
+  locationOptions: locationOptionsProp,
 }: {
   title?: string;
   description?: string;
   className?: string;
   defaultTypes?: string[];
   defaultRoles?: string[];
+  roleOptions?: string[];
+  locationOptions?: string[];
 }) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -60,6 +60,20 @@ export default function Newsletter({
   const [types, setTypes] = useState<string[]>(defaultTypes);
   const [roles, setRoles] = useState<string[]>(defaultRoles);
   const [regions, setRegions] = useState<string[]>([]);
+  const [roleOptions, setRoleOptions] = useState<string[]>(roleOptionsProp ?? []);
+  const [locationOptions, setLocationOptions] = useState<string[]>(locationOptionsProp ?? []);
+
+  // If options weren't passed from a server component, fetch them once on mount
+  useEffect(() => {
+    if (roleOptionsProp !== undefined || locationOptionsProp !== undefined) return;
+    fetch("/api/newsletter-options")
+      .then((r) => r.json())
+      .then((d) => {
+        if (Array.isArray(d.professions)) setRoleOptions(d.professions);
+        if (Array.isArray(d.locations)) setLocationOptions(d.locations);
+      })
+      .catch(() => {/* silently degrade — chips just won't appear */});
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
 
@@ -203,37 +217,41 @@ export default function Newsletter({
             </div>
           </div>
 
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Roles you're interested in
-            </p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {ROLE_OPTIONS.map((r) => (
-                <Chip
-                  key={r}
-                  label={r}
-                  selected={roles.includes(r)}
-                  onToggle={() => toggle(roles, setRoles, r)}
-                />
-              ))}
+          {roleOptions.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Roles you're interested in
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {roleOptions.map((r) => (
+                  <Chip
+                    key={r}
+                    label={r}
+                    selected={roles.includes(r)}
+                    onToggle={() => toggle(roles, setRoles, r)}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Where in Uganda?
-            </p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {REGION_OPTIONS.map((r) => (
-                <Chip
-                  key={r}
-                  label={r}
-                  selected={regions.includes(r)}
-                  onToggle={() => toggle(regions, setRegions, r)}
-                />
-              ))}
+          {locationOptions.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Where in Uganda?
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {locationOptions.map((r) => (
+                  <Chip
+                    key={r}
+                    label={r}
+                    selected={regions.includes(r)}
+                    onToggle={() => toggle(regions, setRegions, r)}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </form>
       )}
 

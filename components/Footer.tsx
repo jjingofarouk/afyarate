@@ -3,6 +3,7 @@ import Link from "next/link";
 import { POST_TYPES, POST_TYPE_LABELS } from "@/lib/types";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 import Newsletter from "@/components/Newsletter";
+import { getProfessions, getLocations } from "@/lib/posts";
 
 const sectionClass =
   "text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500";
@@ -10,8 +11,11 @@ const sectionClass =
 const linkClass =
   "text-sm text-slate-500 transition hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400";
 
-export default function Footer() {
+export default async function Footer() {
   const year = new Date().getFullYear();
+  const [professions, locations] = await Promise.all([getProfessions(), getLocations()]);
+  const roleOptions = professions.map((p) => p.label);
+  const locationOptions = locations.map((l) => l.label);
 
   return (
     <footer className="mt-16 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
@@ -193,6 +197,8 @@ export default function Footer() {
           <Newsletter
             title="New jobs & opportunities, straight to your inbox"
             description="Fresh nursing, midwifery, clinical and allied-health openings across Uganda — plus scholarships, grants and conferences. No spam, unsubscribe anytime."
+            roleOptions={roleOptions}
+            locationOptions={locationOptions}
           />
         </div>
 

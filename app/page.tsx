@@ -11,7 +11,7 @@ import {
   isFacilitiesReady,
   searchFacilities,
 } from "@/lib/facilities";
-import { getPosts } from "@/lib/posts";
+import { getPosts, getProfessions, getLocations } from "@/lib/posts";
 import PractitionerSearch from "@/components/PractitionerSearch";
 import FacilityCard from "@/components/FacilityCard";
 import PostCard from "@/components/PostCard";
@@ -330,6 +330,15 @@ export default async function HomePage({
     ready ? getPosts() : Promise.resolve([]),
   ]);
 
+  // Fetch newsletter options after posts are loaded (getProfessions/getLocations
+  // reuse the already-cached posts result, so no extra DB call)
+  const [newsletterProfessions, newsletterLocations] = await Promise.all([
+    ready ? getProfessions() : Promise.resolve([]),
+    ready ? getLocations() : Promise.resolve([]),
+  ]);
+  const roleOptions = newsletterProfessions.map((p) => p.label);
+  const locationOptions = newsletterLocations.map((l) => l.label);
+
   const hospitals = topHospitals?.items ?? [];
   const pharmacies = topPharmacies?.items ?? [];
 
@@ -637,7 +646,7 @@ export default async function HomePage({
       >
         <SlideIn from="bottom">
           <div className="mx-auto max-w-2xl rounded-2xl border border-emerald-100 bg-white/70 p-6 sm:p-8 dark:border-emerald-900/40 dark:bg-slate-900/60">
-            <Newsletter />
+            <Newsletter roleOptions={roleOptions} locationOptions={locationOptions} />
           </div>
         </SlideIn>
       </HomeSection>

@@ -17,7 +17,7 @@ const TYPE_TO_PREF: Record<string, string> = {
   grant: "Grants", fellowship: "Fellowships", conference: "Conferences",
 };
 
-// Map profession string → ROLE_OPTIONS value (best-effort)
+// Map profession string → newsletter role label (best-effort pre-fill)
 const PROF_TO_ROLE: Record<string, string> = {
   nurse: "Nurse / Midwife", midwife: "Nurse / Midwife",
   doctor: "Doctor", physician: "Doctor", medical: "Doctor",
