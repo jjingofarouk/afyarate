@@ -40,6 +40,31 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// ── Deduplication ─────────────────────────────────────────────────────────
+async function fetchSentSlugs() {
+  const { data, error } = await supabase
+    .from("newsletter_sends")
+    .select("email, post_slug");
+  if (error) {
+    console.warn("Could not load send history (dedup skipped):", error.message);
+    return {};
+  }
+  const map = {};
+  for (const row of data ?? []) {
+    (map[row.email] ??= new Set()).add(row.post_slug);
+  }
+  return map;
+}
+
+async function recordSend(email, postSlug) {
+  const { error } = await supabase
+    .from("newsletter_sends")
+    .insert({ email, post_slug: postSlug })
+    .onConflict("email, post_slug")   // idempotent — ignore if already recorded
+    .ignore();
+  if (error) console.warn(`  WARN   failed to record send for ${email}:`, error.message);
+}
+
 // ── Preference matching ────────────────────────────────────────────────────
 const TYPE_MAP = {
   Jobs: "job",
@@ -50,12 +75,13 @@ const TYPE_MAP = {
   Conferences: "conference",
 };
 
-function pickBestPost(posts, sub) {
+function pickBestPost(posts, sub, alreadySent = new Set()) {
   const wantedTypes = sub.opportunity_types?.length
     ? sub.opportunity_types.map((t) => TYPE_MAP[t]).filter(Boolean)
     : Object.values(TYPE_MAP);
 
   const matched = posts.filter((p) => {
+    if (alreadySent.has(p.slug)) return false;
     if (!wantedTypes.includes(p.type)) return false;
     if (sub.roles?.length && p.profession) {
       const prof = p.profession.toLowerCase();
@@ -279,10 +305,13 @@ async function main() {
   console.log(`Found ${posts.length} recent post(s).`);
   if (!posts.length) { console.log("Nothing to send."); return; }
 
-  const { data: subscribers, error: subErr } = await supabase
-    .from("newsletter_subscribers")
-    .select("email,first_name,opportunity_types,roles,regions")
-    .eq("status", "subscribed");
+  const [{ data: subscribers, error: subErr }, sentMap] = await Promise.all([
+    supabase
+      .from("newsletter_subscribers")
+      .select("email,first_name,opportunity_types,roles,regions")
+      .eq("status", "subscribed"),
+    fetchSentSlugs(),
+  ]);
 
   if (subErr) { console.error("Subscribers fetch failed:", subErr.message); process.exit(1); }
 
@@ -295,10 +324,11 @@ async function main() {
   let sent = 0, skipped = 0;
 
   for (const sub of targets) {
-    const post = pickBestPost(posts, sub);
+    const alreadySent = sentMap[sub.email] ?? new Set();
+    const post = pickBestPost(posts, sub, alreadySent);
 
     if (!post) {
-      console.log(`  SKIP   ${sub.email} — no matching post`);
+      console.log(`  SKIP   ${sub.email} — no matching post (or all already sent)`);
       skipped++;
       continue;
     }
@@ -319,6 +349,7 @@ async function main() {
         html,
       });
       console.log(`  SENT   ${sub.email} — "${post.title}"`);
+      await recordSend(sub.email, post.slug);
       sent++;
     } catch (err) {
       console.error(`  ERROR  ${sub.email}: ${err.message}`);
