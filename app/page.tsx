@@ -17,11 +17,12 @@ import FacilityCard from "@/components/FacilityCard";
 import PostCard from "@/components/PostCard";
 import PostTypePanel from "@/components/home/PostTypePanel";
 import HomeSection from "@/components/home/HomeSection";
-import HowItWorks from "@/components/home/HowItWorks";
 import SpotlightListing from "@/components/home/SpotlightListing";
 import RatedPractitionerCard from "@/components/home/RatedPractitionerCard";
 import { PAGE_SIZE, SITE_URL } from "@/lib/site";
 import { FadeIn } from "@/components/motion/FadeIn";
+import { SlideIn } from "@/components/motion/SlideIn";
+import { StaggerGrid, StaggerItem } from "@/components/motion/StaggerGrid";
 import { AnimatedWords } from "@/components/motion/AnimatedWords";
 import { MotionImg } from "@/components/motion/MotionImg";
 import { slugify } from "@/lib/posts";
@@ -465,115 +466,164 @@ export default async function HomePage({
         </HomeSection>
       )}
 
-      {/* Stats strip */}
+      {/* Stats strip — asymmetric: one dominant tile + smaller secondaries */}
       {statTiles.length > 0 && (
-        <HomeSection tone="white" compact className="-mt-px">
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-5">
-            {statTiles.map((s) => (
-              <div
-                key={s.label}
-                className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4 dark:border-slate-800 dark:bg-slate-900"
-              >
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                  {s.icon}
-                </span>
-                <div className="min-w-0">
-                  <div className="truncate text-lg font-bold text-emerald-700 sm:text-2xl dark:text-emerald-400">
-                    {s.value}
-                  </div>
-                  <div className="truncate text-xs font-medium uppercase leading-tight tracking-wide text-slate-500 dark:text-slate-400">
-                    {s.label}
+        <section className="-mt-px border-y border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-950">
+          <div className="mx-auto max-w-6xl px-4 py-8 sm:py-10">
+            <SlideIn from="bottom">
+              <div className="grid grid-cols-12 gap-3">
+                {/* Primary — large dominant tile */}
+                <div className="col-span-12 sm:col-span-5 lg:col-span-4 flex flex-col justify-between gap-4 rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-6 dark:border-emerald-900/40 dark:from-emerald-950/30 dark:to-slate-900">
+                  <span className="grid size-11 place-items-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
+                    {statTiles[0].icon}
+                  </span>
+                  <div>
+                    <div className="text-5xl font-black tabular-nums text-emerald-700 dark:text-emerald-400">
+                      {statTiles[0].value}
+                    </div>
+                    <div className="mt-1 text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                      {statTiles[0].label}
+                    </div>
                   </div>
                 </div>
+
+                {/* Secondaries — smaller, 2-col sub-grid */}
+                <div className="col-span-12 sm:col-span-7 lg:col-span-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+                  {statTiles.slice(1).map((s, i) => (
+                    <div
+                      key={s.label}
+                      style={{ transitionDelay: `${i * 60}ms` }}
+                      className="flex flex-col justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                    >
+                      <span className="grid size-9 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                        {s.icon}
+                      </span>
+                      <div>
+                        <div className="text-xl font-bold tabular-nums text-emerald-700 dark:text-emerald-400 sm:text-2xl">
+                          {s.value}
+                        </div>
+                        <div className="text-xs font-medium uppercase leading-tight tracking-wide text-slate-500 dark:text-slate-400">
+                          {s.label}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
+            </SlideIn>
           </div>
-        </HomeSection>
+        </section>
       )}
 
-      {/* How it works */}
-      <HomeSection
-        tone="slate"
-        eyebrow="How it works"
-        eyebrowIcon={<SearchIcon />}
-        title="Three steps to a safer choice"
-        description="Rate Musawo makes it simple to verify care and find your next opportunity in Uganda's health sector."
-      >
-        <HowItWorks
-          steps={[
-            {
-              icon: <SearchIcon />,
-              title: "Search the registry",
-              text: "Find any licensed doctor, nurse, midwife or pharmacist by name, profession or council.",
-            },
-            {
-              icon: <StarIcon />,
-              title: "Check ratings & licence",
-              text: "See what real patients say, confirm the licence is active, and compare practitioners.",
-            },
-            {
-              icon: <BriefcaseIcon />,
-              title: "Rate or apply",
-              text: "Leave feedback on the care you received, or apply to the latest jobs and scholarships.",
-            },
-          ]}
-        />
-      </HomeSection>
-
-      {/* Section 1 — jobs & opportunities (lead story) */}
+      {/* Listings — hoisted to slot 2; asymmetric editorial layout */}
       {allPosts.length > 0 && (
-        <HomeSection
+        <section
           id="listings"
-          tone="emerald"
-          eyebrow="Opportunities"
-          eyebrowIcon={<BriefcaseIcon />}
-          title="Jobs & opportunities for every career stage"
-          description="Fresh jobs, scholarships, grants, conferences and fellowships for Uganda's health workforce — whether you're starting out, studying or specialising."
-          action={{ href: "/posts", label: "View all listings" }}
+          className="scroll-mt-20 border-y border-emerald-100 bg-emerald-50/60 dark:border-emerald-900/40 dark:bg-emerald-950/20"
         >
-          {spotlight && (
-            <div className="mb-10">
-              <SpotlightListing post={spotlight} />
-            </div>
-          )}
-          {topJobs.length > 0 && (
-            <div className="mb-10">
-              <h3 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
-                Latest jobs
-              </h3>
-              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {topJobs.map((p) => (
-                  <PostCard key={p.id} post={p} />
-                ))}
+          <div className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
+
+            {/* Asymmetric section header */}
+            <SlideIn from="left">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                    Opportunities
+                  </p>
+                  <h2 className="mt-2 text-4xl font-black leading-[0.95] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl dark:text-slate-50">
+                    Jobs &amp;<br />Opportunities
+                  </h2>
+                </div>
+                <div className="sm:text-right">
+                  <p className="max-w-xs text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                    Fresh listings for Uganda's health workforce — every career stage, every region.
+                  </p>
+                  <Link
+                    href="/posts"
+                    className="mt-2 inline-block text-sm font-semibold text-emerald-700 underline-offset-4 hover:underline dark:text-emerald-400"
+                  >
+                    View all listings →
+                  </Link>
+                </div>
               </div>
+            </SlideIn>
+
+            {/* Spotlight (7 cols) + type panels sidebar (5 cols) */}
+            <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-12">
+              {spotlight && (
+                <SlideIn from="left" className="lg:col-span-7">
+                  <SpotlightListing post={spotlight} />
+                </SlideIn>
+              )}
+              {typePanels.length > 0 && (
+                <SlideIn from="right" delay={0.1} className="lg:col-span-5 flex flex-col gap-4">
+                  {typePanels.slice(0, 3).map((g) => (
+                    <PostTypePanel
+                      key={g.type}
+                      typeLabel={POST_TYPE_LABELS[g.type].plural}
+                      href={`/${POST_TYPE_LABELS[g.type].plural.toLowerCase()}`}
+                      count={g.posts.length}
+                      posts={g.posts.slice(0, 2)}
+                      type={g.type}
+                    />
+                  ))}
+                </SlideIn>
+              )}
             </div>
-          )}
-          {typePanels.length > 0 && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {typePanels.map((g) => (
-                <PostTypePanel
-                  key={g.type}
-                  typeLabel={POST_TYPE_LABELS[g.type].plural}
-                  href={`/${POST_TYPE_LABELS[g.type].plural.toLowerCase()}`}
-                  count={g.posts.length}
-                  posts={g.posts.slice(0, 2)}
-                  type={g.type}
-                />
-              ))}
-            </div>
-          )}
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-100 bg-white/70 p-4 dark:border-emerald-900/40 dark:bg-slate-900/60">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Know an opening students or health workers would want to see?
-            </p>
-            <Link
-              href="/posts/new"
-              className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
-            >
-              Post a listing
-            </Link>
+
+            {/* Latest jobs — staggered cards */}
+            {topJobs.length > 0 && (
+              <div className="mt-10">
+                <SlideIn from="bottom">
+                  <p className="mb-4 text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                    Latest jobs
+                  </p>
+                </SlideIn>
+                <StaggerGrid className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  {topJobs.map((p, i) => (
+                    <StaggerItem
+                      key={p.id}
+                      className={i % 2 === 1 ? "lg:mt-6" : ""}
+                    >
+                      <PostCard post={p} />
+                    </StaggerItem>
+                  ))}
+                </StaggerGrid>
+              </div>
+            )}
+
+            {/* Remaining type panels */}
+            {typePanels.length > 3 && (
+              <StaggerGrid className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {typePanels.slice(3).map((g) => (
+                  <StaggerItem key={g.type}>
+                    <PostTypePanel
+                      typeLabel={POST_TYPE_LABELS[g.type].plural}
+                      href={`/${POST_TYPE_LABELS[g.type].plural.toLowerCase()}`}
+                      count={g.posts.length}
+                      posts={g.posts.slice(0, 2)}
+                      type={g.type}
+                    />
+                  </StaggerItem>
+                ))}
+              </StaggerGrid>
+            )}
+
+            <SlideIn from="bottom" delay={0.1}>
+              <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-100 bg-white/70 p-4 dark:border-emerald-900/40 dark:bg-slate-900/60">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Know an opening students or health workers would want to see?
+                </p>
+                <Link
+                  href="/posts/new"
+                  className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                >
+                  Post a listing
+                </Link>
+              </div>
+            </SlideIn>
           </div>
-        </HomeSection>
+        </section>
       )}
 
       {/* Newsletter — job alerts by email */}
@@ -585,9 +635,11 @@ export default async function HomePage({
         title="New jobs, straight to your inbox"
         description="Never miss an opening — subscribe and get fresh jobs, scholarships, grants and conferences across Uganda delivered by email."
       >
-        <div className="mx-auto max-w-2xl rounded-2xl border border-emerald-100 bg-white/70 p-6 sm:p-8 dark:border-emerald-900/40 dark:bg-slate-900/60">
-          <Newsletter />
-        </div>
+        <SlideIn from="bottom">
+          <div className="mx-auto max-w-2xl rounded-2xl border border-emerald-100 bg-white/70 p-6 sm:p-8 dark:border-emerald-900/40 dark:bg-slate-900/60">
+            <Newsletter />
+          </div>
+        </SlideIn>
       </HomeSection>
 
       {/* Section 2 — the ratings of doctors */}
@@ -602,11 +654,13 @@ export default async function HomePage({
       >
         {topRated.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {topRated.map((p) => (
-                <RatedPractitionerCard key={p.id} p={p} />
+            <StaggerGrid className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {topRated.map((p, i) => (
+                <StaggerItem key={p.id} className={i % 2 === 0 ? "lg:mt-4" : ""}>
+                  <RatedPractitionerCard p={p} />
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerGrid>
             <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-2xl border border-amber-200/70 bg-white/70 p-5 text-center sm:flex-row sm:text-left dark:border-amber-900/40 dark:bg-slate-900/60">
               <div>
                 <p className="text-base font-semibold text-slate-900 dark:text-slate-50">
