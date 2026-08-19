@@ -276,8 +276,17 @@ function buildEmail(sub, post) {
           </table>
         </td></tr>
 
+        <!-- Not a fit nudge -->
+        <tr><td style="background:#f9fafb;border-left:1px solid #e5e7eb;border-right:1px solid #e5e7eb;padding:14px 24px;">
+          <p style="margin:0;font-size:14px;color:#6b7280;line-height:1.6;">
+            Not the right fit?&nbsp;
+            <a href="${manageLink(sub)}" style="color:#059669;font-weight:600;text-decoration:none;">Update your preferences</a>
+            &nbsp;so we only send what matters to you.
+          </p>
+        </td></tr>
+
         <!-- Browse more -->
-        <tr><td style="background:#ffffff;padding:4px 24px 24px;text-align:center;">
+        <tr><td style="background:#ffffff;padding:16px 24px 24px;text-align:center;">
           <p style="margin:0;font-size:14px;color:#9ca3af;">
             Want to see more?&nbsp;
             <a href="${SITE}/jobs" style="color:#0f4c24;font-weight:600;text-decoration:none;">Browse all opportunities</a>
