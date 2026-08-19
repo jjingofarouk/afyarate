@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { sendWelcomeEmail } from "@/lib/welcome-email";
 
 export const dynamic = "force-dynamic";
 
@@ -49,15 +48,6 @@ export async function POST(req: NextRequest) {
 
   const supabase = createAdminClient();
 
-  // Detect new vs returning subscriber before upserting
-  const { data: existing } = await supabase
-    .from("newsletter_subscribers")
-    .select("email")
-    .eq("email", email)
-    .single();
-
-  const isNew = !existing;
-
   const { error } = await supabase.from("newsletter_subscribers").upsert(
     {
       email,
@@ -76,13 +66,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: "Couldn't save your subscription right now. Please try again in a moment." },
       { status: 502 },
-    );
-  }
-
-  // Fire welcome email only for brand-new subscribers — don't await so it doesn't block the response
-  if (isNew) {
-    void sendWelcomeEmail({ email, firstName }).catch((err) =>
-      console.error("Welcome email failed:", err),
     );
   }
 
