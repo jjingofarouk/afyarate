@@ -59,9 +59,7 @@ async function fetchSentSlugs() {
 async function recordSend(email, postSlug) {
   const { error } = await supabase
     .from("newsletter_sends")
-    .insert({ email, post_slug: postSlug })
-    .onConflict("email, post_slug")   // idempotent — ignore if already recorded
-    .ignore();
+    .upsert({ email, post_slug: postSlug }, { onConflict: "email,post_slug", ignoreDuplicates: true });
   if (error) console.warn(`  WARN   failed to record send for ${email}:`, error.message);
 }
 
@@ -349,11 +347,13 @@ async function main() {
         html,
       });
       console.log(`  SENT   ${sub.email} — "${post.title}"`);
-      await recordSend(sub.email, post.slug);
       sent++;
     } catch (err) {
       console.error(`  ERROR  ${sub.email}: ${err.message}`);
+      continue;
     }
+    // Record outside the send try/catch — a DB glitch here never marks the send as failed
+    await recordSend(sub.email, post.slug);
 
     await new Promise((r) => setTimeout(r, 300));
   }
