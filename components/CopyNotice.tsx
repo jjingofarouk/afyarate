@@ -21,12 +21,10 @@ export default function CopyNotice() {
 
     document.addEventListener("copy", show);
     document.addEventListener("cut", show);
-    document.addEventListener("contextmenu", show);
 
     return () => {
       document.removeEventListener("copy", show);
       document.removeEventListener("cut", show);
-      document.removeEventListener("contextmenu", show);
       if (timer.current) clearTimeout(timer.current);
     };
   }, []);
@@ -44,7 +42,7 @@ export default function CopyNotice() {
     >
       <div className="flex items-center gap-2.5 rounded-full border border-slate-200 bg-white/95 py-2 pl-3 pr-4 text-sm font-medium text-slate-700 shadow-lg backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-200">
         <LockIcon />
-        <span>Copying is disabled — use the share links instead.</span>
+        <span>Copying text is disabled. Use the share buttons to share this page.</span>
       </div>
     </div>
   );
