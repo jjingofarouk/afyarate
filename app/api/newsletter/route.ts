@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   if (roles.length === 0) return badRequest("Please choose at least one role.");
   if (regions.length === 0) return badRequest("Please choose at least one location.");
 
-  const supabase = createServerClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from("newsletter_subscribers").upsert(
     {
       email,
