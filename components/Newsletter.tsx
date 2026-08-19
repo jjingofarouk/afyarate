@@ -120,6 +120,7 @@ export default function Newsletter({
   className = "",
   defaultTypes = [],
   defaultRoles = [],
+  defaultEmail = "",
   roleOptions: roleOptionsProp,
   locationOptions: locationOptionsProp,
 }: {
@@ -128,12 +129,13 @@ export default function Newsletter({
   className?: string;
   defaultTypes?: string[];
   defaultRoles?: string[];
+  defaultEmail?: string;
   roleOptions?: string[];
   locationOptions?: string[];
 }) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(defaultEmail);
   const [types, setTypes] = useState<string[]>(defaultTypes);
   const [roles, setRoles] = useState<string[]>(defaultRoles);
   const [regions, setRegions] = useState<string[]>([]);
