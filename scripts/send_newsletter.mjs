@@ -346,7 +346,9 @@ async function main() {
         subject,
         html,
       });
-      console.log(`  SENT   ${sub.email} — "${post.title}"`);
+      console.log(`  SENT   ${sub.email}`);
+      console.log(`         📌 ${post.type.toUpperCase()} | ${post.title}`);
+      console.log(`         🏢 ${post.organization}${post.location ? ` · 📍 ${post.location}` : ""}${post.deadline ? ` · ⏰ ${post.deadline}` : ""}`);
       sent++;
     } catch (err) {
       console.error(`  ERROR  ${sub.email}: ${err.message}`);

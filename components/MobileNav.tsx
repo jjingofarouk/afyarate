@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { POST_TYPES, POST_TYPE_LABELS } from "@/lib/types";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const sectionLabelClass =
   "px-3 pt-5 pb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500";
@@ -62,16 +63,19 @@ export default function MobileNav() {
                 <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   Menu
                 </span>
-                <button
-                  type="button"
-                  onClick={close}
-                  aria-label="Close menu"
-                  className="grid size-8 place-items-center rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-                    <path d="M6 6l12 12M18 6L6 18" />
-                  </svg>
-                </button>
+                <div className="flex items-center gap-1">
+                  <ThemeToggle />
+                  <button
+                    type="button"
+                    onClick={close}
+                    aria-label="Close menu"
+                    className="grid size-8 place-items-center rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                      <path d="M6 6l12 12M18 6L6 18" />
+                    </svg>
+                  </button>
+                </div>
               </div>
 
               <nav className="mt-2 flex flex-1 flex-col">
