@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { OPPORTUNITY_TYPES } from "@/lib/newsletter";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const INITIAL_SHOW = 8;
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -32,11 +33,87 @@ function Chip({
   );
 }
 
-/**
- * Newsletter signup. Posts to /api/newsletter (server-side), which saves the
- * email, name and preference selections to the site's Supabase
- * newsletter_subscribers table so they can be emailed later.
- */
+function ChipGroup({
+  label,
+  options,
+  selected,
+  onToggle,
+  searchable = false,
+}: {
+  label: string;
+  options: string[];
+  selected: string[];
+  onToggle: (v: string) => void;
+  searchable?: boolean;
+}) {
+  const [q, setQ] = useState("");
+  const [expanded, setExpanded] = useState(false);
+
+  if (options.length === 0) return null;
+
+  const lq = q.trim().toLowerCase();
+  const filtered = lq ? options.filter((o) => o.toLowerCase().includes(lq)) : options;
+
+  // Always surface selected items even when collapsed
+  const selectedSet = new Set(selected);
+  const selectedInFiltered = filtered.filter((o) => selectedSet.has(o));
+  const unselectedInFiltered = filtered.filter((o) => !selectedSet.has(o));
+  const visible = expanded
+    ? filtered
+    : [...selectedInFiltered, ...unselectedInFiltered.slice(0, Math.max(0, INITIAL_SHOW - selectedInFiltered.length))];
+  const hiddenCount = filtered.length - visible.length;
+
+  return (
+    <div>
+      <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{label}</p>
+      {searchable && options.length > INITIAL_SHOW && (
+        <div className="relative mt-2">
+          <svg
+            aria-hidden="true"
+            className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-slate-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" />
+          </svg>
+          <input
+            type="search"
+            value={q}
+            onChange={(e) => { setQ(e.target.value); setExpanded(true); }}
+            placeholder={`Search ${label.toLowerCase()}…`}
+            className="w-full rounded-lg border border-slate-200 bg-white py-1.5 pl-8 pr-3 text-sm outline-none placeholder:text-slate-400 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
+          />
+        </div>
+      )}
+      <div className="mt-2 flex flex-wrap gap-2">
+        {visible.map((o) => (
+          <Chip key={o} label={o} selected={selected.includes(o)} onToggle={() => onToggle(o)} />
+        ))}
+        {!expanded && hiddenCount > 0 && (
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            className="rounded-full border border-dashed border-slate-300 px-3 py-1.5 text-sm text-slate-500 transition hover:border-emerald-400 hover:text-emerald-600 dark:border-slate-600 dark:hover:border-emerald-500"
+          >
+            +{hiddenCount} more
+          </button>
+        )}
+        {expanded && !lq && hiddenCount === 0 && options.length > INITIAL_SHOW && (
+          <button
+            type="button"
+            onClick={() => setExpanded(false)}
+            className="rounded-full border border-dashed border-slate-300 px-3 py-1.5 text-sm text-slate-500 transition hover:border-slate-400 dark:border-slate-600"
+          >
+            Show less
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Newsletter({
   title = "Get new jobs in your inbox",
   description = "New nursing, midwifery, clinical and allied-health openings across Uganda, delivered to your inbox. Tell us what you want to hear about — no spam, unsubscribe anytime.",
@@ -62,8 +139,9 @@ export default function Newsletter({
   const [regions, setRegions] = useState<string[]>([]);
   const [roleOptions, setRoleOptions] = useState<string[]>(roleOptionsProp ?? []);
   const [locationOptions, setLocationOptions] = useState<string[]>(locationOptionsProp ?? []);
+  const [status, setStatus] = useState<Status>("idle");
+  const [message, setMessage] = useState("");
 
-  // If options weren't passed from a server component, fetch them once on mount
   useEffect(() => {
     if (roleOptionsProp !== undefined || locationOptionsProp !== undefined) return;
     fetch("/api/newsletter-options")
@@ -72,10 +150,8 @@ export default function Newsletter({
         if (Array.isArray(d.professions)) setRoleOptions(d.professions);
         if (Array.isArray(d.locations)) setLocationOptions(d.locations);
       })
-      .catch(() => {/* silently degrade — chips just won't appear */});
+      .catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const [status, setStatus] = useState<Status>("idle");
-  const [message, setMessage] = useState("");
 
   function toggle(list: string[], setList: (next: string[]) => void, value: string) {
     setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
@@ -130,24 +206,26 @@ export default function Newsletter({
 
   return (
     <div className={className}>
-      <h3 className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-50">
-        {title}
-      </h3>
-      <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-        {description}
-      </p>
+      {title && (
+        <h3 className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-50">
+          {title}
+        </h3>
+      )}
+      {description && (
+        <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+          {description}
+        </p>
+      )}
 
       {status === "success" ? (
         <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300">
           {message}
         </p>
       ) : (
-        <form onSubmit={onSubmit} className="mt-5 space-y-4" noValidate>
+        <form onSubmit={onSubmit} className="mt-5 space-y-5" noValidate>
           <div className="grid max-w-xl grid-cols-2 gap-2">
             <div>
-              <label htmlFor="newsletter-first-name" className="sr-only">
-                First name
-              </label>
+              <label htmlFor="newsletter-first-name" className="sr-only">First name</label>
               <input
                 id="newsletter-first-name"
                 type="text"
@@ -160,9 +238,7 @@ export default function Newsletter({
               />
             </div>
             <div>
-              <label htmlFor="newsletter-last-name" className="sr-only">
-                Last name
-              </label>
+              <label htmlFor="newsletter-last-name" className="sr-only">Last name</label>
               <input
                 id="newsletter-last-name"
                 type="text"
@@ -177,9 +253,7 @@ export default function Newsletter({
           </div>
 
           <div className="flex max-w-xl flex-col gap-2 sm:flex-row">
-            <label htmlFor="newsletter-email" className="sr-only">
-              Email address
-            </label>
+            <label htmlFor="newsletter-email" className="sr-only">Email address</label>
             <input
               id="newsletter-email"
               type="email"
@@ -201,57 +275,28 @@ export default function Newsletter({
             </button>
           </div>
 
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              What should we send you?
-            </p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {OPPORTUNITY_TYPES.map((o) => (
-                <Chip
-                  key={o}
-                  label={o}
-                  selected={types.includes(o)}
-                  onToggle={() => toggle(types, setTypes, o)}
-                />
-              ))}
-            </div>
-          </div>
+          <ChipGroup
+            label="What should we send you?"
+            options={[...OPPORTUNITY_TYPES]}
+            selected={types}
+            onToggle={(v) => toggle(types, setTypes, v)}
+          />
 
-          {roleOptions.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Roles you're interested in
-              </p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {roleOptions.map((r) => (
-                  <Chip
-                    key={r}
-                    label={r}
-                    selected={roles.includes(r)}
-                    onToggle={() => toggle(roles, setRoles, r)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+          <ChipGroup
+            label="Roles you're interested in"
+            options={roleOptions}
+            selected={roles}
+            onToggle={(v) => toggle(roles, setRoles, v)}
+            searchable
+          />
 
-          {locationOptions.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Where in Uganda?
-              </p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {locationOptions.map((r) => (
-                  <Chip
-                    key={r}
-                    label={r}
-                    selected={regions.includes(r)}
-                    onToggle={() => toggle(regions, setRegions, r)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+          <ChipGroup
+            label="Where in Uganda?"
+            options={locationOptions}
+            selected={regions}
+            onToggle={(v) => toggle(regions, setRegions, v)}
+            searchable
+          />
         </form>
       )}
 
