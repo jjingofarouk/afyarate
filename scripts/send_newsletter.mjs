@@ -271,10 +271,10 @@ function buildEmail(sub, post) {
             You're receiving this because you subscribed to Rate Musawo opportunity alerts.
           </p>
           <p style="margin:0 0 6px;font-size:12px;">
-            <a href="${SITE}/newsletter/manage?email=${encodeURIComponent(sub.email)}"
+            <a href="${manageLink(sub)}"
               style="color:#059669;font-weight:600;text-decoration:none;">Manage preferences</a>
             &nbsp;·&nbsp;
-            <a href="${SITE}/newsletter/manage?email=${encodeURIComponent(sub.email)}"
+            <a href="${manageLink(sub)}"
               style="color:#9ca3af;text-decoration:none;">Unsubscribe</a>
           </p>
           <p style="margin:0;font-size:12px;color:#9ca3af;">
@@ -294,9 +294,13 @@ function buildEmail(sub, post) {
 }
 
 // ── Welcome email ──────────────────────────────────────────────────────────
+function manageLink(sub) {
+  return `${SITE}/newsletter/manage?token=${sub.manage_token}`;
+}
+
 function buildWelcomeEmail(sub) {
   const name = sub.first_name ? sub.first_name.trim() : "there";
-  const manageUrl = `${SITE}/newsletter/manage?email=${encodeURIComponent(sub.email)}`;
+  const manageUrl = manageLink(sub);
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -374,7 +378,7 @@ function buildWelcomeEmail(sub) {
 async function sendWelcomeEmails() {
   const { data: unwelcomed, error } = await supabase
     .from("newsletter_subscribers")
-    .select("email, first_name")
+    .select("email, first_name, manage_token")
     .eq("status", "subscribed")
     .eq("welcome_sent", false);
 
@@ -440,7 +444,7 @@ async function main() {
   const [{ data: subscribers, error: subErr }, sentMap] = await Promise.all([
     supabase
       .from("newsletter_subscribers")
-      .select("email,first_name,opportunity_types,roles,regions")
+      .select("email,first_name,opportunity_types,roles,regions,manage_token")
       .eq("status", "subscribed"),
     fetchSentSlugs(),
   ]);

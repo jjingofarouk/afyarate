@@ -11,21 +11,20 @@ export const metadata: Metadata = {
 };
 
 export default async function NewsletterManagePage(props: {
-  searchParams: Promise<{ email?: string }>;
+  searchParams: Promise<{ token?: string }>;
 }) {
-  const { email: rawEmail } = await props.searchParams;
-  const email = (rawEmail ?? "").trim().toLowerCase();
+  const { token } = await props.searchParams;
 
-  if (!email) return <InvalidLink />;
+  if (!token?.trim()) return <InvalidLink />;
 
   const supabase = createAdminClient();
   const { data: sub } = await supabase
     .from("newsletter_subscribers")
     .select("email, first_name, last_name, opportunity_types, roles, regions, status")
-    .eq("email", email)
+    .eq("manage_token", token.trim())
     .single();
 
-  if (!sub) return <NotFound email={email} />;
+  if (!sub) return <NotFound />;
 
   const [professions, locations] = await Promise.all([getProfessions(), getLocations()]);
 
@@ -64,18 +63,18 @@ function InvalidLink() {
   );
 }
 
-function NotFound({ email }: { email: string }) {
+function NotFound() {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-slate-50 p-8 dark:bg-slate-950">
       <div className="max-w-sm text-center">
         <p className="text-4xl">🔍</p>
-        <h1 className="mt-4 text-xl font-bold text-slate-900 dark:text-slate-50">Not found</h1>
+        <h1 className="mt-4 text-xl font-bold text-slate-900 dark:text-slate-50">Link not recognised</h1>
         <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-          No subscriber found for <strong className="text-slate-700 dark:text-slate-300">{email}</strong>.
+          This preferences link has expired or is invalid. Check your latest email from Rate Musawo for a fresh link.
         </p>
         <a href="/"
           className="mt-6 inline-block rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700">
-          Subscribe on the homepage
+          Back to Rate Musawo
         </a>
       </div>
     </div>
