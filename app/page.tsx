@@ -475,55 +475,6 @@ export default async function HomePage({
         </HomeSection>
       )}
 
-      {/* Stats strip — asymmetric: one dominant tile + smaller secondaries */}
-      {statTiles.length > 0 && (
-        <section className="-mt-px border-y border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-950">
-          <div className="mx-auto max-w-6xl px-4 py-8 sm:py-10">
-            <SlideIn from="bottom">
-              <div className="grid grid-cols-12 gap-3">
-                {/* Primary — large dominant tile */}
-                <div className="col-span-12 sm:col-span-5 lg:col-span-4 flex flex-col justify-between gap-4 rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-6 dark:border-emerald-900/40 dark:from-emerald-950/30 dark:to-slate-900">
-                  <span className="grid size-11 place-items-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
-                    {statTiles[0].icon}
-                  </span>
-                  <div>
-                    <div className="text-5xl font-black tabular-nums text-emerald-700 dark:text-emerald-400">
-                      {statTiles[0].value}
-                    </div>
-                    <div className="mt-1 text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                      {statTiles[0].label}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Secondaries — smaller, 2-col sub-grid */}
-                <div className="col-span-12 sm:col-span-7 lg:col-span-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                  {statTiles.slice(1).map((s, i) => (
-                    <div
-                      key={s.label}
-                      style={{ transitionDelay: `${i * 60}ms` }}
-                      className="flex flex-col justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
-                    >
-                      <span className="grid size-9 place-items-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                        {s.icon}
-                      </span>
-                      <div>
-                        <div className="text-xl font-bold tabular-nums text-emerald-700 dark:text-emerald-400 sm:text-2xl">
-                          {s.value}
-                        </div>
-                        <div className="text-xs font-medium uppercase leading-tight tracking-wide text-slate-500 dark:text-slate-400">
-                          {s.label}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </SlideIn>
-          </div>
-        </section>
-      )}
-
       {/* Listings — hoisted to slot 2; asymmetric editorial layout */}
       {allPosts.length > 0 && (
         <section
