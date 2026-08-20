@@ -77,7 +77,9 @@ export default function AmbulanceRegisterForm() {
   if (done) {
     return (
       <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-8 text-center dark:border-emerald-900/40 dark:bg-emerald-950/30">
-        <p className="text-2xl">✅</p>
+        <svg className="mx-auto size-10 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
         <h2 className="mt-3 text-lg font-bold text-slate-900 dark:text-slate-50">
           Registration submitted
         </h2>

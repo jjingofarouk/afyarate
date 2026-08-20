@@ -36,25 +36,20 @@ export default function AmbulanceCard({ provider }: { provider: AmbulanceProvide
         </p>
       )}
 
-      {provider.vehicleTypes.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
+      {(provider.vehicleTypes.length > 0 || provider.services.length > 0) && (
+        <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1">
           {provider.vehicleTypes.map((v) => (
             <span
               key={v}
-              className="rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-800 dark:bg-red-950/40 dark:text-red-300"
+              className="shrink-0 whitespace-nowrap rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-800 dark:bg-red-950/40 dark:text-red-300"
             >
               {v}
             </span>
           ))}
-        </div>
-      )}
-
-      {provider.services.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1.5">
           {provider.services.map((s) => (
             <span
               key={s}
-              className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+              className="shrink-0 whitespace-nowrap rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300"
             >
               {s}
             </span>

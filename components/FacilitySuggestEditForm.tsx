@@ -1,27 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import ServicePicker from "./ServicePicker";
 
-export default function FacilitySuggestEditForm({ slug }: { slug: string }) {
+export default function FacilitySuggestEditForm({
+  slug,
+  kind,
+}: {
+  slug: string;
+  kind: "hospital" | "pharmacy";
+}) {
   const [description, setDescription] = useState("");
   const [phone, setPhone] = useState("");
-  const [serviceInput, setServiceInput] = useState("");
   const [services, setServices] = useState<string[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
-
-  function addService() {
-    const v = serviceInput.trim();
-    if (!v || services.includes(v)) return;
-    setServices((s) => [...s, v]);
-    setServiceInput("");
-  }
-
-  function removeService(v: string) {
-    setServices((s) => s.filter((x) => x !== v));
-  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -73,7 +68,7 @@ export default function FacilitySuggestEditForm({ slug }: { slug: string }) {
       className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"
     >
       <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
-        Run this facility? Update its details
+        Are you the owner of this facility?
       </h3>
       <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
         Suggest services, a description or a corrected phone number. A team member reviews every
@@ -84,47 +79,7 @@ export default function FacilitySuggestEditForm({ slug }: { slug: string }) {
         <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
           Services offered
         </label>
-        <div className="flex gap-2">
-          <input
-            value={serviceInput}
-            onChange={(e) => setServiceInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addService();
-              }
-            }}
-            placeholder="e.g. Maternity ward, Radiology"
-            className={inputClass}
-          />
-          <button
-            type="button"
-            onClick={addService}
-            className="shrink-0 rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-emerald-400 hover:text-emerald-700 dark:border-slate-700 dark:text-slate-300"
-          >
-            Add
-          </button>
-        </div>
-        {services.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {services.map((s) => (
-              <span
-                key={s}
-                className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
-              >
-                {s}
-                <button
-                  type="button"
-                  onClick={() => removeService(s)}
-                  aria-label={`Remove ${s}`}
-                  className="text-emerald-600 hover:text-emerald-900 dark:text-emerald-400"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
+        <ServicePicker kind={kind} selected={services} onChange={setServices} />
       </div>
 
       <div className="mt-3">

@@ -7,6 +7,12 @@ import FacilitySearch from "@/components/FacilitySearch";
 import FacilityPhotoUpload from "@/components/FacilityPhotoUpload";
 import FacilityPhotoGallery from "@/components/FacilityPhotoGallery";
 import FacilitySuggestEditForm from "@/components/FacilitySuggestEditForm";
+import {
+  HOSPITAL_SERVICE_GROUPS,
+  PHARMACY_SERVICE_GROUPS,
+  SERVICE_COLOR_CLASSES,
+  type ServiceGroup,
+} from "@/lib/facilityServices";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { Stars } from "@/components/Stars";
 import ShareButtons from "@/components/ShareButtons";
@@ -120,6 +126,11 @@ async function FacilityDetailPage({ slug }: { slug: string }) {
     getFacilityPhotos(facility.id),
   ]);
   const kind = FACILITY_KIND_LABELS[facility.kind];
+  const serviceGroups: ServiceGroup[] =
+    facility.kind === "pharmacy" ? PHARMACY_SERVICE_GROUPS : HOSPITAL_SERVICE_GROUPS;
+  const serviceColorMap = new Map(
+    serviceGroups.flatMap((g) => g.services.map((s) => [s, g.color] as const)),
+  );
   const breadcrumbLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -255,14 +266,17 @@ async function FacilityDetailPage({ slug }: { slug: string }) {
                   Services offered
                 </h2>
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  {facility.services.map((s) => (
-                    <span
-                      key={s}
-                      className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                    >
-                      {s}
-                    </span>
-                  ))}
+                  {facility.services.map((s) => {
+                    const color = serviceColorMap.get(s) ?? "slate";
+                    return (
+                      <span
+                        key={s}
+                        className={`rounded-full border px-2.5 py-1 text-xs font-medium ${SERVICE_COLOR_CLASSES[color].chip}`}
+                      >
+                        {s}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -338,7 +352,7 @@ async function FacilityDetailPage({ slug }: { slug: string }) {
 
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             <FacilityPhotoUpload slug={facility.slug} />
-            <FacilitySuggestEditForm slug={facility.slug} />
+            <FacilitySuggestEditForm slug={facility.slug} kind={facility.kind} />
           </div>
         </FadeIn>
       </div>
