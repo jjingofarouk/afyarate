@@ -6,9 +6,9 @@
  * Run locally; subscribers are stored in Supabase.
  *
  * Meant to be invoked frequently (e.g. every 15 min) by cron so that a
- * missed run (Mac asleep at the scheduled hour) gets caught the moment the
- * machine wakes. A stamp file guarantees only one real send per EAT day
- * regardless of how many times this fires. See alreadySentToday() below.
+ * missed run (Mac asleep at the scheduled slot) gets caught the moment the
+ * machine wakes. A stamp file guarantees each of today's slots sends at
+ * most once, regardless of how many times this fires. See dueSlot() below.
  */
 
 import { existsSync, readFileSync, writeFileSync } from "fs";
@@ -30,10 +30,16 @@ const TO_ONLY = toIdx >= 0 ? args[toIdx + 1] : null;
 
 const SITE = "https://ratemusawo.online";
 
-// ── Once-daily guard ─────────────────────────────────────────────────────
-// Send window opens at 19:00 EAT. Stamp file records the EAT calendar date
-// of the last successful full send so retries within the same day no-op.
-const SEND_HOUR = 19;
+// ── Twice-daily guard ────────────────────────────────────────────────────
+// Two slots, EAT: 09:30 and 19:00. Stamp file (JSON) records today's date
+// plus which slot ids already sent, so retries within the same day no-op.
+// If the Mac was asleep through multiple due slots, only the most recent
+// one actually sends (catch-up never fires two emails back to back); the
+// earlier missed slot(s) are marked consumed without sending.
+const SEND_SLOTS = [
+  { id: "morning", hour: 9, minute: 30 },
+  { id: "evening", hour: 19, minute: 0 },
+];
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const STAMP_FILE = join(__dirname, "..", ".newsletter-last-sent");
 
@@ -41,18 +47,41 @@ function todayEAT() {
   return eatNow().toISOString().slice(0, 10);
 }
 
-function alreadySentToday() {
-  if (!existsSync(STAMP_FILE)) return false;
+function minutesNowEAT() {
+  const d = eatNow();
+  return d.getUTCHours() * 60 + d.getUTCMinutes();
+}
+
+function readStamp() {
+  if (!existsSync(STAMP_FILE)) return { date: null, sent: [] };
   try {
-    return readFileSync(STAMP_FILE, "utf8").trim() === todayEAT();
+    return JSON.parse(readFileSync(STAMP_FILE, "utf8"));
   } catch {
-    return false;
+    return { date: null, sent: [] };
   }
 }
 
-function markSentToday() {
+/** Returns the slot to send for right now, or null if nothing is due. */
+function dueSlot() {
+  const today = todayEAT();
+  const stamp = readStamp();
+  const sentToday = stamp.date === today ? new Set(stamp.sent) : new Set();
+  const nowMin = minutesNowEAT();
+
+  const due = SEND_SLOTS.filter((s) => nowMin >= s.hour * 60 + s.minute && !sentToday.has(s.id));
+  if (!due.length) return null;
+  return due[due.length - 1]; // most recent due slot only
+}
+
+/** Marks every slot up to and including `slot` as consumed for today. */
+function markSlotSent(slot) {
+  const today = todayEAT();
+  const stamp = readStamp();
+  const sentToday = stamp.date === today ? new Set(stamp.sent) : new Set();
+  const idx = SEND_SLOTS.findIndex((s) => s.id === slot.id);
+  for (let i = 0; i <= idx; i++) sentToday.add(SEND_SLOTS[i].id);
   try {
-    writeFileSync(STAMP_FILE, todayEAT());
+    writeFileSync(STAMP_FILE, JSON.stringify({ date: today, sent: [...sentToday] }));
   } catch (err) {
     console.warn("Could not write stamp file:", err.message);
   }
@@ -645,20 +674,18 @@ function isExpired(post) {
 async function main() {
   console.log(`\nRate Musawo Newsletter, ${DRY_RUN ? "DRY RUN" : "LIVE SEND"}`);
 
-  // Gate the real daily send: only applies to unattended full runs (not
-  // --dry, not --to test sends, not --force). Cron can fire this every
-  // 15 min all day; before 19:00 EAT it's a silent no-op, and once sent,
-  // every later tick that day is also a silent no-op.
+  // Gate the real send: only applies to unattended full runs (not --dry,
+  // not --to test sends, not --force). Cron fires this every 15 min around
+  // each slot; outside a due window, or once today's slot already sent,
+  // it's a silent no-op.
+  let slot = null;
   if (!DRY_RUN && !TO_ONLY && !FORCE) {
-    const hour = eatNow().getUTCHours();
-    if (hour < SEND_HOUR) {
-      console.log(`Before ${SEND_HOUR}:00 EAT, not time yet. Exiting.`);
+    slot = dueSlot();
+    if (!slot) {
+      console.log("No slot due right now. Exiting.");
       return;
     }
-    if (alreadySentToday()) {
-      console.log(`Already sent today (${todayEAT()} EAT). Exiting.`);
-      return;
-    }
+    console.log(`Sending for the ${slot.id} slot (${todayEAT()} EAT).`);
   }
 
   if (RESET) {
@@ -752,7 +779,7 @@ async function main() {
 
   console.log(`\nDone. Sent: ${sent}, Skipped: ${skipped}`);
 
-  if (!DRY_RUN && !TO_ONLY) markSentToday();
+  if (!DRY_RUN && !TO_ONLY && slot) markSlotSent(slot);
 }
 
 main();
