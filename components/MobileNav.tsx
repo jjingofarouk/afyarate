@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { POST_TYPES, POST_TYPE_LABELS } from "@/lib/types";
@@ -18,9 +18,44 @@ const typeIcon = (
   </svg>
 );
 
+function formatCount(n: number | undefined): string | null {
+  if (!n) return null;
+  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`;
+  return String(n);
+}
+
+function CountBadge({ n }: { n: number | undefined }) {
+  const label = formatCount(n);
+  if (!label) return null;
+  return (
+    <span className="ml-auto shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+      {label}
+    </span>
+  );
+}
+
+interface NavCounts {
+  byType: Record<string, number>;
+  total: number;
+  practitioners: number;
+  facilities: number;
+  ambulances: number;
+}
+
 export default function MobileNav() {
   const [open, setOpen] = useState(false);
+  const [counts, setCounts] = useState<NavCounts | null>(null);
   const close = () => setOpen(false);
+
+  // Lazy: only fetch nav counts once the menu is actually opened, and only
+  // the first time, no point re-fetching on every open in one session.
+  useEffect(() => {
+    if (!open || counts) return;
+    fetch("/api/nav-counts")
+      .then((r) => r.json())
+      .then(setCounts)
+      .catch(() => {});
+  }, [open, counts]);
 
   return (
     <>
@@ -53,7 +88,7 @@ export default function MobileNav() {
               role="dialog"
               aria-modal="true"
               aria-label="Menu"
-              className="fixed inset-y-0 right-0 z-50 flex h-dvh w-[min(92vw,24rem)] flex-col overflow-y-auto border-l border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+              className="fixed inset-y-0 right-0 z-50 flex h-dvh w-[min(88vw,18rem)] flex-col overflow-y-auto border-l border-slate-200 bg-white p-4 shadow-2xl dark:border-slate-700 dark:bg-slate-900"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
@@ -89,18 +124,21 @@ export default function MobileNav() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                   Practitioners
+                  <CountBadge n={counts?.practitioners} />
                 </Link>
                 <Link href="/facilities" onClick={close} className={linkClass}>
                   <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z" />
                   </svg>
                   Hospitals &amp; Pharmacies
+                  <CountBadge n={counts?.facilities} />
                 </Link>
                 <Link href="/ambulances" onClick={close} className={linkClass}>
                   <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h8m-8 4h4m5 8H6a2 2 0 01-2-2V9a2 2 0 012-2h1.5l1-2h7l1 2H18a2 2 0 012 2v8a2 2 0 01-2 2z" />
                   </svg>
                   Ambulances
+                  <CountBadge n={counts?.ambulances} />
                 </Link>
                 <Link href="/stats/uganda" onClick={close} className={linkClass}>
                   <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -113,11 +151,13 @@ export default function MobileNav() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                   </svg>
                   All listings
+                  <CountBadge n={counts?.total} />
                 </Link>
                 {POST_TYPES.map((t) => (
                   <Link key={t} href={`/${POST_TYPE_LABELS[t].plural.toLowerCase()}`} onClick={close} className={linkClass}>
                     {typeIcon}
                     {POST_TYPE_LABELS[t].plural}
+                    <CountBadge n={counts?.byType[t]} />
                   </Link>
                 ))}
 
