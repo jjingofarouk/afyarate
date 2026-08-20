@@ -29,10 +29,10 @@ export async function GET(req: NextRequest) {
   const [postsPage, practitionerResult, facilityResult] = await Promise.all([
     getPostsPage({ q, limit: PER_KIND_LIMIT }).catch(() => ({ items: [], total: 0 })),
     dbReady
-      ? searchPractitioners({ q, sort: "rating", pageSize: PER_KIND_LIMIT }).catch(() => null)
+      ? searchPractitioners({ q, sort: "rating", pageSize: PER_KIND_LIMIT, countMode: "estimated" }).catch(() => null)
       : Promise.resolve(null),
     facilitiesReady
-      ? searchFacilities({ q, sort: "rating", pageSize: PER_KIND_LIMIT }).catch(() => null)
+      ? searchFacilities({ q, sort: "rating", pageSize: PER_KIND_LIMIT, countMode: "estimated" }).catch(() => null)
       : Promise.resolve(null),
   ]);
 

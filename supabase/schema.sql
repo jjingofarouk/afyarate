@@ -181,6 +181,11 @@ create index if not exists practitioners_profession on public.practitioners (pro
 create index if not exists practitioners_status on public.practitioners (licence_status);
 create index if not exists practitioners_regno on public.practitioners (registration_no);
 create index if not exists practitioners_licno on public.practitioners (license_number);
+-- searchPractitioners() OR's ilike across search_name/registration_no/license_number;
+-- without trigram indexes on the latter two, that OR forced a sequential scan
+-- across the full practitioners table (114k+ rows) on every keystroke.
+create index if not exists practitioners_regno_trgm on public.practitioners using gin (registration_no gin_trgm_ops);
+create index if not exists practitioners_licno_trgm on public.practitioners using gin (license_number gin_trgm_ops);
 create index if not exists licenses_practitioner on public.licenses (practitioner_id);
 create index if not exists ratings_practitioner on public.ratings (practitioner_id);
 create index if not exists ratings_created on public.ratings (created_at desc);

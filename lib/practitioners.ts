@@ -42,6 +42,11 @@ export interface SearchOptions {
   sort?: "name" | "rating" | "random";
   page?: number;
   pageSize?: number;
+  // "exact" for the dedicated search pages (correct pagination totals);
+  // "estimated" for lightweight callers like header search autocomplete,
+  // where an approximate count is fine and exact costs a full table visit
+  // on a 114k+ row table regardless of indexing.
+  countMode?: "exact" | "estimated";
 }
 
 export interface Stats {
@@ -54,10 +59,8 @@ export interface Stats {
 export async function isDbReady(): Promise<boolean> {
   try {
     const supabase = createServerClient();
-    const { error } = await supabase
-      .from("practitioners")
-      .select("id", { count: "exact", head: true })
-      .limit(1);
+    // No count needed at all, just confirm the table is queryable.
+    const { error } = await supabase.from("practitioners").select("id").limit(1);
     return !error;
   } catch {
     return false;
@@ -79,6 +82,7 @@ export async function searchPractitioners(
     Math.max(1, Number.isFinite(opts.pageSize) ? (opts.pageSize as number) : 12),
   );
   const offset = (page - 1) * pageSize;
+  const countMode = opts.countMode ?? "exact";
 
   // Shared filter builder (used for both the count and the result queries).
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -115,7 +119,7 @@ export async function searchPractitioners(
       buildFilters(
         supabase
           .from("practitioners_overview")
-          .select("id", { count: "exact", head: true }),
+          .select("id", { count: countMode, head: true }),
       ),
     ]);
     if (error) throw new Error(error.message);
@@ -127,7 +131,7 @@ export async function searchPractitioners(
     let query = buildFilters(
       supabase
         .from("practitioners_overview")
-        .select("*", { count: "exact" })
+        .select("*", { count: countMode })
         .range(offset, offset + pageSize - 1),
     );
     // Photos first: practitioners with a profile photo always come before

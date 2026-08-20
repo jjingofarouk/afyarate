@@ -283,20 +283,6 @@ async function FacilityDetailPage({ slug }: { slug: string }) {
 
             <FacilityPhotoGallery photos={photos} />
 
-            {facility.sourceUrl && (
-              <p className="mt-5 text-xs text-slate-400 dark:text-slate-500">
-                Source:{" "}
-                <a
-                  href={facility.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-emerald-700 underline dark:text-emerald-400"
-                >
-                  Uganda Healthcare Directory
-                </a>
-              </p>
-            )}
-
             <p className="mt-5 flex items-start gap-1.5 rounded-xl bg-slate-50 px-3 py-2.5 text-xs text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
               <svg className="mt-0.5 size-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

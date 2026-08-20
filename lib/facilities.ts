@@ -226,6 +226,8 @@ export interface FacilitySearchOptions {
   sort?: "rating" | "name";
   page?: number;
   pageSize?: number;
+  // See countMode on practitioners' SearchOptions, same tradeoff.
+  countMode?: "exact" | "estimated";
 }
 
 export interface FacilityStats {
@@ -238,10 +240,8 @@ export interface FacilityStats {
 export async function isFacilitiesReady(): Promise<boolean> {
   try {
     const supabase = createServerClient();
-    const { error } = await supabase
-      .from("facilities")
-      .select("id", { count: "exact", head: true })
-      .limit(1);
+    // No count needed, just confirm the table is queryable.
+    const { error } = await supabase.from("facilities").select("id").limit(1);
     return !error;
   } catch {
     return false;
@@ -262,6 +262,7 @@ export async function searchFacilities(
     Math.max(1, Number.isFinite(opts.pageSize) ? (opts.pageSize as number) : 12),
   );
   const offset = (page - 1) * pageSize;
+  const countMode = opts.countMode ?? "exact";
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const buildFilters = (qb: any) => {
@@ -274,7 +275,7 @@ export async function searchFacilities(
   let query = buildFilters(
     supabase
       .from("facilities_overview")
-      .select("*", { count: "exact" })
+      .select("*", { count: countMode })
       .range(offset, offset + pageSize - 1),
   );
   if (sort === "rating") {
