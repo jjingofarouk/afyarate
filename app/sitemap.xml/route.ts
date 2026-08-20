@@ -17,20 +17,15 @@ export const revalidate = 3600;
 const CHUNK = 1000;
 
 export async function GET() {
-  let practitionerChunks = 0;
-  let facilityChunks = 0;
-  try {
-    const stats = await getStats();
-    practitionerChunks = Math.max(0, Math.ceil(stats.practitioners / CHUNK));
-  } catch {
-    practitionerChunks = 0;
-  }
-  try {
-    const fstats = await getFacilityStats();
-    facilityChunks = Math.max(0, Math.ceil(fstats.total / CHUNK));
-  } catch {
-    facilityChunks = 0;
-  }
+  const [statsResult, fstatsResult] = await Promise.allSettled([getStats(), getFacilityStats()]);
+  const practitionerChunks =
+    statsResult.status === "fulfilled"
+      ? Math.max(0, Math.ceil(statsResult.value.practitioners / CHUNK))
+      : 0;
+  const facilityChunks =
+    fstatsResult.status === "fulfilled"
+      ? Math.max(0, Math.ceil(fstatsResult.value.total / CHUNK))
+      : 0;
 
   const total = 2 + facilityChunks + practitionerChunks;
   const urls = Array.from(

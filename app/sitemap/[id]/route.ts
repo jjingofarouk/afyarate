@@ -19,20 +19,15 @@ export const revalidate = 3600;
 const CHUNK = 1000;
 
 export async function generateStaticParams() {
-  let practitionerChunks = 0;
-  let facilityChunks = 0;
-  try {
-    const stats = await getStats();
-    practitionerChunks = Math.max(0, Math.ceil(stats.practitioners / CHUNK));
-  } catch {
-    practitionerChunks = 0;
-  }
-  try {
-    const fstats = await getFacilityStats();
-    facilityChunks = Math.max(0, Math.ceil(fstats.total / CHUNK));
-  } catch {
-    facilityChunks = 0;
-  }
+  const [statsResult, fstatsResult] = await Promise.allSettled([getStats(), getFacilityStats()]);
+  const practitionerChunks =
+    statsResult.status === "fulfilled"
+      ? Math.max(0, Math.ceil(statsResult.value.practitioners / CHUNK))
+      : 0;
+  const facilityChunks =
+    fstatsResult.status === "fulfilled"
+      ? Math.max(0, Math.ceil(fstatsResult.value.total / CHUNK))
+      : 0;
   return Array.from({ length: 2 + facilityChunks + practitionerChunks }, (_, i) => ({
     id: String(i),
   }));
@@ -121,7 +116,23 @@ export async function GET(
       })),
     ];
   } else if (chunkId === 1) {
-    for (const p of await getPosts()) {
+    // getProfessions/getLocations/getOrganizations all derive from getPosts()'
+    // in-memory cache, so they're cheap once posts is loaded, but posts and
+    // facility cities are two genuinely separate DB calls with no dependency
+    // on each other. Run them concurrently instead of back to back, one slow
+    // Supabase round trip is enough to push a Worker close to its request
+    // time limit and turn a large chunk like this one into a 5xx.
+    const [posts, professions, professionCounts, locations, organizations, facilityCities] =
+      await Promise.all([
+        getPosts(),
+        getProfessions(),
+        getProfessionCounts(),
+        getLocations(),
+        getOrganizations(),
+        getFacilityCities(),
+      ]);
+
+    for (const p of posts) {
       entries.push({
         url: `${SITE_URL}/posts/${p.slug}`,
         lastmod: p.publishedAt ?? undefined,
@@ -129,42 +140,34 @@ export async function GET(
         freq: "daily",
       });
     }
-    for (const f of await getProfessions()) {
+    for (const f of professions) {
       entries.push({
         url: `${SITE_URL}/professions/${f.slug}`,
         priority: 0.6,
         freq: "weekly",
       });
     }
-    for (const f of await getProfessionCounts()) {
+    for (const f of professionCounts) {
       entries.push({
         url: `${SITE_URL}/practitioners/profession/${slugify(f.profession)}`,
         priority: 0.7,
         freq: "weekly",
       });
     }
-    for (const f of await getLocations()) {
-      entries.push({
-        url: `${SITE_URL}/locations/${f.slug}`,
-        priority: 0.6,
-        freq: "weekly",
-      });
+    for (const f of locations) {
+      entries.push(
+        { url: `${SITE_URL}/locations/${f.slug}`, priority: 0.6, freq: "weekly" },
+        { url: `${SITE_URL}/stats/${f.slug}`, priority: 0.6, freq: "weekly" },
+      );
     }
-    for (const f of await getOrganizations()) {
+    for (const f of organizations) {
       entries.push({
         url: `${SITE_URL}/organizations/${f.slug}`,
         priority: 0.6,
         freq: "weekly",
       });
     }
-    for (const f of await getLocations()) {
-      entries.push({
-        url: `${SITE_URL}/stats/${f.slug}`,
-        priority: 0.6,
-        freq: "weekly",
-      });
-    }
-    for (const city of await getFacilityCities()) {
+    for (const city of facilityCities) {
       const citySlug = slugify(city);
       entries.push(
         {
