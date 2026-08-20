@@ -4,20 +4,20 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Newsletter from "@/components/Newsletter";
 
-// Cycles through these states, bell icon used when emoji is null
+// Cycles through these states, bell icon used when icon is null
 const PHASES = [
-  { emoji: null,  text: "Daily job updates"        },
-  { emoji: "😊", text: "We found jobs for you"    },
-  { emoji: null,  text: "Fresh listings today"     },
-  { emoji: "✨", text: "New opportunities posted"  },
-  { emoji: null,  text: "Daily job updates"        },
-  { emoji: "👋", text: "Join health workers"       },
-  { emoji: null,  text: "Get matched alerts"       },
-  { emoji: "🎯", text: "Your next role is here"    },
-  { emoji: null,  text: "Daily job updates"        },
-  { emoji: "🌟", text: "Opportunities this week"   },
-  { emoji: null,  text: "Be first to know"         },
-  { emoji: "💪", text: "Advance your career"       },
+  { icon: null,          text: "Daily job updates"        },
+  { icon: "check",       text: "We found jobs for you"    },
+  { icon: null,          text: "Fresh listings today"     },
+  { icon: "sparkle",     text: "New opportunities posted" },
+  { icon: null,          text: "Daily job updates"        },
+  { icon: "users",       text: "Join health workers"      },
+  { icon: null,          text: "Get matched alerts"       },
+  { icon: "briefcase",   text: "Your next role is here"   },
+  { icon: null,          text: "Daily job updates"        },
+  { icon: "star",        text: "Opportunities this week"  },
+  { icon: null,          text: "Be first to know"         },
+  { icon: "trendingUp",  text: "Advance your career"      },
 ] as const;
 
 function BellIcon() {
@@ -38,6 +38,63 @@ function BellIcon() {
     </svg>
   );
 }
+
+function CheckCircleIcon() {
+  return (
+    <svg className="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
+function SparkleIcon() {
+  return (
+    <svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12 2l1.5 6.5L20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5L12 2z" />
+    </svg>
+  );
+}
+
+function UsersIcon() {
+  return (
+    <svg className="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+    </svg>
+  );
+}
+
+function BriefcaseIcon() {
+  return (
+    <svg className="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18a47.99 47.99 0 01-12.756 0c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0" />
+    </svg>
+  );
+}
+
+function StarIcon() {
+  return (
+    <svg className="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.562.562 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+    </svg>
+  );
+}
+
+function TrendingUpIcon() {
+  return (
+    <svg className="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.306a11.95 11.95 0 015.814-5.518l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+    </svg>
+  );
+}
+
+const PHASE_ICONS: Record<string, typeof BellIcon> = {
+  check: CheckCircleIcon,
+  sparkle: SparkleIcon,
+  users: UsersIcon,
+  briefcase: BriefcaseIcon,
+  star: StarIcon,
+  trendingUp: TrendingUpIcon,
+};
 
 function CloseIcon() {
   return (
@@ -62,23 +119,16 @@ export default function NewsletterFab() {
   const pathname = usePathname();
   const isAdmin  = pathname.startsWith("/admin");
 
-  // Cycle phase + fade text
+  // Cycle phase + fade text + wiggle together, slow enough to actually read
   useEffect(() => {
-    const id = setInterval(() => {
+    function tick() {
       setTextKey((k) => k + 1);
       setPhase((p) => (p + 1) % PHASES.length);
-    }, 4500);
-    return () => clearInterval(id);
-  }, []);
-
-  // Wiggle: first time after 2.5s, then every 9s
-  useEffect(() => {
-    function doWiggle() {
       setWiggle(true);
       setTimeout(() => setWiggle(false), 800);
     }
-    const first = setTimeout(doWiggle, 2500);
-    const loop  = setInterval(doWiggle, 9000);
+    const first = setTimeout(tick, 3000);
+    const loop  = setInterval(tick, 9000);
     return () => { clearTimeout(first); clearInterval(loop); };
   }, []);
 
@@ -97,6 +147,7 @@ export default function NewsletterFab() {
   if (isAdmin) return null;
 
   const current = PHASES[phase];
+  const CurrentIcon = current.icon ? PHASE_ICONS[current.icon] : BellIcon;
 
   return (
     <>
@@ -121,15 +172,9 @@ export default function NewsletterFab() {
             wiggle ? "fab-wiggle" : "",
           ].join(" ")}
         >
-          {/* Icon slot, emoji or bell */}
+          {/* Icon slot, phase icon or bell */}
           <span className="flex size-4 shrink-0 items-center justify-center leading-none">
-            {current.emoji ? (
-              <span className="text-[15px] leading-none select-none" aria-hidden>
-                {current.emoji}
-              </span>
-            ) : (
-              <BellIcon />
-            )}
+            <CurrentIcon />
           </span>
 
           {/* Text with fade on change */}
