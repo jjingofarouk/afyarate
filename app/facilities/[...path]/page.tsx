@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import FacilityRatingForm from "@/components/FacilityRatingForm";
 import { FacilityInitials, FacilityKindBadge } from "@/components/FacilityCard";
 import FacilitySearch from "@/components/FacilitySearch";
+import FacilityPhotoUpload from "@/components/FacilityPhotoUpload";
+import FacilityPhotoGallery from "@/components/FacilityPhotoGallery";
+import FacilitySuggestEditForm from "@/components/FacilitySuggestEditForm";
 import { FadeIn } from "@/components/motion/FadeIn";
 import { Stars } from "@/components/Stars";
 import ShareButtons from "@/components/ShareButtons";
@@ -11,6 +14,7 @@ import { Star } from "@/components/StarIcon";
 import {
   getFacility,
   getFacilityCities,
+  getFacilityPhotos,
   getFacilityRatings,
   searchFacilities,
 } from "@/lib/facilities";
@@ -111,7 +115,10 @@ async function FacilityDetailPage({ slug }: { slug: string }) {
   const facility = await getFacility(slug);
   if (!facility) notFound();
 
-  const ratings = await getFacilityRatings(facility.id);
+  const [ratings, photos] = await Promise.all([
+    getFacilityRatings(facility.id),
+    getFacilityPhotos(facility.id),
+  ]);
   const kind = FACILITY_KIND_LABELS[facility.kind];
   const breadcrumbLd = {
     "@context": "https://schema.org",
@@ -242,6 +249,26 @@ async function FacilityDetailPage({ slug }: { slug: string }) {
               </div>
             )}
 
+            {facility.services.length > 0 && (
+              <div className="mt-5">
+                <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  Services offered
+                </h2>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {facility.services.map((s) => (
+                    <span
+                      key={s}
+                      className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                    >
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <FacilityPhotoGallery photos={photos} />
+
             {facility.sourceUrl && (
               <p className="mt-5 text-xs text-slate-400 dark:text-slate-500">
                 Source:{" "}
@@ -255,6 +282,14 @@ async function FacilityDetailPage({ slug }: { slug: string }) {
                 </a>
               </p>
             )}
+
+            <p className="mt-5 flex items-start gap-1.5 rounded-xl bg-slate-50 px-3 py-2.5 text-xs text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
+              <svg className="mt-0.5 size-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Photos and detail updates on this page are reviewed by our team before publishing,
+              to keep information accurate and free of spam.
+            </p>
           </div>
 
           <div className="mt-6 grid gap-6 md:grid-cols-2">
@@ -299,6 +334,11 @@ async function FacilityDetailPage({ slug }: { slug: string }) {
                 </ul>
               )}
             </div>
+          </div>
+
+          <div className="mt-6 grid gap-6 md:grid-cols-2">
+            <FacilityPhotoUpload slug={facility.slug} />
+            <FacilitySuggestEditForm slug={facility.slug} />
           </div>
         </FadeIn>
       </div>

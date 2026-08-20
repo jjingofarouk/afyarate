@@ -349,6 +349,94 @@ create policy "anyone can upload post images"
   with check (bucket_id = 'post-images');
 
 -- ----------------------------------------------------------------------------
+-- 5c. Facility services + community contributions (photos, detail edits), all
+--     moderated: public may insert, only approved rows are publicly readable,
+--     admin (service role) reviews and merges into the live facility record.
+-- ----------------------------------------------------------------------------
+alter table public.facilities add column if not exists services text[] default '{}';
+
+create table if not exists public.facility_photos (
+  id bigint generated always as identity primary key,
+  facility_id bigint not null references public.facilities(id) on delete cascade,
+  image_url text not null,
+  storage_path text not null,
+  submitted_by_name text,
+  submitted_by_email text,
+  status text not null default 'pending' check (status in ('pending','approved','rejected')),
+  rejection_reason text,
+  created_at timestamptz not null default now(),
+  reviewed_at timestamptz
+);
+create index if not exists facility_photos_facility_id_idx on public.facility_photos(facility_id);
+create index if not exists facility_photos_status_idx on public.facility_photos(status);
+
+create table if not exists public.facility_edit_suggestions (
+  id bigint generated always as identity primary key,
+  facility_id bigint not null references public.facilities(id) on delete cascade,
+  suggested_description text,
+  suggested_services text[],
+  suggested_phone text,
+  submitted_by_name text,
+  submitted_by_email text,
+  status text not null default 'pending' check (status in ('pending','approved','rejected')),
+  rejection_reason text,
+  created_at timestamptz not null default now(),
+  reviewed_at timestamptz
+);
+create index if not exists facility_edits_facility_id_idx on public.facility_edit_suggestions(facility_id);
+create index if not exists facility_edits_status_idx on public.facility_edit_suggestions(status);
+
+alter table public.facility_photos enable row level security;
+alter table public.facility_edit_suggestions enable row level security;
+
+drop policy if exists "anyone can submit facility photos" on public.facility_photos;
+create policy "anyone can submit facility photos"
+  on public.facility_photos for insert with check (true);
+drop policy if exists "approved facility photos are publicly readable" on public.facility_photos;
+create policy "approved facility photos are publicly readable"
+  on public.facility_photos for select using (status = 'approved');
+
+drop policy if exists "anyone can submit facility edits" on public.facility_edit_suggestions;
+create policy "anyone can submit facility edits"
+  on public.facility_edit_suggestions for insert with check (true);
+
+-- ----------------------------------------------------------------------------
+-- 5d. Ambulance providers, self-registered and moderated the same way, only
+--     rows with status = 'approved' are ever shown on the public /ambulances
+--     page. Reuses the post-images storage bucket for any submitted photo.
+-- ----------------------------------------------------------------------------
+create table if not exists public.ambulance_providers (
+  id bigint generated always as identity primary key,
+  slug text not null unique,
+  name text not null,
+  phone text not null,
+  alt_phone text,
+  email text,
+  city text,
+  region text,
+  coverage_area text,
+  vehicle_types text[] default '{}',
+  services text[] default '{}',
+  description text,
+  image_url text,
+  status text not null default 'pending' check (status in ('pending','approved','rejected')),
+  featured boolean not null default false,
+  created_at timestamptz not null default now(),
+  reviewed_at timestamptz
+);
+create index if not exists ambulance_status_idx on public.ambulance_providers(status);
+create index if not exists ambulance_city_idx on public.ambulance_providers(city);
+
+alter table public.ambulance_providers enable row level security;
+
+drop policy if exists "anyone can register an ambulance provider" on public.ambulance_providers;
+create policy "anyone can register an ambulance provider"
+  on public.ambulance_providers for insert with check (true);
+drop policy if exists "approved ambulance providers are publicly readable" on public.ambulance_providers;
+create policy "approved ambulance providers are publicly readable"
+  on public.ambulance_providers for select using (status = 'approved');
+
+-- ----------------------------------------------------------------------------
 -- 6. Newsletter subscribers, emails + preferences for job alerts
 -- ----------------------------------------------------------------------------
 create table if not exists public.newsletter_subscribers (

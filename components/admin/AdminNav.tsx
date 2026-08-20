@@ -26,6 +26,21 @@ export default function AdminNav() {
       label: "New listing",
       active: pathname.endsWith("/new"),
     },
+    {
+      href: "/admin/facility-photos",
+      label: "Facility photos",
+      active: pathname.startsWith("/admin/facility-photos"),
+    },
+    {
+      href: "/admin/facility-edits",
+      label: "Facility edits",
+      active: pathname.startsWith("/admin/facility-edits"),
+    },
+    {
+      href: "/admin/ambulances",
+      label: "Ambulances",
+      active: pathname.startsWith("/admin/ambulances"),
+    },
   ];
 
   async function logout() {

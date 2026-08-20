@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { createServerClient } from "./supabase/server";
+import { createAdminClient } from "./supabase/admin";
 import type {
   Facility,
   FacilityKind,
@@ -30,7 +31,192 @@ function mapFacility(row: Row): Facility {
     sourceUrl: asString(row.source_url),
     avgRating: row.avg_rating != null ? Number(row.avg_rating) : null,
     ratingCount: Number(row.rating_count ?? 0),
+    services: Array.isArray(row.services) ? (row.services as string[]) : [],
   };
+}
+
+export interface FacilityPhoto {
+  id: number;
+  imageUrl: string;
+  storagePath: string;
+  submittedByName: string | null;
+  createdAt: string;
+}
+
+function mapPhoto(row: Row): FacilityPhoto {
+  return {
+    id: Number(row.id),
+    imageUrl: String(row.image_url ?? ""),
+    storagePath: String(row.storage_path ?? ""),
+    submittedByName: asString(row.submitted_by_name),
+    createdAt: String(row.created_at ?? ""),
+  };
+}
+
+/** Approved photos only, for the public gallery. */
+export async function getFacilityPhotos(facilityId: number): Promise<FacilityPhoto[]> {
+  const supabase = createServerClient();
+  const { data, error } = await supabase
+    .from("facility_photos")
+    .select("*")
+    .eq("facility_id", facilityId)
+    .eq("status", "approved")
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as Row[]).map(mapPhoto);
+}
+
+/** Public submission, RLS allows insert, lands as pending until an admin approves it. */
+export async function submitFacilityPhoto(input: {
+  facilityId: number;
+  imageUrl: string;
+  storagePath: string;
+  submittedByName?: string;
+  submittedByEmail?: string;
+}): Promise<void> {
+  const supabase = createServerClient();
+  const { error } = await supabase.from("facility_photos").insert({
+    facility_id: input.facilityId,
+    image_url: input.imageUrl,
+    storage_path: input.storagePath,
+    submitted_by_name: input.submittedByName?.trim() || null,
+    submitted_by_email: input.submittedByEmail?.trim() || null,
+    status: "pending",
+  });
+  if (error) throw new Error(error.message);
+}
+
+/** Public suggestion for services/description/phone, moderated before it touches the live record. */
+export async function submitFacilityEditSuggestion(input: {
+  facilityId: number;
+  suggestedDescription?: string;
+  suggestedServices?: string[];
+  suggestedPhone?: string;
+  submittedByName?: string;
+  submittedByEmail?: string;
+}): Promise<void> {
+  const supabase = createServerClient();
+  const { error } = await supabase.from("facility_edit_suggestions").insert({
+    facility_id: input.facilityId,
+    suggested_description: input.suggestedDescription?.trim() || null,
+    suggested_services: input.suggestedServices ?? null,
+    suggested_phone: input.suggestedPhone?.trim() || null,
+    submitted_by_name: input.submittedByName?.trim() || null,
+    submitted_by_email: input.submittedByEmail?.trim() || null,
+    status: "pending",
+  });
+  if (error) throw new Error(error.message);
+}
+
+// ── Admin moderation (service role, bypasses RLS) ───────────────────────────
+
+export interface FacilityPhotoModeration extends FacilityPhoto {
+  facilityId: number;
+  facilityName: string | null;
+  submittedByEmail: string | null;
+  status: "pending" | "approved" | "rejected";
+}
+
+export async function adminListFacilityPhotos(
+  status = "pending",
+): Promise<FacilityPhotoModeration[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("facility_photos")
+    .select("*, facilities(name)")
+    .eq("status", status)
+    .order("created_at", { ascending: true });
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as Row[]).map((row) => ({
+    ...mapPhoto(row),
+    facilityId: Number(row.facility_id),
+    facilityName: asString((row.facilities as Row | null)?.name),
+    submittedByEmail: asString(row.submitted_by_email),
+    status: (row.status as FacilityPhotoModeration["status"]) ?? "pending",
+  }));
+}
+
+export async function adminReviewFacilityPhoto(
+  id: string,
+  approve: boolean,
+  rejectionReason?: string,
+): Promise<void> {
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("facility_photos")
+    .update({
+      status: approve ? "approved" : "rejected",
+      rejection_reason: approve ? null : (rejectionReason ?? "").slice(0, 1000),
+      reviewed_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
+export interface FacilityEditModeration {
+  id: number;
+  facilityId: number;
+  facilityName: string | null;
+  suggestedDescription: string | null;
+  suggestedServices: string[] | null;
+  suggestedPhone: string | null;
+  submittedByName: string | null;
+  submittedByEmail: string | null;
+  createdAt: string;
+}
+
+export async function adminListFacilityEdits(): Promise<FacilityEditModeration[]> {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("facility_edit_suggestions")
+    .select("*, facilities(name)")
+    .eq("status", "pending")
+    .order("created_at", { ascending: true });
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as Row[]).map((row) => ({
+    id: Number(row.id),
+    facilityId: Number(row.facility_id),
+    facilityName: asString((row.facilities as Row | null)?.name),
+    suggestedDescription: asString(row.suggested_description),
+    suggestedServices: Array.isArray(row.suggested_services)
+      ? (row.suggested_services as string[])
+      : null,
+    suggestedPhone: asString(row.suggested_phone),
+    submittedByName: asString(row.submitted_by_name),
+    submittedByEmail: asString(row.submitted_by_email),
+    createdAt: String(row.created_at ?? ""),
+  }));
+}
+
+/** Approve merges the suggested fields into the live facility row; reject just closes it out. */
+export async function adminReviewFacilityEdit(id: string, approve: boolean): Promise<void> {
+  const supabase = createAdminClient();
+  if (approve) {
+    const { data: suggestion, error: fetchErr } = await supabase
+      .from("facility_edit_suggestions")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (fetchErr) throw new Error(fetchErr.message);
+
+    const changes: Record<string, unknown> = {};
+    if (suggestion.suggested_description) changes.description = suggestion.suggested_description;
+    if (suggestion.suggested_services) changes.services = suggestion.suggested_services;
+    if (suggestion.suggested_phone) changes.phone = suggestion.suggested_phone;
+
+    if (Object.keys(changes).length > 0) {
+      const { error: updateErr } = await supabase
+        .from("facilities")
+        .update({ ...changes, updated_at: new Date().toISOString() })
+        .eq("id", suggestion.facility_id);
+      if (updateErr) throw new Error(updateErr.message);
+    }
+  }
+  const { error } = await supabase
+    .from("facility_edit_suggestions")
+    .update({ status: approve ? "approved" : "rejected", reviewed_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
 }
 
 export interface FacilitySearchOptions {

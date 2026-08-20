@@ -150,6 +150,11 @@ export default async function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/ambulances" className={linkClass}>
+                  Ambulance services
+                </Link>
+              </li>
+              <li>
                 <Link href="/practitioners/profession/doctor" className={linkClass}>
                   Doctors in Uganda
                 </Link>

@@ -96,6 +96,12 @@ export default function MobileNav() {
                   </svg>
                   Hospitals &amp; Pharmacies
                 </Link>
+                <Link href="/ambulances" onClick={close} className={linkClass}>
+                  <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h8m-8 4h4m5 8H6a2 2 0 01-2-2V9a2 2 0 012-2h1.5l1-2h7l1 2H18a2 2 0 012 2v8a2 2 0 01-2 2z" />
+                  </svg>
+                  Ambulances
+                </Link>
                 <Link href="/stats/uganda" onClick={close} className={linkClass}>
                   <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 18V6m4 12V9m4 9v-6m4 6V8m4 10V4" />

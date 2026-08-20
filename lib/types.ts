@@ -141,6 +141,7 @@ export interface Facility {
   sourceUrl: string | null;
   avgRating: number | null;
   ratingCount: number;
+  services: string[];
 }
 
 export interface FacilityRating {
