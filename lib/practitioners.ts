@@ -135,15 +135,25 @@ export async function searchPractitioners(
         .select("*", { count: countMode })
         .range(offset, offset + pageSize - 1),
     );
-    // Photos first: practitioners with a profile photo always come before
-    // those without one (image_url is ordered NULLS LAST).
-    query = query.order("image_url", { ascending: true, nullsFirst: false });
+    // Top rated: only rated practitioners, best first. Photo-first ordering
+    // deliberately does NOT apply here (it would bury top-rated practitioners
+    // without photos under unrated ones that have them).
     if (sort === "rating") {
+      query = buildFilters(
+        supabase
+          .from("practitioners_overview")
+          .select("*", { count: countMode })
+          .gt("rating_count", 0)
+          .range(offset, offset + pageSize - 1),
+      );
       query = query
-        .order("rating_count", { ascending: false, nullsFirst: false })
-        .order("avg_rating", { ascending: false, nullsFirst: false })
+        .order("rating_count", { ascending: false })
+        .order("avg_rating", { ascending: false })
         .order("name", { ascending: true });
     } else {
+      // Photos first: practitioners with a profile photo always come before
+      // those without one (image_url is ordered NULLS LAST).
+      query = query.order("image_url", { ascending: true, nullsFirst: false });
       query = query.order("name", { ascending: true });
     }
     const { data, count: c, error } = await query;
