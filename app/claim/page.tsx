@@ -72,17 +72,65 @@ const benefits = [
   },
 ];
 
+function PricingCard() {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900">
+      <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+        One-time fee
+      </p>
+      <div className="mt-2 flex items-end gap-3">
+        <p className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50">
+          UGX 5,000
+        </p>
+        <p className="mb-1 text-sm text-slate-400 line-through">UGX 9,900</p>
+        <span className="mb-1 rounded-md bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
+          50% off
+        </span>
+      </div>
+      <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+        Pay once. No renewals, no hidden fees, no annual charge.
+      </p>
+      <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-200 pt-4 text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
+        {["One-time payment", "MTN and Airtel Money"].map((t) => (
+          <span key={t} className="flex items-center gap-1.5">
+            <CheckIcon /> {t}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function ClaimPage() {
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 lg:grid lg:grid-cols-[1fr_420px] lg:gap-16 lg:py-14">
+    /*
+     * Mobile stack order (flex-col + order-*):
+     *   1. ClaimFlow  (find your profile)
+     *   2. Pricing card
+     *   3. Left-col content (header, benefits, trust tiles)
+     * Desktop (lg:grid): left col = header + pricing + benefits; right col = ClaimFlow sticky
+     */
+    <div className="mx-auto flex max-w-5xl flex-col px-4 py-10 lg:grid lg:grid-cols-[1fr_420px] lg:gap-16 lg:py-14">
 
-      {/* Right col on desktop = ClaimFlow. On mobile it comes after the header and pricing. */}
+      {/* ── Mobile-first: ClaimFlow at top ── */}
+      {/* On desktop this becomes the sticky right column */}
+      <div className="order-1 lg:order-2 lg:sticky lg:top-8 lg:self-start">
+        <ClaimFlow />
+        <p className="mt-3 text-center text-xs text-slate-400 dark:text-slate-500">
+          Registry details (name, licence, status) stay as published by your council.
+        </p>
+      </div>
 
-      {/* LEFT: header, pricing, benefits */}
-      <div className="lg:order-1">
+      {/* ── Mobile-only pricing card (order-2) ── */}
+      <div className="order-2 mt-6 lg:hidden">
+        <PricingCard />
+      </div>
+
+      {/* ── Left col on desktop (order-3 mobile → order-1 desktop) ── */}
+      <div className="order-3 lg:order-1">
 
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-8 mt-10 lg:mt-0">
           <span className="inline-block rounded-full border border-amber-300 px-3 py-0.5 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700 dark:border-amber-700 dark:text-amber-400">
             Get verified
           </span>
@@ -95,38 +143,9 @@ export default function ClaimPage() {
           </p>
         </div>
 
-        {/* Pricing block */}
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900">
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-            One-time fee
-          </p>
-          <div className="mt-2 flex items-end gap-3">
-            <p className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50">
-              UGX 5,000
-            </p>
-            <p className="mb-1 text-sm text-slate-400 line-through">UGX 9,900</p>
-            <span className="mb-1 rounded-md bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
-              50% off
-            </span>
-          </div>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            Pay once. No renewals, no hidden fees, no annual charge.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-200 pt-4 text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
-            {["One-time payment", "MTN and Airtel Money", "No subscriptions"].map((t) => (
-              <span key={t} className="flex items-center gap-1.5">
-                <CheckIcon /> {t}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* ClaimFlow on mobile (shows between pricing and benefits) */}
-        <div className="mt-8 lg:hidden">
-          <ClaimFlow />
-          <p className="mt-3 text-center text-xs text-slate-400 dark:text-slate-500">
-            Registry details (name, licence, status) stay as published by your council.
-          </p>
+        {/* Pricing — desktop only (mobile version rendered above) */}
+        <div className="hidden lg:block">
+          <PricingCard />
         </div>
 
         {/* Benefits */}
@@ -165,14 +184,6 @@ export default function ClaimPage() {
             </div>
           ))}
         </div>
-      </div>
-
-      {/* RIGHT col on desktop only */}
-      <div className="hidden lg:order-2 lg:block lg:sticky lg:top-8 lg:self-start">
-        <ClaimFlow />
-        <p className="mt-3 text-center text-xs text-slate-400 dark:text-slate-500">
-          Registry details (name, licence, status) stay as published by your council.
-        </p>
       </div>
 
     </div>
