@@ -50,7 +50,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const db = createAdminClient();
+  let db: ReturnType<typeof createAdminClient>;
+  try {
+    db = createAdminClient();
+  } catch (e) {
+    return NextResponse.json({ error: "Server configuration error.", detail: (e as Error).message }, { status: 500 });
+  }
 
   // Registry lookup — the primary source we already hold.
   const { data: practitioner, error: pErr } = await db
@@ -119,7 +124,7 @@ export async function POST(req: NextRequest) {
 
   if (cErr || !claim) {
     console.error("[/api/claims] claim insert failed:", cErr?.message);
-    return NextResponse.json({ error: "Could not start your claim." }, { status: 500 });
+    return NextResponse.json({ error: "Could not start your claim.", detail: cErr?.message ?? "unknown" }, { status: 500 });
   }
 
   const result = await collectMoney({
