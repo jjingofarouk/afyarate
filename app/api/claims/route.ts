@@ -26,10 +26,24 @@ function nameTokens(name: string): string[] {
 export async function POST(req: NextRequest) {
   if (!marzPayConfigured()) {
     return NextResponse.json(
-      { error: "Payments are not configured yet. Please try again later." },
+      {
+        error: "Payments are not configured yet. Please try again later.",
+        debug: {
+          hasMarzKey: !!process.env.MARZ_API_KEY,
+          hasMarzSecret: !!process.env.MARZ_API_SECRET,
+          hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+          hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+        },
+      },
       { status: 503 }
     );
   }
+  // Surface env presence even on success path — remove after diagnosis.
+  console.log("[/api/claims] env check", {
+    hasMarzKey: !!process.env.MARZ_API_KEY,
+    hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+  });
 
   let body: { practitionerId?: number | string; name?: string; phone?: string; email?: string };
   try {
