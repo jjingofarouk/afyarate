@@ -407,14 +407,14 @@ export default async function HomePage({
       <FadeIn>
         <section className="relative flex min-h-[420px] items-center overflow-hidden sm:min-h-[480px] lg:min-h-[600px]">
           <MotionImg
-            src="https://idishukmepvkzyguhxnm.supabase.co/storage/v1/object/public/post-images/home-hero-pediatric-checkup.webp"
-            alt="A doctor giving a pediatric check-up to a smiling boy with his mother"
-            className="absolute inset-0 h-full w-full object-cover object-top"
+            src="/hero.jpg"
+            alt="Healthcare workers in a hospital corridor"
+            className="absolute inset-0 h-full w-full object-cover object-center"
             loading="eager"
             width={1200}
             height={800}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-black/20" />
+          <div className="absolute inset-0 bg-black/60" />
 
           <div className="relative z-10 w-full px-4 py-10 text-center sm:px-10 sm:py-16">
             <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-5xl">
