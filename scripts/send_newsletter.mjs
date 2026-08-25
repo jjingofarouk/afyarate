@@ -62,9 +62,9 @@ function readStamp() {
 }
 
 /** Returns the slot to send for right now, or null if nothing is due. */
-function dueSlot() {
+async function dueSlot() {
   const today = todayEAT();
-  const stamp = readStamp();
+  const stamp = await syncStamps();
   const sentToday = stamp.date === today ? new Set(stamp.sent) : new Set();
   const nowMin = minutesNowEAT();
 
@@ -73,8 +73,57 @@ function dueSlot() {
   return due[due.length - 1]; // most recent due slot only
 }
 
+// Slot progress is mirrored to Supabase (newsletter_runtime) so it can be
+// audited remotely and survives a lost/stale stamp file. The local file
+// stays the fast path; the two are unioned before deciding what's due.
+async function loadRemoteStamp() {
+  try {
+    const { data, error } = await supabase
+      .from("newsletter_runtime")
+      .select("data")
+      .eq("key", "slots")
+      .maybeSingle();
+    if (error || !data?.data) return null;
+    return data.data;
+  } catch {
+    return null; // remote state is best-effort
+  }
+}
+
+async function saveRemoteStamp(stamp) {
+  try {
+    await supabase
+      .from("newsletter_runtime")
+      .upsert({ key: "slots", data: stamp, updated_at: new Date().toISOString() }, { onConflict: "key" });
+  } catch (err) {
+    console.warn("(remote stamp save skipped):", err.message);
+  }
+}
+
+async function syncStamps() {
+  const local = readStamp();
+  const remote = await loadRemoteStamp();
+  if (!remote) return local;
+  const today = todayEAT();
+
+  let merged;
+  if (local.date === today && remote.date === today) {
+    merged = { date: today, sent: [...new Set([...(local.sent ?? []), ...(remote.sent ?? [])])] };
+  } else if (remote.date === today) {
+    merged = { date: today, sent: remote.sent ?? [] };
+  } else {
+    return local;
+  }
+  try {
+    if (JSON.stringify(merged) !== JSON.stringify(local)) {
+      writeFileSync(STAMP_FILE, JSON.stringify(merged));
+    }
+  } catch {}
+  return merged;
+}
+
 /** Marks every slot up to and including `slot` as consumed for today. */
-function markSlotSent(slot) {
+async function markSlotSent(slot) {
   const today = todayEAT();
   const stamp = readStamp();
   const sentToday = stamp.date === today ? new Set(stamp.sent) : new Set();
@@ -85,6 +134,7 @@ function markSlotSent(slot) {
   } catch (err) {
     console.warn("Could not write stamp file:", err.message);
   }
+  await saveRemoteStamp(readStamp());
 }
 
 // ── Clients ────────────────────────────────────────────────────────────────
@@ -102,17 +152,28 @@ const transporter = nodemailer.createTransport({
 });
 
 // ── Deduplication ─────────────────────────────────────────────────────────
-async function fetchSentSlugs() {
-  const { data, error } = await supabase
-    .from("newsletter_sends")
-    .select("email, post_slug");
-  if (error) {
-    console.warn("Could not load send history (dedup skipped):", error.message);
-    return {};
-  }
+// Never repeat a listing to the same user — this is a hard guarantee.
+// History lives in newsletter_sends (unique on email+post_slug). We query
+// it filtered in chunks of subscribers instead of SELECT *: unfiltered
+// selects silently cap at 1000 rows, which would break dedup once the
+// history table grows past that.
+const CHUNK_SIZE = 150;
+
+async function fetchSentSlugs(emails) {
   const map = {};
-  for (const row of data ?? []) {
-    (map[row.email] ??= new Set()).add(row.post_slug);
+  for (let i = 0; i < emails.length; i += CHUNK_SIZE) {
+    const { data, error } = await supabase
+      .from("newsletter_sends")
+      .select("email, post_slug")
+      .in("email", emails.slice(i, i + CHUNK_SIZE));
+    if (error) {
+      // A partial/failed read means we might repeat a listing. Abort the
+      // whole run rather than risk violating the no-repeat rule.
+      throw new Error(`Send-history fetch failed (dedup aborted): ${error.message}`);
+    }
+    for (const row of data ?? []) {
+      (map[row.email] ??= new Set()).add(row.post_slug);
+    }
   }
   return map;
 }
@@ -120,7 +181,10 @@ async function fetchSentSlugs() {
 async function recordSend(email, postSlug) {
   const { error } = await supabase
     .from("newsletter_sends")
-    .upsert({ email, post_slug: postSlug }, { onConflict: "email,post_slug", ignoreDuplicates: true });
+    .upsert(
+      { email, post_slug: postSlug, sent_at: new Date().toISOString() },
+      { onConflict: "email,post_slug", ignoreDuplicates: true },
+    );
   if (error) console.warn(`  WARN   failed to record send for ${email}:`, error.message);
 }
 
@@ -171,8 +235,24 @@ function pickBestPost(posts, sub, alreadySent = new Set()) {
   });
 
   if (!matched.length) return null;
-  // Featured first, then newest
-  return matched.find((p) => p.featured) ?? matched[0];
+  // Featured first, then freshness — but ties are broken deterministically
+  // per subscriber/day so different subscribers receive different strong
+  // matches instead of everyone getting the identical listing.
+  const seed = hashStr(`${sub.email}|${todayEAT()}`);
+  const freshnessScore = (iso) => {
+    if (!iso) return 0;
+    const ageDays = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+    return Math.max(0, 100 - 5 * Math.min(Math.max(ageDays, 0), 20));
+  };
+  const scored = matched.map((p) => ({
+    p,
+    s:
+      (p.featured ? 10_000 : 0) +
+      freshnessScore(p.published_at) +
+      ((seed ^ hashStr(p.slug)) % 500),
+  }));
+  scored.sort((a, b) => b.s - a.s);
+  return scored[0].p;
 }
 
 // ── Varied greeting messages ───────────────────────────────────────────────
@@ -236,6 +316,91 @@ const WELCOME_MESSAGES = [
 
 function pickMessage() {
   return MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
+}
+
+// ── Match-derived copy ─────────────────────────────────────────────────────
+// Generic random lines from shared pools made a single blast feel
+// copy-pasted. Instead we compose the intro from what actually matched:
+// the subscriber's role/region preferences and the listing itself.
+function hashStr(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+const titleCase = (s) => s.replace(/\b\w/g, (c) => c.toUpperCase());
+
+const OPENERS = {
+  job: [
+    "Good news — a new job matched your profile.",
+    "A fresh job opening just landed that fits what you're looking for.",
+    "We spotted a new job we think you should see.",
+    "There's a new vacancy with your name on it.",
+  ],
+  internship: [
+    "An internship opening just came in for you.",
+    "A new internship matched your profile.",
+    "Fresh internship alert — take a look.",
+  ],
+  scholarship: [
+    "A scholarship opportunity matched your profile.",
+    "Good news — there's a scholarship you may qualify for.",
+    "A new funding opportunity for your studies just came in.",
+  ],
+  grant: [
+    "A grant opportunity matched your interests.",
+    "Funding alert — this grant could fit your work.",
+    "A new grant call just opened that may suit you.",
+  ],
+  fellowship: [
+    "A fellowship opportunity matched your profile.",
+    "Good news — a new fellowship call is open.",
+    "There's a fellowship we think suits your path.",
+  ],
+  conference: [
+    "A conference matched your professional interests.",
+    "Heads up — a relevant conference is coming up.",
+    "A new conference opportunity just opened.",
+  ],
+  default: [
+    "Something new matched your profile.",
+    "We found an opportunity worth your time.",
+    "A fresh opportunity just came in for you.",
+  ],
+};
+
+function regionHitFor(sub, location) {
+  if (!sub.regions?.length || !location) return null;
+  const loc = location.toLowerCase();
+  return (
+    sub.regions
+      .map((r) => r.replace(" Uganda", "").trim())
+      .find((r) => r && loc.includes(r.toLowerCase())) ?? null
+  );
+}
+
+function buildMatchMessage(sub, post, seed) {
+  const pick = (arr) => arr[seed % arr.length];
+  const prof = (post.profession ?? "").toLowerCase();
+  const roleHit = prof
+    ? (sub.roles ?? []).find((r) => roleMatchesProfession(r, prof)) ?? null
+    : null;
+  const regionHit = regionHitFor(sub, post.location);
+  const urgency = daysUntilDeadline(post.deadline);
+
+  let msg = pick(OPENERS[post.type] ?? OPENERS.default);
+  const bits = [];
+  if (roleHit) bits.push(`it's in your field (${titleCase(roleHit)})`);
+  else if (prof) bits.push(`it's looking for ${prof} professionals`);
+  if (regionHit) bits.push(`it's based in ${regionHit}`);
+  if (urgency !== null && urgency <= 7) {
+    bits.push(`the deadline is only ${urgency} day${urgency === 1 ? "" : "s"} away`);
+  }
+  if (bits.length) {
+    msg += ` ${pick(["Why we flagged it:", "Here's why:", "Quick rundown:"])} ${capitalize(bits.join(", "))}.`;
+  }
+  return msg;
 }
 
 function pickWelcomeMessage() {
@@ -396,14 +561,24 @@ function buildEmail(sub, post) {
   // Context-aware variables
   const dow         = eatNow().getUTCDay();
   const greeting    = timeGreeting();
-  const message     = pickContextMessage(dow);
+  const seed        = hashStr(`${sub.email}|${post.slug}`);
+  const message     = buildMatchMessage(sub, post, seed);
   const holiday     = todayHoliday();
   const urgencyDays = daysUntilDeadline(post.deadline);
+  const regionHit   = regionHitFor(sub, post.location);
   const age         = postedAge(post.published_at);
   const hasImage    = !!post.image_url;
+  // Personalized subject: lead with the match, add urgency or place.
+  // Holiday greeting overrides everything for the day.
+  const subjectCore = [
+    `${color.label}: ${post.title}`,
+    urgencyDays !== null && urgencyDays <= 7
+      ? `closes in ${urgencyDays} day${urgencyDays === 1 ? "" : "s"}`
+      : regionHit,
+  ].filter(Boolean).join(" · ");
   const subject     = holiday
-    ? `${holiday.emoji} Happy ${holiday.name} | ${color.label}: ${post.title} | Rate Musawo`
-    : `${timePeriodLabel()}: ${post.title} at ${post.organization} | Rate Musawo`;
+    ? `${holiday.emoji} Happy ${holiday.name} | ${subjectCore} | Rate Musawo`
+    : `${timePeriodLabel()}: ${subjectCore} | Rate Musawo`;
 
   // Per-cell border-radius (overflow:hidden is unreliable in email clients)
   const imgRadius   = "border-radius:10px 10px 0 0;";
@@ -428,7 +603,7 @@ function buildEmail(sub, post) {
           <img src="${SITE}/logo.png" alt="Rate Musawo" width="52" height="52"
             style="border-radius:8px;display:block;margin:0 auto 10px;">
           <p style="margin:0;font-size:21px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Rate Musawo</p>
-          <p style="margin:3px 0 0;font-size:12px;color:#86efac;letter-spacing:0.2px;">Jobs, grants, scholarships, fellowships, conferences and more for Uganda's health workers</p>
+          <p style="margin:3px 0 0;font-size:12px;color:#86efac;letter-spacing:0.2px;">Jobs, grants, scholarships, fellowships, conferences, & more for Uganda's health workers</p>
         </td></tr>
 
         <!-- Greeting -->
@@ -528,8 +703,26 @@ function buildEmail(sub, post) {
 </body>
 </html>`;
 
-  return { subject, html };
+  return { subject, html, message };
 }
+
+// ── Sending helpers ───────────────────────────────────────────────────────
+// One retry with backoff on transient SMTP errors — a single hiccup
+// shouldn't cost a subscriber their slot for the whole day.
+async function sendWithRetry(mail) {
+  try {
+    return await transporter.sendMail(mail);
+  } catch (err) {
+    console.warn(`         retrying after: ${err.message}`);
+    await new Promise((r) => setTimeout(r, 3_000));
+    return transporter.sendMail(mail);
+  }
+}
+
+// Human-like pacing: randomized delay so bulk sends don't march in
+// lock-step (Gmail's rate heuristics favor this as the list grows).
+const sendDelay = () => 350 + Math.floor(Math.random() * 450);
+const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ── Welcome email ──────────────────────────────────────────────────────────
 function manageLink(sub) {
@@ -558,7 +751,7 @@ function buildWelcomeEmail(sub) {
           <img src="${SITE}/logo.png" alt="Rate Musawo" width="52" height="52"
             style="border-radius:8px;display:block;margin:0 auto 10px;">
           <p style="margin:0;font-size:21px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Rate Musawo</p>
-          <p style="margin:3px 0 0;font-size:12px;color:#86efac;letter-spacing:0.2px;">Jobs, grants, scholarships, fellowships, conferences and more for Uganda's health workers</p>
+          <p style="margin:3px 0 0;font-size:12px;color:#86efac;letter-spacing:0.2px;">Jobs, grants, scholarships, fellowships, conferences, & more for Uganda's health workers</p>
         </td></tr>
 
         <!-- Body -->
@@ -637,7 +830,7 @@ async function sendWelcomeEmails() {
     }
 
     try {
-      await transporter.sendMail({
+      await sendWithRetry({
         from: `"Rate Musawo" <${process.env.GMAIL_USER}>`,
         to: sub.email,
         subject,
@@ -654,7 +847,7 @@ async function sendWelcomeEmails() {
       .update({ welcome_sent: true })
       .eq("email", sub.email);
 
-    await new Promise((r) => setTimeout(r, 300));
+    await pause(sendDelay());
   }
 
   console.log();
@@ -680,7 +873,7 @@ async function main() {
   // it's a silent no-op.
   let slot = null;
   if (!DRY_RUN && !TO_ONLY && !FORCE) {
-    slot = dueSlot();
+    slot = await dueSlot();
     if (!slot) {
       console.log("No slot due right now. Exiting.");
       return;
@@ -720,19 +913,26 @@ async function main() {
   console.log(`Found ${posts.length} active post(s) (${expiredCount} skipped, deadline passed).`);
   if (!posts.length) { console.log("Nothing to send."); return; }
 
-  const [{ data: subscribers, error: subErr }, sentMap] = await Promise.all([
-    supabase
-      .from("newsletter_subscribers")
-      .select("email,first_name,opportunity_types,roles,regions,manage_token")
-      .eq("status", "subscribed"),
-    fetchSentSlugs(),
-  ]);
+  const { data: subscribers, error: subErr } = await supabase
+    .from("newsletter_subscribers")
+    .select("email,first_name,opportunity_types,roles,regions,manage_token")
+    .eq("status", "subscribed");
 
   if (subErr) { console.error("Subscribers fetch failed:", subErr.message); process.exit(1); }
 
   const targets = TO_ONLY
     ? subscribers.filter((s) => s.email === TO_ONLY)
     : subscribers;
+
+  // Load send history per-subscriber in chunks. Failure is fatal: a partial
+  // dedup map would risk repeating listings to real people.
+  let sentMap;
+  try {
+    sentMap = await fetchSentSlugs(subscribers.map((s) => s.email));
+  } catch (err) {
+    console.error(err.message);
+    process.exit(1);
+  }
 
   console.log(`${subscribers.length} subscriber(s)${TO_ONLY ? ` → filtered to ${TO_ONLY}` : ""}.\n`);
 
@@ -748,16 +948,17 @@ async function main() {
       continue;
     }
 
-    const { subject, html } = buildEmail(sub, post);
+    const { subject, html, message } = buildEmail(sub, post);
 
     if (DRY_RUN) {
       console.log(`  [DRY]  ${sub.email}, "${post.title}" (${post.type})`);
+      console.log(`         💬 ${message}`);
       sent++;
       continue;
     }
 
     try {
-      await transporter.sendMail({
+      await sendWithRetry({
         from: `"Rate Musawo" <${process.env.GMAIL_USER}>`,
         to: sub.email,
         subject,
@@ -766,6 +967,7 @@ async function main() {
       console.log(`  SENT   ${sub.email}`);
       console.log(`         📌 ${post.type.toUpperCase()} | ${post.title}`);
       console.log(`         🏢 ${post.organization}${post.location ? ` · 📍 ${post.location}` : ""}${post.deadline ? ` · ⏰ ${post.deadline}` : ""}`);
+      console.log(`         💬 ${message}`);
       sent++;
     } catch (err) {
       console.error(`  ERROR  ${sub.email}: ${err.message}`);
@@ -774,7 +976,7 @@ async function main() {
     // Record outside the send try/catch, a DB glitch here never marks the send as failed
     await recordSend(sub.email, post.slug);
 
-    await new Promise((r) => setTimeout(r, 300));
+    await pause(sendDelay());
   }
 
   console.log(`\nDone. Sent: ${sent}, Skipped: ${skipped}`);

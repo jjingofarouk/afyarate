@@ -135,7 +135,8 @@ const COLS = [
   "country", "employment_type", "experience_level", "qualification", "eligibility",
   "salary", "description", "summary", "how_to_apply", "application_url",
   "application_email", "deadline", "source_name", "source_url", "tags", "featured",
-  "status", "published_at", "views", "search_text", "image_url",
+  "status", "published_at", "views", "search_text", "image_url", "required_documents",
+  "key_dates",
 ].filter((c) => presentCols.has(c));
 
 const conflictSets = COLS.filter((c) => c !== "slug").map((c) => `${c} = excluded.${c}`);

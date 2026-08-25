@@ -30,7 +30,7 @@ export default function RatedPractitionerCard({ p }: { p: Practitioner }) {
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="line-clamp-1 text-sm font-semibold text-slate-900 group-hover:text-amber-700 dark:text-slate-100 dark:group-hover:text-amber-400">
+          <p className="line-clamp-2 text-sm font-semibold leading-snug text-slate-900 group-hover:text-amber-700 dark:text-slate-100 dark:group-hover:text-amber-400">
             {p.name}
           </p>
           <p className="mt-0.5 line-clamp-1 text-xs text-slate-500 dark:text-slate-400">

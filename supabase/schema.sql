@@ -463,6 +463,61 @@ create policy "anyone can subscribe to the newsletter"
   on public.newsletter_subscribers for insert with check (true);
 
 -- ----------------------------------------------------------------------------
+-- 8. Profile claims (paid, one-time forever) + editable profile details.
+--    Flow: practitioner auto-matches against the registry -> pays UGX 5,000
+--    once via MarzPay -> webhook flips status to 'paid' and marks the
+--    practitioner claimed. Registry fields stay scraper-owned forever;
+--    claimants may only edit rows in profile_details.
+-- ----------------------------------------------------------------------------
+alter table public.practitioners add column if not exists claimed boolean not null default false;
+
+create table if not exists public.claim_requests (
+  id bigint generated always as identity primary key,
+  practitioner_id bigint not null references public.practitioners (id) on delete cascade,
+  requester_name text not null,
+  phone text not null,
+  email text,
+  status text not null default 'processing'
+    check (status in ('matched','processing','paid','failed')),
+  marzpay_reference text unique,
+  marzpay_txn_uuid text,
+  provider_txn_id text,
+  amount integer not null default 5000,
+  paid_at timestamptz,
+  -- Secret that unlocks /practitioners/[id]/edit for the payer.
+  edit_token text unique,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists claims_practitioner on public.claim_requests (practitioner_id);
+create index if not exists claims_status on public.claim_requests (status);
+-- One paid claim per practitioner, ever (partial unique index enforces this
+-- at the database level even under concurrent webhooks).
+create unique index if not exists claims_one_paid_per_practitioner
+  on public.claim_requests (practitioner_id) where status = 'paid';
+
+create table if not exists public.profile_details (
+  practitioner_id bigint primary key references public.practitioners (id) on delete cascade,
+  phone text,
+  whatsapp text,
+  workplace text,
+  bio text,
+  specialties text[] default '{}',
+  website text,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.claim_requests enable row level security;
+alter table public.profile_details enable row level security;
+
+-- Claims have NO public policies: they are written/read only by the service
+-- role (API routes + admin). Profile details are publicly readable so the
+-- practitioner page can render them.
+drop policy if exists "profile details are publicly readable" on public.profile_details;
+create policy "profile details are publicly readable"
+  on public.profile_details for select using (true);
+
+-- ----------------------------------------------------------------------------
 -- 7. Grants for the anon/authenticated roles used by the publishable key
 -- ----------------------------------------------------------------------------
 grant usage on schema public to anon, authenticated;
@@ -471,6 +526,7 @@ grant select on public.practitioners, public.licenses, public.ratings, public.po
               public.profession_counts to anon, authenticated;
 grant select on public.facilities, public.facility_ratings,
               public.facilities_overview to anon, authenticated;
+grant select on public.profile_details to anon, authenticated;
 grant insert on public.ratings to anon, authenticated;
 grant insert on public.posts to anon, authenticated;
 grant insert on public.facility_ratings to anon, authenticated;

@@ -25,8 +25,10 @@ function Deadline({ date }: { date: string | null }) {
         closed
           ? "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400"
           : days <= 7
-            ? "bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300"
-            : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300"
+            ? "bg-red-100 text-red-700 dark:bg-red-900/60 dark:text-red-300"
+            : days <= 30
+              ? "bg-orange-100 text-orange-800 dark:bg-orange-900/60 dark:text-orange-300"
+              : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300"
       }`}
     >
       {closed ? "Closed" : days === 0 ? "Closes today" : `${days} ${days === 1 ? "day" : "days"} left`}

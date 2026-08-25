@@ -9,6 +9,11 @@ import { SITE_URL } from "@/lib/site";
 //   - employmentType uses Google's allowed enums (CONTRACTOR, INTERN, ...)
 //   - jobLocation.address is broken into streetAddress / addressLocality /
 //     addressRegion wherever the stored location string contains that detail.
+//   - streetAddress / postalCode are always emitted (Google warns when they
+//     are missing); Uganda has no widely used postal codes, so a neutral
+//     placeholder is used.
+//   - validThrough is always emitted; rolling listings expire 6 months after
+//     publication.
 // ---------------------------------------------------------------------------
 
 const CURRENCY = "UGX";
@@ -42,6 +47,13 @@ const TOWN_REGIONS: Record<string, string> = {
   buikwe: "Central Region",
   kayabwe: "Central Region",
   bombo: "Central Region",
+  busega: "Central Region",
+  mifunya: "Central Region",
+  kibiri: "Central Region",
+  buwambo: "Central Region",
+  kibuye: "Central Region",
+  matugga: "Central Region",
+  mengo: "Central Region",
   // Eastern Region
   jinja: "Eastern Region",
   iganga: "Eastern Region",
@@ -67,6 +79,8 @@ const TOWN_REGIONS: Record<string, string> = {
   kibuku: "Eastern Region",
   butebo: "Eastern Region",
   luuka: "Eastern Region",
+  namutumba: "Eastern Region",
+  serere: "Eastern Region",
   // Western Region
   mbarara: "Western Region",
   kasese: "Western Region",
@@ -223,10 +237,12 @@ export function parseJobLocation(raw: string | null): JobLocation {
 }
 
 /** Parse a salary string ("UGX 2M", "600K", "1,500,000") into a numeric value
- *  plus pay period when stated. Returns undefined for vague values. */
+ *  plus pay period. Defaults to MONTH when no period is stated, since a bare
+ *  figure in a Uganda job posting is almost always a monthly wage. Returns
+ *  undefined for vague values ("Negotiable", "Not disclosed"). */
 export function parseSalary(
   raw: string | null,
-): { value: number; unitText?: string } | undefined {
+): { value: number; unitText: string } | undefined {
   if (!raw) return undefined;
   const s = raw.replace(/,/g, "").toLowerCase();
   const m = s.match(/(\d+(?:\.\d+)?)\s*(m|million|k|thousand)?/);
@@ -237,12 +253,14 @@ export function parseSalary(
   else if (unit === "k" || unit === "thousand") value *= 1_000;
   if (!Number.isFinite(value) || value <= 0) return undefined;
 
-  let unitText: string | undefined;
+  let unitText: string;
   if (/hourly|per\s+hour|per\s+hr|\/hr|\/hour\b/.test(s)) unitText = "HOUR";
   else if (/weekly|per\s+week|per\s+wk|\/wk|\/week\b/.test(s)) unitText = "WEEK";
-  else if (/monthly|per\s+month|\/month\b/.test(s)) unitText = "MONTH";
   else if (/annually|annual|per\s+(?:year|annum)|\/yr\b|\/year\b/.test(s)) unitText = "YEAR";
-  return { value, ...(unitText ? { unitText } : {}) };
+  // A bare figure ("UGX 600,000") is, by near universal local convention, a
+  // monthly wage; no Uganda posting means that as an annual salary.
+  else unitText = "MONTH";
+  return { value, unitText };
 }
 
 /** Fallback: when the salary field is empty/unparseable, look for a
@@ -276,6 +294,24 @@ function deadlineIso(deadline: string | null): string | undefined {
   return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
 }
 
+/** Rolling listings get a validThrough 6 months after publication so the
+ *  field is never missing (Google warns when it is). */
+function rollingValidThrough(publishedAt: string | null): string {
+  const d = publishedAt ? new Date(publishedAt) : new Date();
+  if (Number.isNaN(d.getTime())) return new Date().toISOString();
+  d.setUTCMonth(d.getUTCMonth() + 6);
+  return d.toISOString();
+}
+
+/** Best-effort streetAddress: parsed street detail, else the raw location
+ *  text, else the hiring organization's name. */
+function streetAddressFor(post: Post, location: JobLocation): string {
+  if (location.streetAddress) return location.streetAddress;
+  const raw = post.location?.trim().replace(/\s+/g, " ");
+  if (raw && raw.toLowerCase() !== "uganda") return raw;
+  return post.organization;
+}
+
 /** Build the JobPosting JSON-LD entity, or null for non-job listings. */
 export function jobPostingSchema(post: Post): Record<string, unknown> | null {
   if (post.type !== "job" && post.type !== "internship") return null;
@@ -290,7 +326,7 @@ export function jobPostingSchema(post: Post): Record<string, unknown> | null {
     title: post.title,
     description: post.description || post.summary || post.title,
     datePosted: post.publishedAt ?? new Date().toISOString(),
-    ...(deadlineIso(post.deadline) ? { validThrough: deadlineIso(post.deadline) } : {}),
+    validThrough: deadlineIso(post.deadline) ?? rollingValidThrough(post.publishedAt),
     employmentType: employmentType(post.employmentType),
     hiringOrganization: {
       "@type": "Organization",
@@ -302,9 +338,10 @@ export function jobPostingSchema(post: Post): Record<string, unknown> | null {
       address: {
         "@type": "PostalAddress",
         addressCountry: "UG",
+        postalCode: "00000",
         ...(location.addressLocality ? { addressLocality: location.addressLocality } : {}),
         ...(location.addressRegion ? { addressRegion: location.addressRegion } : {}),
-        ...(location.streetAddress ? { streetAddress: location.streetAddress } : {}),
+        streetAddress: streetAddressFor(post, location),
       },
     },
     url: `${SITE_URL}/posts/${post.slug}`,

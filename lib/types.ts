@@ -14,6 +14,7 @@ export interface Practitioner {
   recordCount: number;
   avgRating: number | null;
   ratingCount: number;
+  claimed?: boolean;
 }
 
 export interface LicenseRecord {

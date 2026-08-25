@@ -31,6 +31,7 @@ function mapPractitioner(row: Row): Practitioner {
     recordCount: Number(row.record_count ?? 1),
     avgRating: row.avg_rating != null ? Number(row.avg_rating) : null,
     ratingCount: Number(row.rating_count ?? 0),
+    claimed: Boolean((row as Record<string, unknown>).claimed),
   };
 }
 

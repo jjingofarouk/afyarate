@@ -14,6 +14,7 @@ import RatingForm from "@/components/RatingForm";
 import ShareButtons from "@/components/ShareButtons";
 import { Star } from "@/components/StarIcon";
 import { FadeIn } from "@/components/motion/FadeIn";
+import { ClaimCard, ClaimStrip } from "@/components/ClaimProfileCard";
 
 export const dynamic = "force-dynamic";
 
@@ -219,6 +220,7 @@ export default async function PractitionerPage({
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left: photo + summary */}
         <FadeIn className="lg:col-span-1">
+          <div className="space-y-6">
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <div className="aspect-[3/4] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
               {practitioner.imageUrl ? (
@@ -272,10 +274,13 @@ export default async function PractitionerPage({
               </div>
             </div>
           </div>
+          {!practitioner.claimed && <ClaimCard name={practitioner.name} />}
+          </div>
         </FadeIn>
 
         {/* Right: details */}
         <FadeIn delay={0.1} className="lg:col-span-2">
+          {!practitioner.claimed && <ClaimStrip name={practitioner.name} />}
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
               {practitioner.name}

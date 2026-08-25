@@ -102,15 +102,44 @@ export async function generateMetadata({
   };
 }
 
-function MetaItem({ label, value }: { label: string; value: string }) {
+function MetaItem({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone?: "red" | "orange" | "green";
+}) {
+  const toneClasses =
+    tone === "red"
+      ? "text-red-600 dark:text-red-400"
+      : tone === "orange"
+        ? "text-orange-600 dark:text-orange-400"
+        : tone === "green"
+          ? "text-emerald-600 dark:text-emerald-400"
+          : "text-slate-900 dark:text-slate-100";
   return (
     <div>
       <dt className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         {label}
       </dt>
-      <dd className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{value}</dd>
+      <dd className={`mt-1 text-sm font-semibold ${toneClasses}`}>{value}</dd>
     </div>
   );
+}
+
+/** Deadline urgency tone: red ≤7 days, orange ≤30 days, green beyond. */
+function deadlineTone(deadline: string | null): "red" | "orange" | "green" | undefined {
+  if (!deadline) return "green"; // rolling = no pressure
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const days = Math.round(
+    (new Date(`${deadline}T00:00:00`).getTime() - now.getTime()) / 86400000,
+  );
+  if (days <= 7) return "red";
+  if (days <= 30) return "orange";
+  return "green";
 }
 
 function isHeadingLine(line: string): boolean {
@@ -465,7 +494,7 @@ export default async function PostDetailPage({
             {post.employmentType && <MetaItem label="Type" value={post.employmentType} />}
             {post.experienceLevel && <MetaItem label="Level" value={post.experienceLevel} />}
             {post.salary && <MetaItem label="Pay" value={post.salary} />}
-            <MetaItem label="Deadline" value={deadline ?? "Rolling"} />
+            <MetaItem label="Deadline" value={deadline ?? "Rolling"} tone={deadlineTone(post.deadline)} />
           </dl>
 
           {post.summary && (

@@ -4,8 +4,6 @@ import { getPosts, getProfessions, slugify, facetOptions } from "@/lib/posts";
 import PostBoard from "@/components/PostBoard";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 
-const INITIAL_COUNT = 12;
-
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
@@ -101,6 +99,15 @@ export default async function ProfessionPage({
         Looking for a registered {facet.label}? Browse {facet.label}s in Uganda →
       </a>
 
+      <div className="mt-8">
+        <PostBoard
+          initialPosts={posts}
+          total={posts.length}
+          profession={slug}
+          locations={facetOptions(posts, (p) => p.location)}
+        />
+      </div>
+
       <section className="mt-10 grid gap-6 lg:grid-cols-2">
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
@@ -172,15 +179,6 @@ export default async function ProfessionPage({
           )}
         </div>
       </section>
-
-      <div className="mt-8">
-        <PostBoard
-            initialPosts={posts.slice(0, INITIAL_COUNT)}
-            total={posts.length}
-            profession={slug}
-            locations={facetOptions(posts, (p) => p.location)}
-          />
-      </div>
 
       <p className="mt-10 border-t border-slate-100 pt-4 text-xs text-slate-400 dark:border-slate-800 dark:text-slate-500">
         Explore more by profession:{" "}

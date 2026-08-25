@@ -11,6 +11,7 @@ import NoCopyScript from "@/components/NoCopy";
 import CopyNotice from "@/components/CopyNotice";
 import Lightbox from "@/components/Lightbox";
 import NewsletterFab from "@/components/NewsletterFab";
+import ClaimBanner from "@/components/ClaimBanner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -83,20 +84,24 @@ export default function RootLayout({
         />
         <ThemeInitScript />
         <NoCopyScript />
-        <Script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=G-YFWL8BL1F8"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
+        {process.env.NODE_ENV === "production" && (
+          <>
+            <Script
+              async
+              src="https://www.googletagmanager.com/gtag/js?id=G-YFWL8BL1F8"
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
 
-            gtag('config', 'G-YFWL8BL1F8');
-          `}
-        </Script>
+                gtag('config', 'G-YFWL8BL1F8');
+              `}
+            </Script>
+          </>
+        )}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -135,6 +140,7 @@ export default function RootLayout({
         <CopyNotice />
         <Lightbox />
         <NewsletterFab />
+        <ClaimBanner />
       </body>
     </html>
   );

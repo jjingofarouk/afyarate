@@ -3,7 +3,7 @@ import Link from "next/link";
 
 // Contact email for the "Contact the developer" section. Kept private - no
 // personal name appears anywhere on the site.
-const DEVELOPER_EMAIL = "rawvidence@gmail.com";
+const DEVELOPER_EMAIL = "ratemusawo@gmail.com";
 
 export const metadata: Metadata = {
   title: "About",
