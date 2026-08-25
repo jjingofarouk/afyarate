@@ -9,10 +9,7 @@ export function marzPayConfigured(): boolean {
 }
 
 function authHeader(): string {
-  const creds = Buffer.from(
-    `${process.env.MARZ_API_KEY}:${process.env.MARZ_API_SECRET}`
-  ).toString("base64");
-  return `Basic ${creds}`;
+  return `Basic ${btoa(`${process.env.MARZ_API_KEY}:${process.env.MARZ_API_SECRET}`)}`;
 }
 
 /** Normalize Ugandan phone input to E.164 (+256…). Returns null if invalid. */
