@@ -186,6 +186,58 @@ All topics are monetization-aware (`components/ContactForm.tsx`):
 
 ---
 
+## 8. Community support donations ("we don't run ads")
+
+A lightweight, optional donation modal targeting readers — job-seekers,
+patients, and general visitors — who get real value from the platform for
+free and may want to contribute.
+
+### Rationale
+
+- The jobs board, practitioner registry, and facility directory are all free
+  for end-users; a transparent "no ads, help us keep going" ask is honest and
+  tends to land well with users who have already seen value
+- MarzPay plumbing is already live — the payment implementation is trivial
+- 1,000 UGX is the floor (removes psychological barrier while covering MTN
+  processing costs); allow the user to choose any amount above that
+- Wikipedia and Signal have proven this model works at a fraction of their
+  traffic, especially when the ask is tied to specific user benefit ("free
+  jobs board, no ads, yours to use forever")
+
+### UX rules (critical)
+
+- **Never show alongside the claim banner** — if the claim banner has been
+  shown in the current session, suppress the support modal entirely. Two
+  financial asks in one session is too much.
+- **Audience: readers, not practitioners.** Show only on post/job/facility
+  pages; suppress on `/practitioners/[id]` pages (claim funnel targets those).
+- **Trigger late** — after the user has scrolled a post to the bottom, or
+  has visited 2+ pages in the session. Not on arrival.
+- **One-time only, no recurring.** Avoid subscription complexity until there
+  is clear demand for it.
+- **Dismiss cooldown: 30 days** (longer than the claim banner's 7 days,
+  because the ask is softer and should feel rarer).
+
+### Implementation sketch (when building)
+
+- `POST /api/donate` — same MarzPay `collect-money` pattern as claims,
+  fixed or user-chosen amount, reference = `support-{uuid}`
+- `POST /api/webhooks/marzpay` — already handles unknown references
+  gracefully; extend it to log support donations to a `donations` table
+- Modal: slide-up sheet on mobile (same pattern as `ClaimBanner`), phone
+  input + amount selector (1k / 2k / 5k / other), MarzPay STK push,
+  single success screen. No polling needed — close on push sent, thank user.
+- Copy: "Rate Musawo is free and has no ads. If it helped you find a job,
+  verify a doctor, or reach a hospital, a small contribution keeps it going."
+
+### Implementation order
+
+Add this only after the recruiter paid-posting tier (section 3) and the
+facility featured-listing pitch (section 4) are live. Donations are
+supplementary revenue; commercial streams should come first.
+
+---
+
 ## Suggested implementation order
 
 1. [x] Claim banner + contact funnel (done)
@@ -195,3 +247,4 @@ All topics are monetization-aware (`components/ContactForm.tsx`):
 5. [ ] Practitioner edit UI (passcode-gated) writing to profile_details + audit log
 6. [ ] Newsletter sponsorship slot template
 7. [ ] Featured search placement for claimed profiles
+8. [ ] Community support donation modal (section 8 — after 3 and 4 are live)
