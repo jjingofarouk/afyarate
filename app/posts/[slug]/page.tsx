@@ -376,6 +376,53 @@ function Segment({
   );
 }
 
+// Colorful hashtag pills — a deterministic palette so the same tag keeps the
+// same color everywhere, with white text on saturated backgrounds.
+const TAG_STYLES = [
+  "bg-emerald-600 hover:bg-emerald-700",
+  "bg-sky-600 hover:bg-sky-700",
+  "bg-violet-600 hover:bg-violet-700",
+  "bg-rose-600 hover:bg-rose-700",
+  "bg-amber-600 hover:bg-amber-700",
+  "bg-teal-600 hover:bg-teal-700",
+  "bg-indigo-600 hover:bg-indigo-700",
+  "bg-fuchsia-600 hover:bg-fuchsia-700",
+] as const;
+
+function tagStyle(tag: string): string {
+  let h = 0;
+  for (let i = 0; i < tag.length; i++) h = (h * 31 + tag.charCodeAt(i)) >>> 0;
+  return TAG_STYLES[h % TAG_STYLES.length];
+}
+
+const RELATED_COUNT = 6;
+
+/** Rank other published listings by relevance to the current one: same
+ *  profession, then shared category, then shared tags, then same location,
+ *  falling back to recent featured/newest listings so the section always
+ *  fills a full row of related cards. */
+function relatedOpportunities(post: Post, all: Post[], count = RELATED_COUNT): Post[] {
+  const others = all.filter((p) => p.id !== post.id);
+  const profKey = post.profession ? slugify(post.profession) : "";
+  const tags = new Set(post.tags);
+  const score = (p: Post): number => {
+    let s = 0;
+    if (profKey && p.profession && slugify(p.profession) === profKey) s += 8;
+    if (post.category && p.category === post.category) s += 3;
+    if ((p.tags ?? []).some((t) => tags.has(t))) s += 2;
+    if (post.location && p.location === post.location) s += 1;
+    return s;
+  };
+  return others
+    .sort((a, b) => {
+      const d = score(b) - score(a);
+      if (d !== 0) return d;
+      if (b.featured !== a.featured) return b.featured ? 1 : -1;
+      return new Date(b.publishedAt ?? 0).getTime() - new Date(a.publishedAt ?? 0).getTime();
+    })
+    .slice(0, count);
+}
+
 function RelatedLinks({ post }: { post: Post }) {
   const links: { href: string; label: string }[] = [];
   if (post.profession) {
@@ -424,12 +471,9 @@ export default async function PostDetailPage({
     post.applicationUrl ??
     (post.applicationEmail ? `mailto:${post.applicationEmail}` : null);
 
-  let similar: Post[] = [];
-  if (post.profession) {
-    similar = (await getPosts({ profession: slugify(post.profession) }))
-      .filter((p) => p.id !== post.id)
-      .slice(0, 3);
-  }
+  // Related opportunities: same profession first, then shared category/tags/
+  // location, filling up to 6 cards with recent featured/newest listings.
+  const similar = relatedOpportunities(post, await getPosts());
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -603,7 +647,7 @@ export default async function PostDetailPage({
                 <Link
                   key={t}
                   href={`/posts?tag=${encodeURIComponent(t)}`}
-                  className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-emerald-950 dark:hover:text-emerald-400"
+                  className={`rounded-full px-3 py-1 text-xs font-semibold text-white shadow-sm transition hover:shadow ${tagStyle(t)}`}
                 >
                   #{t}
                 </Link>
@@ -616,7 +660,7 @@ export default async function PostDetailPage({
       {similar.length > 0 && (
         <section className="mt-10">
           <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-            More {post.profession} opportunities
+            {post.profession ? `More ${post.profession} opportunities` : "Related opportunities"}
           </h2>
           <div className="mt-4">
             <PostGrid posts={similar} hideTeaser />
