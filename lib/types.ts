@@ -17,6 +17,15 @@ export interface Practitioner {
   claimed?: boolean;
 }
 
+export interface ProfileDetails {
+  phone: string | null;
+  whatsapp: string | null;
+  workplace: string | null;
+  bio: string | null;
+  specialties: string[];
+  website: string | null;
+}
+
 export interface LicenseRecord {
   id: number;
   practitionerId: number;

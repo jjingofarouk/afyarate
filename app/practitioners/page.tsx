@@ -33,7 +33,7 @@ export default async function PractitionersHubPage({
   const counts = await getProfessionCounts();
   const jobProfessions = await getJobProfessions();
   const searchData = q
-    ? await searchPractitioners({ q, status: "all", sort: "rating", page: 1, pageSize: PAGE_SIZE })
+    ? await searchPractitioners({ q, status: "all", sort: "name", page: 1, pageSize: PAGE_SIZE })
     : null;
 
   const breadcrumbLd = {
@@ -91,7 +91,7 @@ export default async function PractitionersHubPage({
           <div className="mt-4">
             <PractitionerSearch
               initialQuery={q}
-              initialSort="rating"
+              initialSort="name"
               initialData={searchData ?? undefined}
             />
           </div>

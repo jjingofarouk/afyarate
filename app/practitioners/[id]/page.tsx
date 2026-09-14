@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import {
   getLicenses,
   getPractitioner,
+  getProfileDetails,
   getRatings,
 } from "@/lib/practitioners";
 import { slugify } from "@/lib/posts";
@@ -102,16 +103,18 @@ export default async function PractitionerPage({
 }) {
   const { id } = await params;
   const numId = Number(id);
-  // All three are keyed off the same id (no need to wait for practitioner to
-  // resolve before starting the other two), fetch in parallel.
-  const [practitioner, licenses, ratings] = await Promise.all([
+  // All four are keyed off the same id (no need to wait for practitioner to
+  // resolve before starting the others), fetch in parallel.
+  const [practitioner, licenses, ratings, details] = await Promise.all([
     getPractitioner(numId),
     getLicenses(numId),
     getRatings(numId),
+    getProfileDetails(numId),
   ]);
   if (!practitioner) notFound();
 
   const active = practitioner.licenceStatus === "Active";
+  const waDigits = details?.whatsapp?.replace(/\D/g, "");
 
   const breadcrumbLd = {
     "@context": "https://schema.org",
@@ -282,9 +285,19 @@ export default async function PractitionerPage({
         <FadeIn delay={0.1} className="lg:col-span-2">
           {!practitioner.claimed && <ClaimStrip name={practitioner.name} />}
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-              {practitioner.name}
-            </h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+                {practitioner.name}
+              </h1>
+              {practitioner.claimed && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1 text-xs font-bold text-white">
+                  <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Verified profile
+                </span>
+              )}
+            </div>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{practitioner.council}</p>
 
             <div className="mt-5">
@@ -319,6 +332,67 @@ export default async function PractitionerPage({
               </div>
             )}
           </div>
+
+          {/* Claimed contact details — only paid, claimed profiles show these. */}
+          {practitioner.claimed && details && (
+            <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm dark:border-emerald-900/60 dark:bg-emerald-950/30">
+              <h2 className="text-sm font-bold uppercase tracking-wide text-emerald-800 dark:text-emerald-300">
+                Contact directly — no middleman
+              </h2>
+              {(details.phone || waDigits) && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {details.phone && (
+                    <a
+                      href={`tel:${details.phone.replace(/\s/g, "")}`}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700"
+                    >
+                      <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                      </svg>
+                      Call {details.phone}
+                    </a>
+                  )}
+                  {waDigits && (
+                    <a
+                      href={`https://wa.me/${waDigits}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-bold text-white transition hover:brightness-95"
+                    >
+                      <svg className="size-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.89 1.22 3.09.15.2 2.1 3.2 5.1 4.49.71.31 1.27.49 1.7.63.72.23 1.37.2 1.88.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.04 21.79h-.01a9.87 9.87 0 01-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 01-1.51-5.26c0-5.45 4.44-9.88 9.9-9.88a9.83 9.83 0 019.88 9.89c0 5.45-4.44 9.88-9.89 9.88m8.42-18.3A11.82 11.82 0 0012.04 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.9 11.9 0 005.68 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41" />
+                      </svg>
+                      WhatsApp
+                    </a>
+                  )}
+                </div>
+              )}
+              {details.workplace && (
+                <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
+                  <span className="font-semibold">Workplace: </span>{details.workplace}
+                </p>
+              )}
+              {details.specialties.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {details.specialties.map((s) => (
+                    <span key={s} className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-emerald-800 dark:bg-slate-800 dark:text-emerald-300">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {details.bio && (
+                <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                  {details.bio}
+                </p>
+              )}
+              {details.website && (
+                <a href={details.website} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-sm font-medium text-emerald-700 underline dark:text-emerald-400">
+                  {details.website}
+                </a>
+              )}
+            </div>
+          )}
 
           {/* Licence history */}
           {licenses.length > 1 && (

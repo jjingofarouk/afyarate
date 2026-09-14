@@ -471,6 +471,46 @@ create policy "anyone can subscribe to the newsletter"
 -- ----------------------------------------------------------------------------
 alter table public.practitioners add column if not exists claimed boolean not null default false;
 
+-- Postgres expands `p.*` in a view at CREATE time, so a view created before
+-- the `claimed` column existed will silently omit it (and the app then reads
+-- claimed as false forever). Re-create the view + dependent function here so
+-- fresh setups and re-runs always expose `claimed`, no matter the ordering.
+drop view if exists public.practitioners_overview cascade;
+create view public.practitioners_overview as
+select
+  p.*,
+  (select round(avg(r.rating)::numeric, 2) from public.ratings r
+    where r.practitioner_id = p.id) as avg_rating,
+  (select count(*) from public.ratings r
+    where r.practitioner_id = p.id) as rating_count
+from public.practitioners p;
+
+create or replace function public.search_random(
+  p_limit integer,
+  p_offset integer,
+  p_q text default '',
+  p_council text default '',
+  p_status text default 'all',
+  p_profession text default ''
+)
+returns setof public.practitioners_overview
+language sql
+as $$
+  select * from public.practitioners_overview
+  where (p_q = ''
+         or search_name ilike '%' || p_q || '%'
+         or registration_no ilike '%' || p_q || '%'
+         or license_number ilike '%' || p_q || '%')
+    and (p_council = '' or council = p_council)
+    and (p_profession = '' or profession = p_profession)
+    and (p_status = 'all'
+         or (p_status = 'active' and licence_status = 'Active')
+         or (p_status = 'inactive'
+             and (licence_status <> 'Active' or licence_status is null)))
+  order by (image_url is not null) desc, random()
+  limit p_limit offset p_offset
+$$;
+
 create table if not exists public.claim_requests (
   id bigint generated always as identity primary key,
   practitioner_id bigint not null references public.practitioners (id) on delete cascade,

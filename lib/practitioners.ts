@@ -3,6 +3,7 @@ import { createServerClient } from "./supabase/server";
 import type {
   LicenseRecord,
   Practitioner,
+  ProfileDetails,
   Rating,
   SearchResult,
 } from "./types";
@@ -249,6 +250,43 @@ export async function getRatings(practitionerId: number): Promise<Rating[]> {
     createdAt: String(r.created_at ?? ""),
     verified: Boolean(r.verified),
   }));
+}
+
+/** Public contact/workplace details a claimant added after paying. Returns
+ *  null when the practitioner never filled them in. Readable by everyone. */
+export async function getProfileDetails(
+  practitionerId: number,
+): Promise<ProfileDetails | null> {
+  const supabase = createServerClient();
+  const { data, error } = await supabase
+    .from("profile_details")
+    .select("phone, whatsapp, workplace, bio, specialties, website")
+    .eq("practitioner_id", practitionerId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+  const r = data as Row;
+  const specialties = Array.isArray(r.specialties)
+    ? (r.specialties as unknown[]).map((s) => String(s)).filter(Boolean)
+    : [];
+  if (
+    !asString(r.phone) &&
+    !asString(r.whatsapp) &&
+    !asString(r.workplace) &&
+    !asString(r.bio) &&
+    specialties.length === 0 &&
+    !asString(r.website)
+  ) {
+    return null;
+  }
+  return {
+    phone: asString(r.phone),
+    whatsapp: asString(r.whatsapp),
+    workplace: asString(r.workplace),
+    bio: asString(r.bio),
+    specialties,
+    website: asString(r.website),
+  };
 }
 
 /** Lightweight id + last-modified page, for sitemap generation. */
