@@ -34,10 +34,10 @@ export default async function FeaturedVerifiedProfile() {
         <div className="relative shrink-0">
           <span aria-hidden className="absolute -inset-1.5 animate-ping rounded-full bg-amber-400/40 [animation-duration:2s]" />
           <div className="relative size-32 overflow-hidden rounded-full bg-white/10 ring-4 ring-amber-400 sm:size-36 md:size-44">
-            {p.imageUrl ? (
+            {details?.photoUrl || p.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={p.imageUrl}
+                src={details?.photoUrl || p.imageUrl || ""}
                 alt={p.name}
                 loading="lazy"
                 className="size-full object-cover object-top"

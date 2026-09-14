@@ -168,6 +168,20 @@ export default async function ProfessionPractitionersPage({
         </p>
       </header>
 
+      {/* Best-of cross-link: "best <profession> in Uganda" ranked landing page */}
+      <div className="mt-6 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4 dark:border-emerald-900/40 dark:bg-emerald-950/30">
+        <p className="text-sm text-emerald-900 dark:text-emerald-200">
+          Short on time? See the{" "}
+          <Link
+            href={`/best/${slug}`}
+            className="font-semibold underline hover:text-emerald-700 dark:hover:text-emerald-300"
+          >
+            best {pluralProfession(prof.profession).toLowerCase()} in Uganda
+          </Link>{" "}
+          — ranked by patient ratings.
+        </p>
+      </div>
+
       <div className="mt-8">
         <PractitionerSearch
           initialProfession={prof.profession}

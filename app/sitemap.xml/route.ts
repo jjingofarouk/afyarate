@@ -1,41 +1,24 @@
-import { getClaimedPractitionerCount, getStats } from "@/lib/practitioners";
-import { getFacilityStats } from "@/lib/facilities";
+import { getChunkCounts } from "@/lib/sitemap-chunks";
 import { SITE_URL } from "@/lib/site";
 
-// Keep chunks under Supabase's 1,000-row response cap so every URL actually
-// makes it into the sitemap (a 50k request silently returns only the first
-// 1,000 rows). A valid sitemap index lists up to 50,000 entries.
+// Sitemap index over the sharded /sitemap/[id] route.
 //
 // Chunk layout (see app/sitemap/[id]/route.ts):
-//   0                                     -> static + type landing + help pages
-//   1                                     -> posts (detail + facet) + practitioner-profession
+//   0                                     -> static + type landing + help + /best pages
+//   1                                     -> posts (detail + facet) + practitioner-profession + jobs-by-profession
 //   2 .. 1+facilityChunks                 -> facilities detail pages
-//   next claimedChunks                    -> CLAIMED (paid/verified) practitioners,
-//                                            name-slug URLs, crawled first
+//   next claimedChunks                    -> CLAIMED (paid/verified) practitioners
 //   remainder                             -> all practitioners, name-slug URLs
+//
+// The index is regenerated hourly and derives the shard list from the shared
+// getChunkCounts() helper in lib/sitemap-chunks, which falls back to
+// last-known-good counts when Supabase hiccups so the shard list never
+// collapses (a collapsed index would drop already-discovered URLs).
 export const dynamic = "force-static";
 export const revalidate = 3600;
 
-const CHUNK = 1000;
-
 export async function GET() {
-  const [statsResult, fstatsResult, claimedResult] = await Promise.allSettled([
-    getStats(),
-    getFacilityStats(),
-    getClaimedPractitionerCount(),
-  ]);
-  const practitionerChunks =
-    statsResult.status === "fulfilled"
-      ? Math.max(0, Math.ceil(statsResult.value.practitioners / CHUNK))
-      : 0;
-  const facilityChunks =
-    fstatsResult.status === "fulfilled"
-      ? Math.max(0, Math.ceil(fstatsResult.value.total / CHUNK))
-      : 0;
-  const claimedChunks =
-    claimedResult.status === "fulfilled"
-      ? Math.max(0, Math.ceil(claimedResult.value / CHUNK))
-      : 0;
+  const { facilityChunks, claimedChunks, practitionerChunks } = await getChunkCounts();
 
   const total = 2 + facilityChunks + claimedChunks + practitionerChunks;
   const urls = Array.from(

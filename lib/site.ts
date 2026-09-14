@@ -11,3 +11,11 @@ export const SUPPORT_WHATSAPP =
   process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "256700000000";
 export const SUPPORT_WHATSAPP_LINK = `https://wa.me/${SUPPORT_WHATSAPP}`;
 export const SUPPORT_EMAIL_LINK = "/contact";
+
+// Direct dispatch + hiring line answered by the Rate Musawo team. Shown on
+// the home page emergency (ambulance) and recruiter (hiring) sections.
+export const DISPATCH_PHONE_DISPLAY = "+256 751 360385";
+export const DISPATCH_PHONE_LINK = "tel:+256751360385";
+export const HIRING_EMAIL = "ratemusawo@gmail.com";
+export const HIRING_EMAIL_LINK = `mailto:${HIRING_EMAIL}?subject=${encodeURIComponent("Hiring health workers via Rate Musawo")}`;
+export const NEWSLETTER_AUDIENCE_SIZE = "50,000+";

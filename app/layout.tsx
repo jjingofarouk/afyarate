@@ -22,6 +22,11 @@ export const metadata: Metadata = {
   keywords: [
     "Uganda doctors",
     "find a doctor Uganda",
+    "best doctors in Uganda",
+    "best hospitals in Uganda",
+    "best pharmacies in Uganda",
+    "best nurses in Uganda",
+    "top doctors in Uganda",
     "health worker ratings Uganda",
     "licensed nurses Uganda",
     "Uganda medical council",

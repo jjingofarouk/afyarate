@@ -21,9 +21,18 @@ export interface ProfileDetails {
   phone: string | null;
   whatsapp: string | null;
   workplace: string | null;
+  workAddress: string | null;
   bio: string | null;
   specialties: string[];
+  languages: string[];
+  consultationFee: string | null;
+  availability: string | null;
+  photoUrl: string | null;
   website: string | null;
+  facebook: string | null;
+  xHandle: string | null;
+  tiktok: string | null;
+  instagram: string | null;
 }
 
 export interface LicenseRecord {

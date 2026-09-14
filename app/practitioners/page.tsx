@@ -98,6 +98,30 @@ export default async function PractitionersHubPage({
         </div>
       </div>
 
+      {/* Best-of cross-links: "best doctors in Uganda" style landing pages */}
+      <div className="mt-6 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4 dark:border-emerald-900/40 dark:bg-emerald-950/30">
+        <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-200">
+          Looking for the best? See our patient-ranked lists:
+        </p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {[
+            ["/best/doctor", "Best doctors in Uganda"],
+            ["/best/nurse-midwife", "Best nurses & midwives"],
+            ["/best/clinical-officer", "Best clinical officers"],
+            ["/best/pharmacist", "Best pharmacists"],
+            ["/best/dentist", "Best dentists"],
+          ].map(([href, label]) => (
+            <Link
+              key={href}
+              href={href}
+              className="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-medium text-emerald-800 transition hover:border-emerald-500 dark:border-emerald-800 dark:bg-slate-900 dark:text-emerald-300 dark:hover:border-emerald-400"
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
+      </div>
+
       <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {counts.map((c) => (
           <li key={c.profession}>

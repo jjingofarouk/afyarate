@@ -3,8 +3,42 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
-const FIELDS = ["phone", "whatsapp", "workplace", "bio", "specialties", "website"] as const;
+const FIELDS = [
+  "phone",
+  "whatsapp",
+  "workplace",
+  "work_address",
+  "bio",
+  "specialties",
+  "languages",
+  "consultation_fee",
+  "availability",
+  "photo_url",
+  "website",
+  "facebook",
+  "x_handle",
+  "tiktok",
+  "instagram",
+] as const;
 type Field = (typeof FIELDS)[number];
+
+const MAX_LEN: Record<Field, number> = {
+  phone: 40,
+  whatsapp: 40,
+  workplace: 200,
+  work_address: 300,
+  bio: 1200,
+  specialties: 0, // handled as arrays below
+  languages: 0, // handled as arrays below
+  consultation_fee: 100,
+  availability: 300,
+  photo_url: 500,
+  website: 300,
+  facebook: 300,
+  x_handle: 100,
+  tiktok: 300,
+  instagram: 300,
+};
 
 function clean(value: unknown, maxLen: number): string | null {
   if (typeof value !== "string") return null;
@@ -79,18 +113,22 @@ export async function POST(
   }
 
   const row: Record<string, unknown> = { practitioner_id: pid };
+  const toList = (raw: unknown, maxItems: number, maxLen: number): string[] => {
+    const list = Array.isArray(raw)
+      ? raw.map((s) => String(s).trim()).filter(Boolean)
+      : typeof raw === "string"
+        ? raw.split(",").map((s) => s.trim()).filter(Boolean)
+        : [];
+    return list.slice(0, maxItems).map((s) => s.slice(0, maxLen));
+  };
   for (const f of FIELDS) {
     if (f === "specialties") {
       // Accept a comma-separated string or array; store as text[].
-      const raw = body.specialties;
-      const list = Array.isArray(raw)
-        ? raw.map((s) => String(s).trim()).filter(Boolean)
-        : typeof raw === "string"
-          ? raw.split(",").map((s) => s.trim()).filter(Boolean).slice(0, 15)
-          : [];
-      row.specialties = list.slice(0, 60).map((s) => s.slice(0, 40));
+      row.specialties = toList(body.specialties, 15, 40);
+    } else if (f === "languages") {
+      row.languages = toList(body.languages, 10, 30);
     } else {
-      row[f] = clean(body[f], f === "bio" ? 1200 : 200);
+      row[f] = clean(body[f], MAX_LEN[f]);
     }
   }
 

@@ -309,22 +309,37 @@ export async function getProfileDetails(
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("profile_details")
-    .select("phone, whatsapp, workplace, bio, specialties, website")
+    .select(
+      "phone, whatsapp, workplace, work_address, bio, specialties, languages, " +
+        "consultation_fee, availability, photo_url, website, facebook, x_handle, tiktok, instagram",
+    )
     .eq("practitioner_id", practitionerId)
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) return null;
-  const r = data as Row;
-  const specialties = Array.isArray(r.specialties)
-    ? (r.specialties as unknown[]).map((s) => String(s)).filter(Boolean)
-    : [];
+  const r = data as unknown as Row;
+  const toList = (v: unknown): string[] =>
+    Array.isArray(v)
+      ? (v as unknown[]).map((s) => String(s)).filter(Boolean)
+      : [];
+  const specialties = toList(r.specialties);
+  const languages = toList(r.languages);
   if (
     !asString(r.phone) &&
     !asString(r.whatsapp) &&
     !asString(r.workplace) &&
+    !asString(r.work_address) &&
     !asString(r.bio) &&
     specialties.length === 0 &&
-    !asString(r.website)
+    languages.length === 0 &&
+    !asString(r.consultation_fee) &&
+    !asString(r.availability) &&
+    !asString(r.photo_url) &&
+    !asString(r.website) &&
+    !asString(r.facebook) &&
+    !asString(r.x_handle) &&
+    !asString(r.tiktok) &&
+    !asString(r.instagram)
   ) {
     return null;
   }
@@ -332,9 +347,18 @@ export async function getProfileDetails(
     phone: asString(r.phone),
     whatsapp: asString(r.whatsapp),
     workplace: asString(r.workplace),
+    workAddress: asString(r.work_address),
     bio: asString(r.bio),
     specialties,
+    languages,
+    consultationFee: asString(r.consultation_fee),
+    availability: asString(r.availability),
+    photoUrl: asString(r.photo_url),
     website: asString(r.website),
+    facebook: asString(r.facebook),
+    xHandle: asString(r.x_handle),
+    tiktok: asString(r.tiktok),
+    instagram: asString(r.instagram),
   };
 }
 

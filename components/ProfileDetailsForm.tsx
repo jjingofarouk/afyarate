@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { createBrowserClient } from "@/lib/supabase/client";
 
 const inputClass =
   "w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-emerald-900/40";
@@ -19,11 +20,21 @@ export default function ProfileDetailsForm({
   const [phone, setPhone] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [workplace, setWorkplace] = useState("");
+  const [workAddress, setWorkAddress] = useState("");
   const [bio, setBio] = useState("");
   const [specialties, setSpecialties] = useState("");
+  const [languages, setLanguages] = useState("");
+  const [consultationFee, setConsultationFee] = useState("");
+  const [availability, setAvailability] = useState("");
+  const [photoUrl, setPhotoUrl] = useState("");
   const [website, setWebsite] = useState("");
+  const [facebook, setFacebook] = useState("");
+  const [xHandle, setXHandle] = useState("");
+  const [tiktok, setTiktok] = useState("");
+  const [instagram, setInstagram] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,9 +50,18 @@ export default function ProfileDetailsForm({
         setPhone(d.phone ?? "");
         setWhatsapp(d.whatsapp ?? "");
         setWorkplace(d.workplace ?? "");
+        setWorkAddress(d.work_address ?? "");
         setBio(d.bio ?? "");
         setSpecialties(Array.isArray(d.specialties) ? d.specialties.join(", ") : "");
+        setLanguages(Array.isArray(d.languages) ? d.languages.join(", ") : "");
+        setConsultationFee(d.consultation_fee ?? "");
+        setAvailability(d.availability ?? "");
+        setPhotoUrl(d.photo_url ?? "");
         setWebsite(d.website ?? "");
+        setFacebook(d.facebook ?? "");
+        setXHandle(d.x_handle ?? "");
+        setTiktok(d.tiktok ?? "");
+        setInstagram(d.instagram ?? "");
       } catch (err) {
         setError((err as Error).message);
       } finally {
@@ -49,6 +69,37 @@ export default function ProfileDetailsForm({
       }
     })();
   }, [practitionerId, token]);
+
+  async function onPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    if (!file.type.startsWith("image/")) {
+      setError("Please choose an image file (JPG or PNG).");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Photo must be under 5 MB.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const sb = createBrowserClient();
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${practitionerId}/${Date.now()}.${ext}`;
+      const { error: upErr } = await sb.storage.from("profile-photos").upload(path, file, {
+        contentType: file.type,
+        upsert: false,
+      });
+      if (upErr) throw new Error(upErr.message);
+      const { data } = sb.storage.from("profile-photos").getPublicUrl(path);
+      setPhotoUrl(data.publicUrl);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,9 +114,18 @@ export default function ProfileDetailsForm({
           phone,
           whatsapp,
           workplace,
+          work_address: workAddress,
           bio,
           specialties,
+          languages,
+          consultation_fee: consultationFee,
+          availability,
+          photo_url: photoUrl,
           website,
+          facebook,
+          x_handle: xHandle,
+          tiktok,
+          instagram,
         }),
       });
       const data = await res.json();
@@ -101,39 +161,125 @@ export default function ProfileDetailsForm({
         public profile. Add as much as you like — you can update it any time.
       </p>
 
-      <div className="mt-6 grid gap-5 sm:grid-cols-2">
+      <div className="mt-6 space-y-7">
         <div>
-          <label htmlFor="pd-phone" className={labelClass}>Phone (shown to patients)</label>
-          <input id="pd-phone" value={phone} onChange={(e) => setPhone(e.target.value)}
-            placeholder="+256 7xx xxx xxx" className={`mt-1.5 ${inputClass}`} />
+          <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Your photo</h3>
+          <div className="mt-2 flex items-center gap-4">
+            <div className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+              {photoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={photoUrl} alt="Profile photo preview" className="size-full object-cover" />
+              ) : (
+                <span className="text-xs text-slate-400">No photo</span>
+              )}
+            </div>
+            <div>
+              <label htmlFor="pd-photo" className="inline-flex cursor-pointer items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:border-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200">
+                {uploading ? "Uploading…" : photoUrl ? "Change photo" : "Upload photo"}
+              </label>
+              <input id="pd-photo" type="file" accept="image/*" onChange={onPhoto} className="hidden" />
+              <p className="mt-1.5 text-xs text-slate-400">JPG or PNG, under 5 MB. Your face builds trust.</p>
+            </div>
+          </div>
         </div>
+
         <div>
-          <label htmlFor="pd-wa" className={labelClass}>WhatsApp number</label>
-          <input id="pd-wa" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)}
-            placeholder="Same as phone? Just repeat it" className={`mt-1.5 ${inputClass}`} />
+          <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Contact</h3>
+          <div className="mt-2 grid gap-5 sm:grid-cols-2">
+            <div>
+              <label htmlFor="pd-phone" className={labelClass}>Phone (shown to patients)</label>
+              <input id="pd-phone" value={phone} onChange={(e) => setPhone(e.target.value)}
+                placeholder="+256 7xx xxx xxx" className={`mt-1.5 ${inputClass}`} />
+            </div>
+            <div>
+              <label htmlFor="pd-wa" className={labelClass}>WhatsApp number</label>
+              <input id="pd-wa" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)}
+                placeholder="Same as phone? Just repeat it" className={`mt-1.5 ${inputClass}`} />
+            </div>
+          </div>
         </div>
-        <div className="sm:col-span-2">
-          <label htmlFor="pd-work" className={labelClass}>Where you work</label>
-          <input id="pd-work" value={workplace} onChange={(e) => setWorkplace(e.target.value)}
-            placeholder="e.g. Mulago National Referral Hospital, Kampala" className={`mt-1.5 ${inputClass}`} />
+
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Practice</h3>
+          <div className="mt-2 grid gap-5 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <label htmlFor="pd-work" className={labelClass}>Where you work</label>
+              <input id="pd-work" value={workplace} onChange={(e) => setWorkplace(e.target.value)}
+                placeholder="e.g. Mulago National Referral Hospital, Kampala" className={`mt-1.5 ${inputClass}`} />
+            </div>
+            <div className="sm:col-span-2">
+              <label htmlFor="pd-addr" className={labelClass}>Work address <span className="font-normal text-slate-400">(street / area, helps patients find you)</span></label>
+              <input id="pd-addr" value={workAddress} onChange={(e) => setWorkAddress(e.target.value)}
+                placeholder="e.g. Plot 12 Bombo Road, Kawempe, Kampala" className={`mt-1.5 ${inputClass}`} />
+            </div>
+            <div>
+              <label htmlFor="pd-fee" className={labelClass}>Consultation fee</label>
+              <input id="pd-fee" value={consultationFee} onChange={(e) => setConsultationFee(e.target.value)}
+                placeholder="e.g. UGX 30,000" className={`mt-1.5 ${inputClass}`} />
+            </div>
+            <div>
+              <label htmlFor="pd-avail" className={labelClass}>Availability</label>
+              <input id="pd-avail" value={availability} onChange={(e) => setAvailability(e.target.value)}
+                placeholder="e.g. Mon–Fri 9–5, Sat by appointment" className={`mt-1.5 ${inputClass}`} />
+            </div>
+          </div>
         </div>
-        <div className="sm:col-span-2">
-          <label htmlFor="pd-spec" className={labelClass}>
-            Specialties <span className="font-normal text-slate-400">(comma separated)</span>
-          </label>
-          <input id="pd-spec" value={specialties} onChange={(e) => setSpecialties(e.target.value)}
-            placeholder="e.g. Paediatrics, Malaria, Antenatal care" className={`mt-1.5 ${inputClass}`} />
+
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">About you</h3>
+          <div className="mt-2 grid gap-5">
+            <div>
+              <label htmlFor="pd-spec" className={labelClass}>
+                Specialties <span className="font-normal text-slate-400">(comma separated)</span>
+              </label>
+              <input id="pd-spec" value={specialties} onChange={(e) => setSpecialties(e.target.value)}
+                placeholder="e.g. Paediatrics, Malaria, Antenatal care" className={`mt-1.5 ${inputClass}`} />
+            </div>
+            <div>
+              <label htmlFor="pd-lang" className={labelClass}>
+                Languages you speak <span className="font-normal text-slate-400">(comma separated)</span>
+              </label>
+              <input id="pd-lang" value={languages} onChange={(e) => setLanguages(e.target.value)}
+                placeholder="e.g. English, Luganda, Runyankole" className={`mt-1.5 ${inputClass}`} />
+            </div>
+            <div>
+              <label htmlFor="pd-bio" className={labelClass}>About you</label>
+              <textarea id="pd-bio" rows={5} value={bio} onChange={(e) => setBio(e.target.value)}
+                placeholder="Tell patients about your experience and how you work…"
+                className={`mt-1.5 ${inputClass} resize-y`} />
+            </div>
+          </div>
         </div>
-        <div className="sm:col-span-2">
-          <label htmlFor="pd-bio" className={labelClass}>About you</label>
-          <textarea id="pd-bio" rows={5} value={bio} onChange={(e) => setBio(e.target.value)}
-            placeholder="Tell patients about your experience, languages you speak, visiting hours…"
-            className={`mt-1.5 ${inputClass} resize-y`} />
-        </div>
-        <div className="sm:col-span-2">
-          <label htmlFor="pd-web" className={labelClass}>Website or social link <span className="font-normal text-slate-400">(optional)</span></label>
-          <input id="pd-web" type="url" value={website} onChange={(e) => setWebsite(e.target.value)}
-            placeholder="https://…" className={`mt-1.5 ${inputClass}`} />
+
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Online</h3>
+          <div className="mt-2 grid gap-5 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <label htmlFor="pd-web" className={labelClass}>Website <span className="font-normal text-slate-400">(optional)</span></label>
+              <input id="pd-web" type="url" value={website} onChange={(e) => setWebsite(e.target.value)}
+                placeholder="https://…" className={`mt-1.5 ${inputClass}`} />
+            </div>
+            <div>
+              <label htmlFor="pd-fb" className={labelClass}>Facebook</label>
+              <input id="pd-fb" value={facebook} onChange={(e) => setFacebook(e.target.value)}
+                placeholder="https://facebook.com/…" className={`mt-1.5 ${inputClass}`} />
+            </div>
+            <div>
+              <label htmlFor="pd-x" className={labelClass}>X (Twitter)</label>
+              <input id="pd-x" value={xHandle} onChange={(e) => setXHandle(e.target.value)}
+                placeholder="@username or https://x.com/…" className={`mt-1.5 ${inputClass}`} />
+            </div>
+            <div>
+              <label htmlFor="pd-tiktok" className={labelClass}>TikTok</label>
+              <input id="pd-tiktok" value={tiktok} onChange={(e) => setTiktok(e.target.value)}
+                placeholder="https://tiktok.com/@…" className={`mt-1.5 ${inputClass}`} />
+            </div>
+            <div>
+              <label htmlFor="pd-ig" className={labelClass}>Instagram</label>
+              <input id="pd-ig" value={instagram} onChange={(e) => setInstagram(e.target.value)}
+                placeholder="https://instagram.com/…" className={`mt-1.5 ${inputClass}`} />
+            </div>
+          </div>
         </div>
       </div>
 

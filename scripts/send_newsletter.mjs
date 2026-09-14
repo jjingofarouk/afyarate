@@ -199,16 +199,30 @@ const TYPE_MAP = {
 };
 
 // Roles that are the same job under different labels across postings.
-// Selecting either one also matches the other.
+// Selecting either one also matches the other. Keys are lowercased.
 const ROLE_SYNONYMS = {
-  doctor: ["medical officer"],
-  "medical officer": ["doctor"],
+  doctor: ["medical officer", "medical doctors"],
+  "medical officer": ["doctor", "medical doctors"],
+  nurse: ["enrolled nurse", "nursing"],
+  "enrolled nurse": ["nurse", "nursing"],
+  pharmacist: ["pharmacy"],
+  pharmacy: ["pharmacist"],
+  midwife: ["nurse / midwife", "midwifery"],
+  "nurse / midwife": ["midwife", "nurse", "midwifery"],
+  dentistry: ["dentist"],
+  dentist: ["dentistry"],
+  "clinical officer": ["doctor", "medical officer"],
+  anaesthesia: ["anaesthesia / critical care"],
 };
 
 function roleMatchesProfession(role, prof) {
   const r = role.toLowerCase();
-  if (prof.includes(r.split(" ")[0])) return true;
-  return (ROLE_SYNONYMS[r] ?? []).some((syn) => prof.includes(syn));
+  const p = prof.toLowerCase();
+  // Direct substring match (e.g. "nurse" in "Enrolled Nurse", "doctor" in "Medical Doctors")
+  if (p.includes(r)) return true;
+  // Synonym match: check if any synonym is a substring of the profession
+  const synonyms = ROLE_SYNONYMS[r] ?? [];
+  return synonyms.some((syn) => p.includes(syn));
 }
 
 function pickBestPost(posts, sub, alreadySent = new Set()) {

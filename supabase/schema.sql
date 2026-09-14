@@ -381,6 +381,25 @@ create policy "anyone can upload post images"
   on storage.objects for insert
   with check (bucket_id = 'post-images');
 
+-- 5b2. Storage, public bucket for claimant profile photos. Public read (the
+--      photo renders on the verified profile); anyone may upload — the URL is
+--      only ever attached to a profile through the token-gated
+--      /api/profile-details upsert, so random uploads can't appear anywhere.
+-- ----------------------------------------------------------------------------
+insert into storage.buckets (id, name, public)
+values ('profile-photos', 'profile-photos', true)
+on conflict (id) do nothing;
+
+drop policy if exists "profile photos are publicly readable" on storage.objects;
+create policy "profile photos are publicly readable"
+  on storage.objects for select
+  using (bucket_id = 'profile-photos');
+
+drop policy if exists "anyone can upload profile photos" on storage.objects;
+create policy "anyone can upload profile photos"
+  on storage.objects for insert
+  with check (bucket_id = 'profile-photos');
+
 -- ----------------------------------------------------------------------------
 -- 5c. Facility services + community contributions (photos, detail edits), all
 --     moderated: public may insert, only approved rows are publicly readable,
@@ -598,9 +617,18 @@ create table if not exists public.profile_details (
   phone text,
   whatsapp text,
   workplace text,
+  work_address text,
   bio text,
   specialties text[] default '{}',
+  languages text[] default '{}',
+  consultation_fee text,
+  availability text,
+  photo_url text,
   website text,
+  facebook text,
+  x_handle text,
+  tiktok text,
+  instagram text,
   updated_at timestamptz not null default now()
 );
 

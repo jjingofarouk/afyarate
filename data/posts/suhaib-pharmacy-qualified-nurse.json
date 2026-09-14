@@ -1,0 +1,32 @@
+{
+  "type": "job",
+  "title": "Qualified Nurse",
+  "organization": "Suhaib Pharmacy",
+  "category": "Health",
+  "profession": "Nurse",
+  "location": "Nokonjeru, Uganda",
+  "country": "Uganda",
+  "employment_type": "Full-time",
+  "experience_level": "Experienced",
+  "qualification": "Qualified Nurse with valid credentials",
+  "eligibility": null,
+  "salary": "300,000 UGX",
+  "description": "Suhaib Pharmacy is a trusted community pharmacy located in Nokonjeru, dedicated to providing quality pharmaceutical and healthcare services. We are looking for a Qualified and Experienced Nurse to join our professional healthcare team.\n\n**Position: Qualified Nurse**\n\n**Requirements:**\n- Qualified and experienced nurse with valid registration\n- Must hold a valid nursing license from the relevant regulatory body\n- Previous clinical or pharmacy nursing experience preferred\n- Strong patient care and communication skills\n- Ability to work independently and as part of a team\n\n**Benefits:**\n- Competitive salary: 300,000 UGX per month\n- Allowance: Medication covered\n- Lunch provided: 100,000 UGX worth\n- Sunday off: Enjoy every Sunday off\n\n**Why Join Us?**\n- Supportive, professional healthcare team\n- Clean and modern pharmacy environment\n- Opportunity for professional growth and training\n- Work-life balance with guaranteed Sundays off\n- Be part of a trusted community pharmacy serving Nokonjeru\n\n**Working Hours:**\nMonday to Saturday, 8:00am - 6:00pm\nSunday: Off\n\n**How to Apply:**\nSubmit your CV and credentials to Suhaib Pharmacy Nokonjeru\n- Contact: 0757 590 599\n- Email: careers@suhaibpharmacy.example\n- Visit us: Suhaib Pharmacy, Nokonjeru\n\nApplications open now. Suhaib Pharmacy is an Equal Opportunity Employer.",
+  "summary": "Suhaib Pharmacy in Nokonjeru is hiring a Qualified Nurse. Salary 300k, lunch allowance, medication benefit, and every Sunday off.",
+  "how_to_apply": "Submit your CV and credentials to Suhaib Pharmacy Nokonjeru. Contact: 0757 590 599. Email: careers@suhaibpharmacy.example. Visit: Suhaib Pharmacy, Nokonjeru (Mon-Sat, 8am-6pm).",
+  "deadline": null,
+  "tags": [
+    "health",
+    "nursing",
+    "pharmacy",
+    "nokonjeru",
+    "sunday-off",
+    "equal-opportunity"
+  ],
+  "benefits": "Salary 300,000 UGX, medication allowance, lunch 100,000 UGX, every Sunday off, professional growth opportunities, modern pharmacy environment",
+  "required_documents": "CV, nursing credentials/licenses",
+  "featured": false,
+  "status": "published",
+  "application_email": "careers@suhaibpharmacy.example",
+  "image_url": "https://idishukmepvkzyguhxnm.supabase.co/storage/v1/object/public/post-images/suhaib-pharmacy-nokonjeru.jpeg"
+}

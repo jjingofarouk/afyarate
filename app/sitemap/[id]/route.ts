@@ -1,13 +1,17 @@
 import { getPosts, getProfessions, getLocations, getOrganizations, slugify } from "@/lib/posts";
 import {
-  getClaimedPractitionerCount,
   getClaimedPractitionerIdsPage,
   getPractitionerIdsPage,
   getProfessionCounts,
-  getStats,
 } from "@/lib/practitioners";
 import { practitionerUrl } from "@/lib/practitioner-url";
-import { getFacilityCities, getFacilityIdsPage, getFacilityStats } from "@/lib/facilities";
+import { getFacilityCities, getFacilityIdsPage } from "@/lib/facilities";
+import {
+  BEST_CITIES,
+  BEST_FACILITY_KINDS,
+  BEST_PROFESSIONS,
+} from "@/lib/best-pages";
+import { getChunkCounts, SITEMAP_CHUNK } from "@/lib/sitemap-chunks";
 import { HELP_ARTICLES } from "@/data/help";
 import { POST_TYPE_LABELS, POST_TYPES } from "@/lib/types";
 import { SITE_URL } from "@/lib/site";
@@ -15,8 +19,8 @@ import { SITE_URL } from "@/lib/site";
 // Keep chunks under Supabase's 1,000-row response cap so every URL makes it
 // into the sitemap (a 50k request silently returns only the first 1,000 rows).
 // Chunk layout:
-//   0                                     -> static + type landing + help pages
-//   1                                     -> posts (detail + facet) + practitioner-profession
+//   0                                     -> static + type landing + help + /best pages
+//   1                                     -> posts (detail + facet) + practitioner-profession + jobs-by-profession
 //   2 .. 1+facilityChunks                 -> facilities detail pages
 //   next claimedChunks                    -> CLAIMED (paid/verified) practitioners,
 //                                            name-slug URLs, priority 0.9 daily
@@ -26,42 +30,40 @@ import { SITE_URL } from "@/lib/site";
 //                                            (claimed profiles appear in both; duplicate
 //                                            <loc>s across sitemaps are valid per spec
 //                                            and Google dedupes them)
-export const dynamic = "force-static";
-export const dynamicParams = false;
+//
+// Every practitioner gets an individual URL here: /practitioners/[id] is a
+// catch-all dynamic route and was never missing from the sitemap, but the
+// sitemap previously disappeared entirely if a single count query failed
+// (getChunkCounts returning 0 collapsed the index to 2 shards). Counts now
+// fall back to last-known-good values via lib/sitemap-chunks.
 export const revalidate = 3600;
 
-const CHUNK = 1000;
-
-async function getChunkCounts(): Promise<{ facilityChunks: number; claimedChunks: number; practitionerChunks: number }> {
-  const [fstatsResult, claimedResult, statsResult] = await Promise.allSettled([
-    getFacilityStats(),
-    getClaimedPractitionerCount(),
-    getStats(),
-  ]);
-  return {
-    facilityChunks:
-      fstatsResult.status === "fulfilled"
-        ? Math.max(0, Math.ceil(fstatsResult.value.total / CHUNK))
-        : 0,
-    claimedChunks:
-      claimedResult.status === "fulfilled"
-        ? Math.max(0, Math.ceil(claimedResult.value / CHUNK))
-        : 0,
-    practitionerChunks:
-      statsResult.status === "fulfilled"
-        ? Math.max(0, Math.ceil(statsResult.value.practitioners / CHUNK))
-        : 0,
-  };
-}
-
-export async function generateStaticParams() {
-  const { facilityChunks, claimedChunks, practitionerChunks } = await getChunkCounts();
-  return Array.from(
-    { length: 2 + facilityChunks + claimedChunks + practitionerChunks },
-    (_, i) => ({
-      id: String(i),
-    }),
-  );
+async function bestStaticEntries(): Promise<Entry[]> {
+  const entries: Entry[] = [
+    {
+      url: `${SITE_URL}/best`,
+      priority: 0.9,
+      freq: "daily",
+    },
+  ];
+  for (const p of BEST_PROFESSIONS) {
+    entries.push({
+      url: `${SITE_URL}/best/${slugify(p)}`,
+      priority: 0.9,
+      freq: "daily",
+    });
+  }
+  for (const k of BEST_FACILITY_KINDS) {
+    entries.push({ url: `${SITE_URL}/best/${k}`, priority: 0.9, freq: "daily" });
+    for (const c of BEST_CITIES) {
+      entries.push({
+        url: `${SITE_URL}/best/${k}/${c.slug}`,
+        priority: 0.7,
+        freq: "weekly",
+      });
+    }
+  }
+  return entries;
 }
 
 function validDate(s: string | null | undefined): string | null {
@@ -118,6 +120,7 @@ export async function GET(
   let entries: Entry[] = [];
 
   if (chunkId === 0) {
+    const best = await bestStaticEntries();
     entries = [
       { url: SITE_URL, priority: 1, freq: "daily" },
       { url: `${SITE_URL}/posts`, priority: 0.9, freq: "daily" },
@@ -132,6 +135,8 @@ export async function GET(
       { url: `${SITE_URL}/organizations`, priority: 0.6, freq: "weekly" },
       { url: `${SITE_URL}/practitioners`, priority: 0.7, freq: "weekly" },
       { url: `${SITE_URL}/facilities`, priority: 0.7, freq: "weekly" },
+      { url: `${SITE_URL}/ambulances`, priority: 0.6, freq: "weekly" },
+      { url: `${SITE_URL}/jobs`, priority: 0.8, freq: "daily" },
       { url: `${SITE_URL}/about`, priority: 0.4, freq: "monthly" },
       { url: `${SITE_URL}/contact`, priority: 0.3, freq: "monthly" },
       { url: `${SITE_URL}/terms`, priority: 0.2, freq: "yearly" },
@@ -144,6 +149,7 @@ export async function GET(
         priority: 0.4,
         freq: "monthly",
       })),
+      ...best,
     ];
   } else if (chunkId === 1) {
     // getProfessions/getLocations/getOrganizations all derive from getPosts()'
@@ -178,11 +184,18 @@ export async function GET(
       });
     }
     for (const f of professionCounts) {
-      entries.push({
-        url: `${SITE_URL}/practitioners/profession/${slugify(f.profession)}`,
-        priority: 0.7,
-        freq: "weekly",
-      });
+      entries.push(
+        {
+          url: `${SITE_URL}/practitioners/profession/${slugify(f.profession)}`,
+          priority: 0.7,
+          freq: "weekly",
+        },
+        {
+          url: `${SITE_URL}/jobs/${slugify(f.profession)}`,
+          priority: 0.7,
+          freq: "daily",
+        },
+      );
     }
     for (const f of locations) {
       entries.push(
@@ -214,8 +227,8 @@ export async function GET(
     }
   } else if (chunkId < CLAIMED_START) {
     // Facilities detail pages (hospitals & pharmacies).
-    const offset = (chunkId - 2) * CHUNK;
-    const rows = await getFacilityIdsPage(offset, CHUNK);
+    const offset = (chunkId - 2) * SITEMAP_CHUNK;
+    const rows = await getFacilityIdsPage(offset, SITEMAP_CHUNK);
     entries = rows.map((r) => ({
       url: `${SITE_URL}/facilities/${r.slug}`,
       lastmod: r.updatedAt ?? undefined,
@@ -226,8 +239,8 @@ export async function GET(
     // Claimed (paid/verified) practitioners: name-slug URLs at top priority
     // so Google crawls the revenue-driving profile pages first and matches
     // "<clinician name>" queries against a URL that contains the name.
-    const offset = (chunkId - CLAIMED_START) * CHUNK;
-    const rows = await getClaimedPractitionerIdsPage(offset, CHUNK);
+    const offset = (chunkId - CLAIMED_START) * SITEMAP_CHUNK;
+    const rows = await getClaimedPractitionerIdsPage(offset, SITEMAP_CHUNK);
     entries = rows.map((r) => ({
       url: `${SITE_URL}${practitionerUrl(r.id, r.name)}`,
       lastmod: r.updatedAt ?? undefined,
@@ -235,8 +248,8 @@ export async function GET(
       freq: "daily",
     }));
   } else {
-    const offset = (chunkId - PRACTITIONER_START) * CHUNK;
-    const rows = await getPractitionerIdsPage(offset, CHUNK);
+    const offset = (chunkId - PRACTITIONER_START) * SITEMAP_CHUNK;
+    const rows = await getPractitionerIdsPage(offset, SITEMAP_CHUNK);
     entries = rows.map((r) => ({
       url: `${SITE_URL}${practitionerUrl(r.id, r.name)}`,
       lastmod: r.updatedAt ?? undefined,

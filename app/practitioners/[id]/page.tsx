@@ -100,6 +100,64 @@ function practitionerSchemaType(profession: string | null): string {
   return "Person";
 }
 
+/** Placeholder shown for profile slots the practitioner hasn't filled in yet. */
+function Missing() {
+  return <span className="italic text-slate-400">Not shared yet</span>;
+}
+
+/** Turn a pasted social value into a link: full URLs pass through, @handles
+ *  resolve against the network base, bare domains get https://. */
+function normalizeHandle(value: string | null, base: string): string | null {
+  if (!value) return null;
+  const t = value.trim();
+  if (!t) return null;
+  if (/^https?:\/\//i.test(t)) return t;
+  if (t.startsWith("@")) return `${base}${t.slice(1)}`;
+  if (t.includes("/") || t.includes(".")) return `https://${t}`;
+  return `${base}${t}`;
+}
+
+function normalizeUrl(value: string | null): string | null {
+  if (!value) return null;
+  const t = value.trim();
+  if (!t) return null;
+  return /^https?:\/\//i.test(t) ? t : `https://${t}`;
+}
+
+function FacebookIcon() {
+  return (
+    <svg className="size-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path d="M13.5 21v-7h2.4l.4-3h-2.8V9.1c0-.9.3-1.5 1.6-1.5h1.3V4.9c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8V11H8v3h2.5v7h3z" />
+    </svg>
+  );
+}
+
+function XIcon() {
+  return (
+    <svg className="size-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path d="M17.8 4h2.7l-6 6.8L21.5 20h-5.6l-4.3-5.6L6.6 20H3.9l6.4-7.3L3.6 4h5.7l3.9 5.1L17.8 4zm-1 14.3h1.5L8.1 5.5H6.5l10.3 12.8z" />
+    </svg>
+  );
+}
+
+function TikTokIcon() {
+  return (
+    <svg className="size-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path d="M16.5 3c.4 2.3 1.9 3.8 4.2 4v3c-1.6 0-3-.5-4.2-1.3v6.1c0 3.4-2.6 6.2-6 6.2-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c.3 0 .7 0 1 .1v3.2c-.3-.1-.7-.2-1-.2-1.6 0-2.9 1.3-2.9 2.9s1.3 2.9 2.9 2.9 2.9-1.3 2.9-2.9V3h3.1z" />
+    </svg>
+  );
+}
+
+function InstagramIcon() {
+  return (
+    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <rect x="4" y="4" width="16" height="16" rx="4.5" />
+      <circle cx="12" cy="12" r="3.5" />
+      <circle cx="16.8" cy="7.2" r="1.2" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 export default async function PractitionerPage({
   params,
 }: {
@@ -123,6 +181,16 @@ export default async function PractitionerPage({
   const firstName = practitioner.name.split(/\s+/)[0] ?? practitioner.name;
   const telHref = details?.phone ? `tel:${details.phone.replace(/\s/g, "")}` : null;
   const specialties = details?.specialties ?? [];
+  const languages = details?.languages ?? [];
+  // A claimant-uploaded photo wins over the scraped registry image everywhere
+  // on this page — faces drive bookings, and payers dress their own window.
+  const photoSrc = details?.photoUrl || practitioner.imageUrl || null;
+  const socials = [
+    { label: "Facebook", href: normalizeUrl(details?.facebook ?? null), Icon: FacebookIcon },
+    { label: "X", href: normalizeHandle(details?.xHandle ?? null, "https://x.com/"), Icon: XIcon },
+    { label: "TikTok", href: normalizeUrl(details?.tiktok ?? null), Icon: TikTokIcon },
+    { label: "Instagram", href: normalizeUrl(details?.instagram ?? null), Icon: InstagramIcon },
+  ];
 
   const breadcrumbLd = {
     "@context": "https://schema.org",
@@ -241,10 +309,10 @@ export default async function PractitionerPage({
               }
             >
               <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-              {practitioner.imageUrl ? (
+              {photoSrc ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={practitioner.imageUrl}
+                  src={photoSrc}
                   alt={practitioner.name}
                   className="h-full w-full object-contain object-top"
                 />
@@ -419,12 +487,11 @@ export default async function PractitionerPage({
             )}
           </div>
 
-          {/* Contact & practice details — every slot always visible. Paid
-              practitioners' values appear here automatically once they fill
-              them in; empty slots show a placeholder instead. */}
+          {/* Visit & fees — booking actions first, then the practical rows.
+              Every slot always visible; paid values appear automatically. */}
           <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm dark:border-emerald-900/60 dark:bg-emerald-950/30">
             <h2 className="text-sm font-bold uppercase tracking-wide text-emerald-800 dark:text-emerald-300">
-              Contact directly. no middleman
+              Visit & fees
             </h2>
             {details?.phone || waDigits ? (
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -470,53 +537,116 @@ export default async function PractitionerPage({
                   No contact details shared yet.
                 </p>
               )}
-              <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
-                <span className="font-semibold">Workplace: </span>
-                {details?.workplace ?? (
-                  <span className="italic text-slate-400">Not shared yet</span>
-                )}
-              </p>
-              {specialties.length > 0 ? (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {specialties.map((s) => (
-                    <span key={s} className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-emerald-800 dark:bg-slate-800 dark:text-emerald-300">
-                      {s}
-                    </span>
-                  ))}
+              <dl className="mt-4 space-y-2.5">
+                <div className="flex justify-between gap-4 border-b border-emerald-100 py-2 text-sm dark:border-emerald-900/40">
+                  <dt className="shrink-0 text-slate-500 dark:text-slate-400">Consultation fee</dt>
+                  <dd className="text-right font-medium text-slate-800 dark:text-slate-200">
+                    {details?.consultationFee ?? <Missing />}
+                  </dd>
                 </div>
-              ) : (
-                <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
-                  <span className="font-semibold">Specialties: </span>
-                  <span className="italic text-slate-400">Not shared yet</span>
-                </p>
-              )}
-              {details?.bio ? (
-                <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                  {details.bio}
-                </p>
-              ) : (
-                <p className="mt-3 text-sm italic text-slate-400">No bio shared yet.</p>
-              )}
-              <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
-                <span className="font-semibold">Website: </span>
-                {details?.website ? (
-                  <a href={details.website} target="_blank" rel="noopener noreferrer" className="font-medium text-emerald-700 underline dark:text-emerald-400">
-                    {details.website}
-                  </a>
-                ) : (
-                  <span className="italic text-slate-400">Not shared yet</span>
-                )}
+                <div className="flex justify-between gap-4 border-b border-emerald-100 py-2 text-sm dark:border-emerald-900/40">
+                  <dt className="shrink-0 text-slate-500 dark:text-slate-400">Availability</dt>
+                  <dd className="text-right font-medium text-slate-800 dark:text-slate-200">
+                    {details?.availability ?? <Missing />}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4 border-b border-emerald-100 py-2 text-sm dark:border-emerald-900/40">
+                  <dt className="shrink-0 text-slate-500 dark:text-slate-400">Workplace</dt>
+                  <dd className="text-right font-medium text-slate-800 dark:text-slate-200">
+                    {details?.workplace ?? <Missing />}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4 py-2 text-sm">
+                  <dt className="shrink-0 text-slate-500 dark:text-slate-400">Address</dt>
+                  <dd className="text-right font-medium text-slate-800 dark:text-slate-200">
+                    {details?.workAddress ?? <Missing />}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+
+          {/* About — bio, specialties, languages. */}
+          <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-50">
+              About {firstName}
+            </h2>
+            {details?.bio ? (
+              <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                {details.bio}
               </p>
-              {!practitioner.claimed && (
-                <p className="mt-4 border-t border-emerald-200 pt-4 text-sm text-slate-600 dark:border-emerald-900/60 dark:text-slate-400">
-                  Is this you, {firstName}?{" "}
-                  <Link href="/claim" className="font-semibold text-emerald-700 underline dark:text-emerald-400">
-                    Claim this profile
-                  </Link>{" "}
-                  to add your contact details, specialties and bio.
-                </p>
+            ) : (
+              <p className="mt-3 text-sm italic text-slate-400">No bio shared yet.</p>
+            )}
+            <h3 className="mt-5 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              Specialties
+            </h3>
+            {specialties.length > 0 ? (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {specialties.map((s) => (
+                  <span key={s} className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-2 text-sm italic text-slate-400">Not shared yet</p>
+            )}
+            <h3 className="mt-5 text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              Languages
+            </h3>
+            {languages.length > 0 ? (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {languages.map((s) => (
+                  <span key={s} className="rounded-full bg-sky-100 px-2.5 py-1 text-xs font-medium text-sky-800 dark:bg-sky-900/50 dark:text-sky-300">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-2 text-sm italic text-slate-400">Not shared yet</p>
+            )}
+          </div>
+
+          {/* Online — website plus every social slot, present or not. */}
+          <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-50">
+              Online
+            </h2>
+            <div className="mt-3 flex justify-between gap-4 border-b border-slate-100 py-2 text-sm dark:border-slate-800">
+              <span className="shrink-0 text-slate-500 dark:text-slate-400">Website</span>
+              {details?.website ? (
+                <a href={normalizeUrl(details.website) ?? details.website} target="_blank" rel="noopener noreferrer" className="truncate text-right font-medium text-emerald-700 underline dark:text-emerald-400">
+                  {details.website}
+                </a>
+              ) : (
+                <Missing />
               )}
             </div>
+            {socials.map(({ label, href, Icon }) => (
+              <div key={label} className="flex items-center justify-between gap-4 border-b border-slate-100 py-2 text-sm last:border-0 dark:border-slate-800">
+                <span className="inline-flex shrink-0 items-center gap-2 text-slate-500 dark:text-slate-400">
+                  <Icon />
+                  {label}
+                </span>
+                {href ? (
+                  <a href={href} target="_blank" rel="noopener noreferrer" className="truncate font-medium text-emerald-700 underline dark:text-emerald-400">
+                    {href.replace(/^https?:\/\//, "").slice(0, 32)}
+                  </a>
+                ) : (
+                  <Missing />
+                )}
+              </div>
+            ))}
+            {!practitioner.claimed && (
+              <p className="mt-4 border-t border-slate-100 pt-4 text-sm text-slate-600 dark:border-slate-800 dark:text-slate-400">
+                Is this you, {firstName}?{" "}
+                <Link href="/claim" className="font-semibold text-emerald-700 underline dark:text-emerald-400">
+                  Claim this profile
+                </Link>{" "}
+                to add your photo, fees, availability, specialties and socials.
+              </p>
+            )}
+          </div>
 
           {/* Licence history */}
           {licenses.length > 1 && (
