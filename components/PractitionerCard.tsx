@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Practitioner } from "@/lib/types";
+import { practitionerUrl } from "@/lib/practitioner-url";
 import { Stars } from "./Stars";
 
 function StatusBadge({ status }: { status: string | null }) {
@@ -37,7 +38,7 @@ export function InitialsAvatar({ name }: { name: string }) {
 export default function PractitionerCard({ p }: { p: Practitioner }) {
   return (
     <Link
-      href={`/practitioners/${p.id}`}
+      href={practitionerUrl(p.id, p.name)}
       className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
     >
       <div className="relative aspect-[4/5] overflow-hidden bg-slate-100 dark:bg-slate-800">

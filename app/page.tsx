@@ -27,6 +27,7 @@ import { StaggerGrid, StaggerItem } from "@/components/motion/StaggerGrid";
 import { AnimatedWords } from "@/components/motion/AnimatedWords";
 import { MotionImg } from "@/components/motion/MotionImg";
 import { pluralProfession, slugify } from "@/lib/posts";
+import { practitionerUrl } from "@/lib/practitioner-url";
 import {
   POST_TYPES,
   POST_TYPE_LABELS,
@@ -247,6 +248,35 @@ function MailIcon() {
   );
 }
 
+type HomeShuffleKey = "jobs" | "practitioners" | "facilities";
+
+const HOME_SHUFFLE_PERMUTATIONS: HomeShuffleKey[][] = [
+  ["jobs", "practitioners", "facilities"],
+  ["jobs", "facilities", "practitioners"],
+  ["practitioners", "jobs", "facilities"],
+  ["practitioners", "facilities", "jobs"],
+  ["facilities", "jobs", "practitioners"],
+  ["facilities", "practitioners", "jobs"],
+];
+
+/**
+ * Daily-rotating homepage section order.
+ *
+ * The featured verified (claimed/paid) banner always stays pinned directly
+ * under the hero — this only shuffles the three discovery blocks below it
+ * (jobs, practitioners, hospitals/pharmacies) so repeat visitors and
+ * crawlers see a different layout each day.
+ *
+ * Deliberately deterministic per UTC day (not Math.random() per request) so
+ * the HTML is stable within a day for SEO, caching and CLS, yet rotates
+ * across days. Day-of-year % 6 walks all permutations evenly.
+ */
+function getHomeSectionOrder(now = new Date()): HomeShuffleKey[] {
+  const start = Date.UTC(now.getUTCFullYear(), 0, 0);
+  const dayOfYear = Math.floor((now.getTime() - start) / 86400000);
+  return HOME_SHUFFLE_PERMUTATIONS[dayOfYear % HOME_SHUFFLE_PERMUTATIONS.length];
+}
+
 function FacilityGroup({
   kind,
   facilities,
@@ -295,9 +325,9 @@ function FacilityGroup({
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; layout?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, layout } = await searchParams;
   // Fetched here (not just client-side) so the first page of results is
   // already in the initial HTML, no client round-trip before anything shows.
   // Each call below gets its own Supabase client (see lib/supabase/server.ts),
@@ -357,6 +387,28 @@ export default async function HomePage({
   // Spotlight: prefer a featured listing, otherwise the newest post overall.
   const spotlight =
     allPosts.find((p) => p.featured) ?? (allPosts.length > 0 ? allPosts[0] : null);
+
+  // Daily-rotating visual order for the three discovery blocks below the
+  // pinned featured-verified banner (jobs, practitioners, hospitals). The
+  // paid spotlight never moves; only these three rotate, one permutation per
+  // UTC day (stable within a day for SEO/caching/CLS). `?layout=` overrides
+  // for previewing, e.g. ?layout=facilities,jobs,practitioners.
+  const sectionOrder: HomeShuffleKey[] = (() => {
+    if (layout) {
+      const keys = layout
+        .split(",")
+        .map((s) => s.trim().toLowerCase())
+        .filter(
+          (s): s is HomeShuffleKey =>
+            s === "jobs" || s === "practitioners" || s === "facilities",
+        );
+      const deduped = [...new Set(keys)];
+      if (deduped.length === 3) return deduped;
+    }
+    return getHomeSectionOrder();
+  })();
+  const orderOf = (key: HomeShuffleKey | "newsletter"): number =>
+    key === "newsletter" ? 10 : sectionOrder.indexOf(key);
 
   const statTiles = (
     [
@@ -419,7 +471,7 @@ export default async function HomePage({
 
           <div className="relative z-10 w-full px-4 py-10 text-center sm:px-10 sm:py-16">
             <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-5xl">
-              <AnimatedWords text="Jobs, grants, scholarships, fellowships, conferences, & more for Uganda's health workers." startDelay={0.15} />
+              <AnimatedWords text="Give and get better healthcare in Uganda." startDelay={0.15} />
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base text-slate-200">
               <AnimatedWords
@@ -449,7 +501,7 @@ export default async function HomePage({
       {/* Featured verified practitioner: loud banner directly under the hero */}
       {ready && <FeaturedVerifiedProfile />}
 
-      {/* Jump-to nav, makes the section stack obvious at a glance */}
+      {/* Jump-to nav, mirrors the day's shuffled section order at a glance */}
       {ready && (
         <HomeSection tone="slate" compact>
           <nav
@@ -457,10 +509,16 @@ export default async function HomePage({
             className="flex flex-wrap items-center justify-center gap-2"
           >
             {[
-              { href: "#listings", label: "Jobs & opportunities" },
-              { href: "#ratings", label: "Top-rated health workers" },
-              { href: "#practitioners", label: "Search the registry" },
-              { href: "#facilities", label: "Hospitals & pharmacies" },
+              ...sectionOrder.flatMap((key) =>
+                key === "jobs"
+                  ? [{ href: "#listings", label: "Jobs & opportunities" }]
+                  : key === "practitioners"
+                    ? [
+                        { href: "#ratings", label: "Top-rated health workers" },
+                        { href: "#practitioners", label: "Search the registry" },
+                      ]
+                    : [{ href: "#facilities", label: "Hospitals & pharmacies" }],
+              ),
               { href: "#faq", label: "FAQs" },
             ].map((item) => (
               <Link
@@ -475,10 +533,16 @@ export default async function HomePage({
         </HomeSection>
       )}
 
-      {/* Listings, hoisted to slot 2; asymmetric editorial layout */}
+      {/* Shuffled discovery blocks: visual order rotates daily (see
+          sectionOrder above). The featured-verified banner above never moves —
+          only jobs / practitioners / hospitals shuffle. DOM order stays fixed
+          for screen readers; `order` controls what visitors see first. */}
+      <div className="flex flex-col">
+      {/* Listings: jobs & opportunities */}
       {allPosts.length > 0 && (
         <section
           id="listings"
+          style={{ order: orderOf("jobs") }}
           className="scroll-mt-20 border-y border-emerald-100 bg-emerald-50/60 dark:border-emerald-900/40 dark:bg-emerald-950/20"
         >
           <div className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
@@ -586,9 +650,10 @@ export default async function HomePage({
         </section>
       )}
 
-      {/* Newsletter, job alerts by email */}
+      {/* Newsletter, job alerts by email — pinned after the shuffled blocks */}
       <HomeSection
         id="newsletter"
+        style={{ order: orderOf("newsletter") }}
         tone="emerald"
         eyebrow="Job alerts"
         eyebrowIcon={<MailIcon />}
@@ -602,9 +667,12 @@ export default async function HomePage({
         </SlideIn>
       </HomeSection>
 
-      {/* Section 2, the ratings of doctors */}
+      {/* Practitioners super-block: community ratings + verified registry.
+          Both halves share the "practitioners" shuffle slot so they travel
+          together and stay adjacent (source order breaks the tie). */}
       <HomeSection
         id="ratings"
+        style={{ order: orderOf("practitioners") }}
         tone="amber"
         eyebrow="Community ratings"
         eyebrowIcon={<StarIcon />}
@@ -665,9 +733,10 @@ export default async function HomePage({
         )}
       </HomeSection>
 
-      {/* Section 3, the verified registry search */}
+      {/* Verified registry search — same shuffle slot as ratings above */}
       <HomeSection
         id="practitioners"
+        style={{ order: orderOf("practitioners") }}
         tone="white"
         eyebrow="Verified registry"
         eyebrowIcon={<UsersIcon />}
@@ -720,10 +789,11 @@ export default async function HomePage({
         )}
       </HomeSection>
 
-      {/* Section 4, hospitals & pharmacies, both clearly represented */}
+      {/* Hospitals & pharmacies */}
       {facilitiesReady && (hospitals.length > 0 || pharmacies.length > 0) && (
         <HomeSection
           id="facilities"
+          style={{ order: orderOf("facilities") }}
           tone="sky"
           eyebrow="Facilities"
           eyebrowIcon={<BuildingIcon />}
@@ -749,6 +819,7 @@ export default async function HomePage({
           </div>
         </HomeSection>
       )}
+      </div>
 
       {/* Section 5, explore */}
       <HomeSection
@@ -871,7 +942,7 @@ export default async function HomePage({
                   "@type": "ListItem",
                   position: i + 1,
                   name: p.name,
-                  url: `${SITE_URL}/practitioners/${p.id}`,
+                  url: `${SITE_URL}${practitionerUrl(p.id, p.name)}`,
                 })),
               },
               hospitals.length > 0 && {

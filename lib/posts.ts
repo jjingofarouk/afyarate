@@ -59,16 +59,11 @@ export interface PostSearchOptions {
   sort?: PostSort;
 }
 
-/** Slugify for facet URLs (/professions/medical-officer etc.). */
-export function slugify(s: string): string {
-  return s
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 80);
-}
+/** Slugify for facet URLs (/professions/medical-officer etc.).
+ *  Single-sourced from the client-safe module so practitioner name slugs and
+ *  facet slugs can never diverge. */
+export { slugify } from "./practitioner-url";
+import { slugify } from "./practitioner-url";
 
 /** Deterministic listing slug from title (+ deadline, so a re-post of the same
  *  job in a later cycle gets its own URL rather than overwriting the old one). */

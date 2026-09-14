@@ -1,5 +1,12 @@
 import { getPosts, getProfessions, getLocations, getOrganizations, slugify } from "@/lib/posts";
-import { getPractitionerIdsPage, getProfessionCounts, getStats } from "@/lib/practitioners";
+import {
+  getClaimedPractitionerCount,
+  getClaimedPractitionerIdsPage,
+  getPractitionerIdsPage,
+  getProfessionCounts,
+  getStats,
+} from "@/lib/practitioners";
+import { practitionerUrl } from "@/lib/practitioner-url";
 import { getFacilityCities, getFacilityIdsPage, getFacilityStats } from "@/lib/facilities";
 import { HELP_ARTICLES } from "@/data/help";
 import { POST_TYPE_LABELS, POST_TYPES } from "@/lib/types";
@@ -11,26 +18,50 @@ import { SITE_URL } from "@/lib/site";
 //   0                                     -> static + type landing + help pages
 //   1                                     -> posts (detail + facet) + practitioner-profession
 //   2 .. 1+facilityChunks                 -> facilities detail pages
-//   (2+facilityChunks) ..                 -> practitioners
+//   next claimedChunks                    -> CLAIMED (paid/verified) practitioners,
+//                                            name-slug URLs, priority 0.9 daily
+//                                            (the money pages: crawl first, rank for
+//                                            "<name> doctor Uganda" searches)
+//   remainder                             -> all practitioners, name-slug URLs
+//                                            (claimed profiles appear in both; duplicate
+//                                            <loc>s across sitemaps are valid per spec
+//                                            and Google dedupes them)
 export const dynamic = "force-static";
 export const dynamicParams = false;
 export const revalidate = 3600;
 
 const CHUNK = 1000;
 
+async function getChunkCounts(): Promise<{ facilityChunks: number; claimedChunks: number; practitionerChunks: number }> {
+  const [fstatsResult, claimedResult, statsResult] = await Promise.allSettled([
+    getFacilityStats(),
+    getClaimedPractitionerCount(),
+    getStats(),
+  ]);
+  return {
+    facilityChunks:
+      fstatsResult.status === "fulfilled"
+        ? Math.max(0, Math.ceil(fstatsResult.value.total / CHUNK))
+        : 0,
+    claimedChunks:
+      claimedResult.status === "fulfilled"
+        ? Math.max(0, Math.ceil(claimedResult.value / CHUNK))
+        : 0,
+    practitionerChunks:
+      statsResult.status === "fulfilled"
+        ? Math.max(0, Math.ceil(statsResult.value.practitioners / CHUNK))
+        : 0,
+  };
+}
+
 export async function generateStaticParams() {
-  const [statsResult, fstatsResult] = await Promise.allSettled([getStats(), getFacilityStats()]);
-  const practitionerChunks =
-    statsResult.status === "fulfilled"
-      ? Math.max(0, Math.ceil(statsResult.value.practitioners / CHUNK))
-      : 0;
-  const facilityChunks =
-    fstatsResult.status === "fulfilled"
-      ? Math.max(0, Math.ceil(fstatsResult.value.total / CHUNK))
-      : 0;
-  return Array.from({ length: 2 + facilityChunks + practitionerChunks }, (_, i) => ({
-    id: String(i),
-  }));
+  const { facilityChunks, claimedChunks, practitionerChunks } = await getChunkCounts();
+  return Array.from(
+    { length: 2 + facilityChunks + claimedChunks + practitionerChunks },
+    (_, i) => ({
+      id: String(i),
+    }),
+  );
 }
 
 function validDate(s: string | null | undefined): string | null {
@@ -76,14 +107,13 @@ export async function GET(
   const { id } = await ctx.params;
   const chunkId = Number(id) || 0;
 
-  let facilityChunks = 0;
-  try {
-    const fstats = await getFacilityStats();
-    facilityChunks = Math.max(0, Math.ceil(fstats.total / CHUNK));
-  } catch {
-    facilityChunks = 0;
-  }
-  const PRACTITIONER_START = 2 + facilityChunks;
+  const { facilityChunks, claimedChunks } = await getChunkCounts().catch(() => ({
+    facilityChunks: 0,
+    claimedChunks: 0,
+    practitionerChunks: 0,
+  }));
+  const CLAIMED_START = 2 + facilityChunks;
+  const PRACTITIONER_START = CLAIMED_START + claimedChunks;
 
   let entries: Entry[] = [];
 
@@ -182,7 +212,7 @@ export async function GET(
         },
       );
     }
-  } else if (chunkId < PRACTITIONER_START) {
+  } else if (chunkId < CLAIMED_START) {
     // Facilities detail pages (hospitals & pharmacies).
     const offset = (chunkId - 2) * CHUNK;
     const rows = await getFacilityIdsPage(offset, CHUNK);
@@ -192,11 +222,23 @@ export async function GET(
       priority: 0.6,
       freq: "weekly",
     }));
+  } else if (chunkId < PRACTITIONER_START) {
+    // Claimed (paid/verified) practitioners: name-slug URLs at top priority
+    // so Google crawls the revenue-driving profile pages first and matches
+    // "<clinician name>" queries against a URL that contains the name.
+    const offset = (chunkId - CLAIMED_START) * CHUNK;
+    const rows = await getClaimedPractitionerIdsPage(offset, CHUNK);
+    entries = rows.map((r) => ({
+      url: `${SITE_URL}${practitionerUrl(r.id, r.name)}`,
+      lastmod: r.updatedAt ?? undefined,
+      priority: 0.9,
+      freq: "daily",
+    }));
   } else {
     const offset = (chunkId - PRACTITIONER_START) * CHUNK;
     const rows = await getPractitionerIdsPage(offset, CHUNK);
     entries = rows.map((r) => ({
-      url: `${SITE_URL}/practitioners/${r.id}`,
+      url: `${SITE_URL}${practitionerUrl(r.id, r.name)}`,
       lastmod: r.updatedAt ?? undefined,
       priority: 0.6,
       freq: "monthly",

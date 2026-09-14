@@ -196,7 +196,7 @@ export default function ClaimBanner() {
     pathname.startsWith("/contact") ||
     pathname.startsWith("/claim");
 
-  const profileMatch = pathname.match(/^\/practitioners\/(\d+)$/);
+  const profileMatch = pathname.match(/^\/practitioners\/(\d+)(?:-[a-z0-9-]*)?$/);
 
   useEffect(() => {
     if (blocked || !profileMatch) return;

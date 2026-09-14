@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Practitioner } from "@/lib/types";
+import { practitionerUrl } from "@/lib/practitioner-url";
 import { Stars } from "../Stars";
 import { InitialsAvatar } from "../PractitionerCard";
 
@@ -12,7 +13,7 @@ export default function RatedPractitionerCard({ p }: { p: Practitioner }) {
   const active = p.licenceStatus === "Active";
   return (
     <Link
-      href={`/practitioners/${p.id}`}
+      href={practitionerUrl(p.id, p.name)}
       className="group flex flex-col overflow-hidden rounded-2xl border border-amber-200/70 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-amber-400 hover:shadow-md dark:border-amber-900/50 dark:bg-slate-900 dark:hover:border-amber-500"
     >
       <div className="flex items-center gap-4 p-4">

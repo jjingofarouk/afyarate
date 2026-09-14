@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPostsPage } from "@/lib/posts";
 import { searchPractitioners } from "@/lib/practitioners";
+import { practitionerUrl } from "@/lib/practitioner-url";
 import { searchFacilities } from "@/lib/facilities";
 import { POST_TYPE_LABELS, FACILITY_KIND_LABELS } from "@/lib/types";
 
@@ -55,7 +56,7 @@ export async function GET(req: NextRequest) {
     id: `practitioner-${p.id}`,
     title: p.name,
     subtitle: [p.profession, p.council].filter(Boolean).join(" · ") || "Licensed practitioner",
-    href: `/practitioners/${p.id}`,
+    href: practitionerUrl(p.id, p.name),
     imageUrl: p.imageUrl,
   }));
 

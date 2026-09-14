@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getPractitioner } from "@/lib/practitioners";
+import { getPractitioner, parsePractitionerIdParam } from "@/lib/practitioners";
 import ProfileDetailsForm, { SupportLinks } from "@/components/ProfileDetailsForm";
 
 export const metadata: Metadata = {
@@ -18,7 +18,8 @@ export default async function EditProfilePage({
 }) {
   const { id } = await params;
   const { t } = await searchParams;
-  const practitioner = await getPractitioner(Number(id));
+  const numId = parsePractitionerIdParam(id);
+  const practitioner = numId == null ? null : await getPractitioner(numId);
   if (!practitioner) notFound();
 
   if (!t || !practitioner.claimed) {
@@ -57,7 +58,7 @@ export default async function EditProfilePage({
 
       <div className="mt-8 space-y-6">
         <ProfileDetailsForm
-          practitionerId={Number(id)}
+          practitionerId={practitioner.id}
           token={t}
           name={practitioner.name}
         />

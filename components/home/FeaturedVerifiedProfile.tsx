@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getFeaturedVerifiedPractitioner } from "@/lib/practitioners";
+import { getFeaturedVerifiedPractitioner, practitionerUrl } from "@/lib/practitioners";
 import { InitialsAvatar } from "../PractitionerCard";
 import { Star } from "../StarIcon";
 
@@ -132,7 +132,7 @@ export default async function FeaturedVerifiedProfile() {
               Verify your own profile
             </Link>
             <Link
-              href={`/practitioners/${p.id}#verify`}
+              href={`${practitionerUrl(p.id, p.name)}#verify`}
               style={{ animationDelay: "0.9s" }}
               className="cta-bob inline-flex items-center justify-center gap-2 rounded-xl bg-sky-500 px-4 py-2.5 text-sm font-bold text-white shadow transition hover:bg-sky-400"
             >
@@ -143,7 +143,7 @@ export default async function FeaturedVerifiedProfile() {
 
           <div className="mt-3 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 md:justify-start">
             <Link
-              href={`/practitioners/${p.id}`}
+              href={practitionerUrl(p.id, p.name)}
               className="text-sm font-semibold text-amber-300 underline-offset-4 hover:underline"
             >
               View full profile →

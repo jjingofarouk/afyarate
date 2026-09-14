@@ -338,20 +338,59 @@ export async function getProfileDetails(
   };
 }
 
+// Name-rich canonical URLs + route-param parsing live in the client-safe
+// module so cards and forms can use them too; re-exported here for
+// server-side convenience.
+export { practitionerUrl, parsePractitionerIdParam } from "./practitioner-url";
+
 /** Lightweight id + last-modified page, for sitemap generation. */
 export async function getPractitionerIdsPage(
   offset: number,
   limit: number,
-): Promise<{ id: number; updatedAt: string | null }[]> {
+): Promise<{ id: number; name: string; updatedAt: string | null }[]> {
   const supabase = createServerClient();
   const { data, error } = await supabase
     .from("practitioners")
-    .select("id, updated_at")
+    .select("id, name, updated_at")
     .order("id", { ascending: true })
     .range(offset, offset + limit - 1);
   if (error) throw new Error(error.message);
   return (data ?? []).map((r: Row) => ({
     id: Number(r.id),
+    name: String(r.name ?? ""),
+    updatedAt: asString(r.updated_at),
+  }));
+}
+
+/** How many paid/claimed (verified) practitioners exist, for sitemap chunk math. */
+export async function getClaimedPractitionerCount(): Promise<number> {
+  const supabase = createServerClient();
+  const { count, error } = await supabase
+    .from("practitioners")
+    .select("id", { count: "exact", head: true })
+    .eq("claimed", true);
+  if (error) throw new Error(error.message);
+  return count ?? 0;
+}
+
+/** Claimed (paid, verified) practitioners page, for the priority sitemap
+ *  chunks. Same shape as getPractitionerIdsPage, newest-claim-agnostic
+ *  id order so chunks are stable across regenerations. */
+export async function getClaimedPractitionerIdsPage(
+  offset: number,
+  limit: number,
+): Promise<{ id: number; name: string; updatedAt: string | null }[]> {
+  const supabase = createServerClient();
+  const { data, error } = await supabase
+    .from("practitioners")
+    .select("id, name, updated_at")
+    .eq("claimed", true)
+    .order("id", { ascending: true })
+    .range(offset, offset + limit - 1);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r: Row) => ({
+    id: Number(r.id),
+    name: String(r.name ?? ""),
     updatedAt: asString(r.updated_at),
   }));
 }

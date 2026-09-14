@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { Practitioner } from "@/lib/types";
+import { practitionerUrl } from "@/lib/practitioner-url";
 import { SUPPORT_WHATSAPP } from "@/lib/site";
 
 type Step = "search" | "preview" | "details" | "paying" | "done";
@@ -429,7 +430,7 @@ export default function ClaimFlow() {
       )}
       {!editHref && selected && (
         <Link
-          href={`/practitioners/${selected.id}/edit`}
+          href={`${practitionerUrl(selected.id, selected.name)}/edit`}
           className="cta-glow mx-auto mt-5 block w-full max-w-md rounded-full bg-amber-500 px-6 py-3.5 text-base font-bold text-white transition hover:bg-amber-600"
         >
           Add your details →
@@ -438,7 +439,7 @@ export default function ClaimFlow() {
 
       {selected && (
         <Link
-          href={`/practitioners/${selected.id}`}
+          href={practitionerUrl(selected.id, selected.name)}
           className="mt-3 inline-block rounded-xl border border-emerald-300 bg-white px-5 py-2.5 text-sm font-bold text-emerald-800 transition hover:border-emerald-400 dark:border-emerald-800 dark:bg-slate-900 dark:text-emerald-300"
         >
           View my profile →

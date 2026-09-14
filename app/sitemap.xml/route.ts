@@ -1,4 +1,4 @@
-import { getStats } from "@/lib/practitioners";
+import { getClaimedPractitionerCount, getStats } from "@/lib/practitioners";
 import { getFacilityStats } from "@/lib/facilities";
 import { SITE_URL } from "@/lib/site";
 
@@ -10,14 +10,20 @@ import { SITE_URL } from "@/lib/site";
 //   0                                     -> static + type landing + help pages
 //   1                                     -> posts (detail + facet) + practitioner-profession
 //   2 .. 1+facilityChunks                 -> facilities detail pages
-//   (2+facilityChunks) ..                 -> practitioners
+//   next claimedChunks                    -> CLAIMED (paid/verified) practitioners,
+//                                            name-slug URLs, crawled first
+//   remainder                             -> all practitioners, name-slug URLs
 export const dynamic = "force-static";
 export const revalidate = 3600;
 
 const CHUNK = 1000;
 
 export async function GET() {
-  const [statsResult, fstatsResult] = await Promise.allSettled([getStats(), getFacilityStats()]);
+  const [statsResult, fstatsResult, claimedResult] = await Promise.allSettled([
+    getStats(),
+    getFacilityStats(),
+    getClaimedPractitionerCount(),
+  ]);
   const practitionerChunks =
     statsResult.status === "fulfilled"
       ? Math.max(0, Math.ceil(statsResult.value.practitioners / CHUNK))
@@ -26,8 +32,12 @@ export async function GET() {
     fstatsResult.status === "fulfilled"
       ? Math.max(0, Math.ceil(fstatsResult.value.total / CHUNK))
       : 0;
+  const claimedChunks =
+    claimedResult.status === "fulfilled"
+      ? Math.max(0, Math.ceil(claimedResult.value / CHUNK))
+      : 0;
 
-  const total = 2 + facilityChunks + practitionerChunks;
+  const total = 2 + facilityChunks + claimedChunks + practitionerChunks;
   const urls = Array.from(
     { length: total },
     (_, i) => `${SITE_URL}/sitemap/${i}`,

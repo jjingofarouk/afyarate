@@ -97,20 +97,21 @@ textarea::placeholder {
 }
 .cta-bob { animation: cta-bob 2.2s ease-in-out infinite; }
 
-/* Claimed-profile contact buttons: hard, attention-grabbing shake. */
+/* Claimed-profile contact buttons: a short shake burst, then rest. Shakes
+   for ~1s of a 3.2s loop so it nudges without dancing non-stop. */
 @keyframes contact-shake {
   0%, 100% { transform: translateX(0) rotate(0); }
-  10% { transform: translateX(-6px) rotate(-2.5deg); }
-  20% { transform: translateX(6px) rotate(2.5deg); }
-  30% { transform: translateX(-5px) rotate(-2deg); }
-  40% { transform: translateX(5px) rotate(2deg); }
-  50% { transform: translateX(-4px) rotate(-1.5deg); }
-  60% { transform: translateX(4px) rotate(1.5deg); }
-  70% { transform: translateX(-3px) rotate(-1deg); }
-  80% { transform: translateX(3px) rotate(1deg); }
-  90% { transform: translateX(-1px) rotate(0); }
+  3% { transform: translateX(-6px) rotate(-2.5deg); }
+  6% { transform: translateX(6px) rotate(2.5deg); }
+  9% { transform: translateX(-5px) rotate(-2deg); }
+  12% { transform: translateX(5px) rotate(2deg); }
+  15% { transform: translateX(-4px) rotate(-1.5deg); }
+  18% { transform: translateX(4px) rotate(1.5deg); }
+  21% { transform: translateX(-3px) rotate(-1deg); }
+  24% { transform: translateX(3px) rotate(1deg); }
+  27%, 100% { transform: translateX(0) rotate(0); }
 }
-.contact-shake { animation: contact-shake 0.9s ease-in-out infinite; }
+.contact-shake { animation: contact-shake 3.2s ease-in-out infinite; }
 
 /* Verified-profile badge: bouncy dance. */
 @keyframes badge-dance {

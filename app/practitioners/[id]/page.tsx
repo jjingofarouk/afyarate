@@ -6,8 +6,10 @@ import {
   getPractitioner,
   getProfileDetails,
   getRatings,
+  parsePractitionerIdParam,
+  practitionerUrl,
 } from "@/lib/practitioners";
-import { pluralProfession, slugify } from "@/lib/posts";
+import { slugify } from "@/lib/posts";
 import { SITE_URL } from "@/lib/site";
 import { InitialsAvatar } from "@/components/PractitionerCard";
 import { Stars } from "@/components/Stars";
@@ -25,7 +27,9 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const p = await getPractitioner(Number(id));
+  const numId = parsePractitionerIdParam(id);
+  if (numId == null) return { title: "Not found" };
+  const p = await getPractitioner(numId);
   if (!p) return { title: "Not found" };
   const title = `${p.name}, ${p.council ?? "Health professional"}`;
   const description = `${p.name} (${p.council ?? "registered in Uganda"}). ${
@@ -33,7 +37,7 @@ export async function generateMetadata({
       ? `Rated ${p.avgRating?.toFixed(1)}/5 from ${p.ratingCount} patient rating${p.ratingCount > 1 ? "s" : ""}.`
       : "Patient ratings and licence information."
   } Licence ${p.licenceStatus ?? "status"}, registration no. ${p.registrationNo ?? "n/a"}.`;
-  const url = `${SITE_URL}/practitioners/${p.id}`;
+  const url = `${SITE_URL}${practitionerUrl(p.id, p.name)}`;
   const image = p.imageUrl || `${SITE_URL}/logo.png`;
 
   return {
@@ -102,7 +106,8 @@ export default async function PractitionerPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const numId = Number(id);
+  const numId = parsePractitionerIdParam(id);
+  if (numId == null) notFound();
   // All four are keyed off the same id (no need to wait for practitioner to
   // resolve before starting the others), fetch in parallel.
   const [practitioner, licenses, ratings, details] = await Promise.all([
@@ -115,6 +120,9 @@ export default async function PractitionerPage({
 
   const active = practitioner.licenceStatus === "Active";
   const waDigits = details?.whatsapp?.replace(/\D/g, "");
+  const firstName = practitioner.name.split(/\s+/)[0] ?? practitioner.name;
+  const telHref = details?.phone ? `tel:${details.phone.replace(/\s/g, "")}` : null;
+  const specialties = details?.specialties ?? [];
 
   const breadcrumbLd = {
     "@context": "https://schema.org",
@@ -127,7 +135,7 @@ export default async function PractitionerPage({
             {
               "@type": "ListItem",
               position: 3,
-              name: `${pluralProfession(practitioner.profession)}`,
+              name: `${practitioner.profession}s`,
               item: `${SITE_URL}/practitioners/profession/${slugify(practitioner.profession)}`,
             },
           ]
@@ -140,7 +148,7 @@ export default async function PractitionerPage({
     "@context": "https://schema.org",
     "@type": practitionerSchemaType(practitioner.profession),
     name: practitioner.name,
-    url: `${SITE_URL}/practitioners/${practitioner.id}`,
+    url: `${SITE_URL}${practitionerUrl(practitioner.id, practitioner.name)}`,
     image: practitioner.imageUrl || `${SITE_URL}/logo.png`,
     ...(practitioner.profession ? { jobTitle: practitioner.profession } : {}),
     ...(practitioner.council
@@ -212,7 +220,7 @@ export default async function PractitionerPage({
               href={`/practitioners/profession/${slugify(practitioner.profession)}`}
               className="hover:text-emerald-700 dark:hover:text-emerald-400"
             >
-              {pluralProfession(practitioner.profession)}
+              {practitioner.profession}s
             </Link>
           </>
         )}
@@ -225,7 +233,14 @@ export default async function PractitionerPage({
         <FadeIn className="lg:col-span-1">
           <div className="space-y-6">
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <div className="aspect-[3/4] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+            <div
+              className={
+                practitioner.claimed
+                  ? "bg-[repeating-linear-gradient(45deg,#fbbf24_0_8px,#022c22_8px_16px)] p-1"
+                  : ""
+              }
+            >
+              <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
               {practitioner.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -236,6 +251,77 @@ export default async function PractitionerPage({
               ) : (
                 <InitialsAvatar name={practitioner.name} />
               )}
+              {practitioner.claimed && (
+                <span
+                  title="Verified profile"
+                  aria-label="Verified profile"
+                  className="contact-shake absolute bottom-3 right-3 drop-shadow-xl"
+                >
+                  <svg viewBox="0 0 100 100" className="size-20" role="img" aria-label="Verified stamp">
+                    <defs>
+                      <path
+                        id="verified-stamp-circle"
+                        d="M50,50 m-35,0 a35,35 0 1,1 70,0 a35,35 0 1,1 -70,0"
+                        fill="none"
+                      />
+                      <clipPath id="verified-logo-clip">
+                        <circle cx="50" cy="50" r="15" />
+                      </clipPath>
+                    </defs>
+                    <circle cx="50" cy="50" r="48" fill="#fbbf24" />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="48"
+                      fill="none"
+                      stroke="#ffffff"
+                      strokeWidth="2.5"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="27"
+                      fill="none"
+                      stroke="#064e3b"
+                      strokeWidth="1.5"
+                      strokeDasharray="4 3"
+                    />
+                    <text
+                      fontSize="14"
+                      fontWeight="900"
+                      fill="#064e3b"
+                      letterSpacing="3"
+                      style={{ textTransform: "uppercase" }}
+                    >
+                      <textPath href="#verified-stamp-circle" textLength="218">
+                        VERIFIED • VERIFIED •
+                      </textPath>
+                    </text>
+                    <circle cx="50" cy="50" r="16" fill="#ffffff" />
+                    <g clipPath="url(#verified-logo-clip)">
+                      <svg x="35" y="35" width="30" height="30" viewBox="360 250 560 660">
+                        <image
+                          href="/logo.png"
+                          x="0"
+                          y="0"
+                          width="1280"
+                          height="1280"
+                          preserveAspectRatio="xMidYMid meet"
+                        />
+                      </svg>
+                    </g>
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="16"
+                      fill="none"
+                      stroke="#064e3b"
+                      strokeWidth="2.5"
+                    />
+                  </svg>
+                </span>
+              )}
+              </div>
             </div>
             <div className="p-5">
               <div className="flex items-center gap-2">
@@ -290,7 +376,7 @@ export default async function PractitionerPage({
                 {practitioner.name}
               </h1>
               {practitioner.claimed && (
-                <span className="badge-dance inline-flex items-center gap-1 rounded-full bg-amber-500 px-2.5 py-1 text-xs font-bold text-white">
+                <span className="badge-dance inline-flex items-center gap-1 rounded-full bg-amber-400 px-2.5 py-1 text-xs font-bold text-emerald-950 shadow">
                   <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3" aria-hidden>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -301,7 +387,7 @@ export default async function PractitionerPage({
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{practitioner.council}</p>
 
             <div className="mt-5">
-              <ShareButtons title={practitioner.name} url={`${SITE_URL}/practitioners/${practitioner.id}`} />
+              <ShareButtons title={practitioner.name} url={`${SITE_URL}${practitionerUrl(practitioner.id, practitioner.name)}`} />
             </div>
 
             <dl className="mt-4">
@@ -333,17 +419,29 @@ export default async function PractitionerPage({
             )}
           </div>
 
-          {/* Claimed contact details — only paid, claimed profiles show these. */}
-          {practitioner.claimed && details && (
-            <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm dark:border-emerald-900/60 dark:bg-emerald-950/30">
-              <h2 className="text-sm font-bold uppercase tracking-wide text-emerald-800 dark:text-emerald-300">
-                Contact directly — no middleman
-              </h2>
-              {(details.phone || waDigits) && (
+          {/* Contact & practice details — every slot always visible. Paid
+              practitioners' values appear here automatically once they fill
+              them in; empty slots show a placeholder instead. */}
+          <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm dark:border-emerald-900/60 dark:bg-emerald-950/30">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-emerald-800 dark:text-emerald-300">
+              Contact directly. no middleman
+            </h2>
+            {details?.phone || waDigits ? (
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {details.phone && (
+                  {telHref && (
                     <a
-                      href={`tel:${details.phone.replace(/\s/g, "")}`}
+                      href={telHref}
+                      className="cta-bob inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 px-6 py-3.5 text-base font-extrabold text-emerald-950 shadow-lg transition hover:bg-amber-300 sm:w-auto"
+                    >
+                      <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h4.125a2.25 2.25 0 012.25 2.25v1.5M12 6.75V5.25A2.25 2.25 0 009.75 3h-1.5A2.25 2.25 0 006 5.25v13.5A2.25 2.25 0 008.25 21h4.125a2.25 2.25 0 002.25-2.25v-1.5m0-10.5h4.125c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125H14.25m-6 0V6.75" />
+                      </svg>
+                      Book {firstName}
+                    </a>
+                  )}
+                  {details?.phone && (
+                    <a
+                      href={telHref ?? undefined}
                       className="contact-shake inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700"
                     >
                       <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -367,33 +465,58 @@ export default async function PractitionerPage({
                     </a>
                   )}
                 </div>
-              )}
-              {details.workplace && (
-                <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
-                  <span className="font-semibold">Workplace: </span>{details.workplace}
+              ) : (
+                <p className="mt-3 text-sm italic text-slate-500 dark:text-slate-400">
+                  No contact details shared yet.
                 </p>
               )}
-              {details.specialties.length > 0 && (
+              <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
+                <span className="font-semibold">Workplace: </span>
+                {details?.workplace ?? (
+                  <span className="italic text-slate-400">Not shared yet</span>
+                )}
+              </p>
+              {specialties.length > 0 ? (
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  {details.specialties.map((s) => (
+                  {specialties.map((s) => (
                     <span key={s} className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-emerald-800 dark:bg-slate-800 dark:text-emerald-300">
                       {s}
                     </span>
                   ))}
                 </div>
+              ) : (
+                <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
+                  <span className="font-semibold">Specialties: </span>
+                  <span className="italic text-slate-400">Not shared yet</span>
+                </p>
               )}
-              {details.bio && (
+              {details?.bio ? (
                 <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
                   {details.bio}
                 </p>
+              ) : (
+                <p className="mt-3 text-sm italic text-slate-400">No bio shared yet.</p>
               )}
-              {details.website && (
-                <a href={details.website} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block text-sm font-medium text-emerald-700 underline dark:text-emerald-400">
-                  {details.website}
-                </a>
+              <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
+                <span className="font-semibold">Website: </span>
+                {details?.website ? (
+                  <a href={details.website} target="_blank" rel="noopener noreferrer" className="font-medium text-emerald-700 underline dark:text-emerald-400">
+                    {details.website}
+                  </a>
+                ) : (
+                  <span className="italic text-slate-400">Not shared yet</span>
+                )}
+              </p>
+              {!practitioner.claimed && (
+                <p className="mt-4 border-t border-emerald-200 pt-4 text-sm text-slate-600 dark:border-emerald-900/60 dark:text-slate-400">
+                  Is this you, {firstName}?{" "}
+                  <Link href="/claim" className="font-semibold text-emerald-700 underline dark:text-emerald-400">
+                    Claim this profile
+                  </Link>{" "}
+                  to add your contact details, specialties and bio.
+                </p>
               )}
             </div>
-          )}
 
           {/* Licence history */}
           {licenses.length > 1 && (
@@ -443,7 +566,7 @@ export default async function PractitionerPage({
           )}
 
           {/* Ratings */}
-          <div id="verify" className="mt-6 grid scroll-mt-24 gap-6 md:grid-cols-2">
+          <div className="mt-6 grid gap-6 md:grid-cols-2">
             <RatingForm practitionerId={practitioner.id} />
 
             <div>

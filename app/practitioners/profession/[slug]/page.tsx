@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProfessionCounts, getProfessions, searchPractitioners } from "@/lib/practitioners";
+import { practitionerUrl } from "@/lib/practitioner-url";
 import { getPosts, pluralProfession, slugify } from "@/lib/posts";
 import PractitionerSearch from "@/components/PractitionerSearch";
 import { PAGE_SIZE, SITE_NAME, SITE_URL } from "@/lib/site";
@@ -126,7 +127,7 @@ export default async function ProfessionPractitionersPage({
       itemListElement: result.items.map((p, i) => ({
         "@type": "ListItem",
         position: i + 1,
-        url: `${SITE_URL}/practitioners/${p.id}`,
+        url: `${SITE_URL}${practitionerUrl(p.id, p.name)}`,
       })),
     },
   };

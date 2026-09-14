@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 export type SectionTone = "white" | "slate" | "emerald" | "amber" | "sky";
 
@@ -48,6 +48,7 @@ export default function HomeSection({
   children,
   className,
   compact = false,
+  style,
 }: {
   id?: string;
   tone?: SectionTone;
@@ -59,11 +60,12 @@ export default function HomeSection({
   children: ReactNode;
   className?: string;
   compact?: boolean;
+  style?: CSSProperties;
 }) {
   const styles = TONE_STYLES[tone];
   const hasHeader = Boolean(eyebrow || title || description || action);
   return (
-    <section id={id} className={`scroll-mt-20 ${styles.band} ${className ?? ""}`}>
+    <section id={id} style={style} className={`scroll-mt-20 ${styles.band} ${className ?? ""}`}>
       <div
         className={`mx-auto max-w-6xl px-4 ${compact ? "py-8 sm:py-10" : "py-12 sm:py-16"}`}
       >
