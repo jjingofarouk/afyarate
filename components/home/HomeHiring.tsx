@@ -9,7 +9,7 @@ import {
 
 /**
  * Recruiter strip: fixed below the discovery sections (never shuffled).
- * Sells access to the health-worker audience — pool size up front, then the
+ * Sells access to the health-worker audience: pool size up front, then the
  * direct phone + email contact paths.
  */
 export default function HomeHiring() {
@@ -30,7 +30,7 @@ export default function HomeHiring() {
           <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-slate-300 lg:mx-0">
             Our job alerts go straight to a pool of over {NEWSLETTER_AUDIENCE_SIZE}{" "}
             verified Ugandan doctors, nurses, midwives, clinical officers and
-            pharmacists. Tell us who you need — we&apos;ll put your opening in
+            pharmacists. Tell us who you need, we&apos;ll put your opening in
             front of them.
           </p>
           <div className="mt-6 flex flex-col items-center gap-2 sm:flex-row sm:justify-center lg:justify-start">

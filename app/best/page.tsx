@@ -174,7 +174,7 @@ export default async function BestHubPage() {
           {BEST_CITIES.map((c) => (
             <Link
               key={c.slug}
-              href={`/best/hospitals/${c.slug}`}
+              href={`/best/hospital/${c.slug}`}
               className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-emerald-400 dark:hover:text-emerald-400"
             >
               Best hospitals in {c.label}

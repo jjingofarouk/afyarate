@@ -58,20 +58,24 @@ async function getCityPageData(kind: "hospital" | "pharmacy", city: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ kind: string; city: string }>;
+  params: Promise<{ slug: string; city: string }>;
 }): Promise<Metadata> {
-  const { kind, city } = await params;
-  if (!(BEST_FACILITY_KINDS as readonly string[]).includes(kind)) {
+  const { slug, city } = await params;
+  // Only hospital/pharmacy slugs are valid here; profession slugs are handled
+  // by the sibling [slug] page, and a two-segment path like /best/doctor/kampala
+  // must not render as a city page.
+  if (!(BEST_FACILITY_KINDS as readonly string[]).includes(slug)) {
     return { title: "Not found" };
   }
-  const k = kind as "hospital" | "pharmacy";
+  const kind = slug as "hospital" | "pharmacy";
+  const k = kind;
   const cityLabel =
     BEST_CITIES.find((c) => c.slug === city)?.label ??
     city.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   const plural = kindLabel(k).toLowerCase();
   const year = new Date().getFullYear();
   const title = `Best ${plural} in ${cityLabel}, Uganda (${year})`;
-  const description = `Compare the best ${plural} in ${cityLabel}, Uganda (${year}), ranked by real patient ratings. See top-rated facilities near you, read reviews and get contact details — free on ${SITE_NAME}.`;
+  const description = `Compare the best ${plural} in ${cityLabel}, Uganda (${year}), ranked by real patient ratings. See top-rated facilities near you, read reviews and get contact details, free on ${SITE_NAME}.`;
   return {
     title,
     description,
@@ -96,15 +100,16 @@ export async function generateMetadata({
 export default async function BestCityPage({
   params,
 }: {
-  params: Promise<{ kind: string; city: string }>;
+  params: Promise<{ slug: string; city: string }>;
 }) {
-  const { kind, city } = await params;
-  if (!(BEST_FACILITY_KINDS as readonly string[]).includes(kind)) notFound();
+  const { slug, city } = await params;
+  if (!(BEST_FACILITY_KINDS as readonly string[]).includes(slug)) notFound();
+  const kind = slug as "hospital" | "pharmacy";
 
-  const data = await getCityPageData(kind as "hospital" | "pharmacy", city);
+  const data = await getCityPageData(kind, city);
   if (!data) notFound();
 
-  const k = kind as "hospital" | "pharmacy";
+  const k = kind;
   const { cityLabel, result } = data;
   const plural = kindLabel(k).toLowerCase();
   const year = new Date().getFullYear();
@@ -181,7 +186,7 @@ export default async function BestCityPage({
         <p className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           The top-rated {plural} in {cityLabel}, Uganda, ranked by patient ratings and
           review count. Each listing shows its location, patient rating and, where
-          available, services and contact details — so you can compare before you visit.
+          available, services and contact details, so you can compare before you visit.
         </p>
       </header>
 

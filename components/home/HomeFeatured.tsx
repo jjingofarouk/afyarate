@@ -7,7 +7,7 @@ export type HomeShuffleKey = "jobs" | "practitioners" | "facilities";
 
 /**
  * Pinned strip directly under the hero: the paid featured-verified banner
- * (never shuffles — claimants paid for this spotlight) plus the jump-to nav
+ * (never shuffles, claimants paid for this spotlight) plus the jump-to nav
  * mirroring the day's shuffled section order. Gated on DB readiness so the
  * hero never waits on it; streams behind Suspense.
  */

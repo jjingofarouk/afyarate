@@ -3,7 +3,7 @@ import { DISPATCH_PHONE_DISPLAY, DISPATCH_PHONE_LINK } from "@/lib/site";
 
 /**
  * Emergency ambulance strip: fixed near the top of the home page (never
- * shuffled — emergencies don't wait for layout rotation). Urgent red band,
+ * shuffled; emergencies don't wait for layout rotation). Urgent red band,
  * pulsing live dot, and a shaking call button wired to the dispatch line.
  */
 export default function HomeEmergency() {
@@ -48,12 +48,12 @@ export default function HomeEmergency() {
             Emergency · 24/7 · countrywide
           </p>
           <h2 className="mt-3 text-3xl font-black tracking-tight text-white sm:text-4xl">
-            Need an ambulance in Uganda? Don&apos;t wait — call now.
+            Need an ambulance in Uganda? Don&apos;t wait, call now.
           </h2>
           <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-red-100 lg:mx-0">
             A medical emergency can&apos;t wait. One call connects you to an
             ambulance near you, anywhere in Uganda, any time of day or night.
-            Every minute matters — call now.
+            Every minute matters, call now.
           </p>
           <div className="mt-5 flex flex-col items-center gap-2 sm:flex-row sm:justify-center lg:justify-start">
             <a

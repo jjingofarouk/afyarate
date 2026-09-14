@@ -146,7 +146,7 @@ export async function generateMetadata({
     const kind = slug as "hospital" | "pharmacy";
     const label = kindLabel(kind).toLowerCase();
     const title = `Best ${kindLabel(kind)} in Uganda (${year}): Top-Rated & Verified`;
-    const description = `Discover the best ${label} in Uganda (${year}), ranked by real patient ratings. Compare top-rated facilities, read reviews and find contact details — free on ${SITE_NAME}.`;
+    const description = `Discover the best ${label} in Uganda (${year}), ranked by real patient ratings. Compare top-rated facilities, read reviews and find contact details, free on ${SITE_NAME}.`;
     return {
       title,
       description,
@@ -258,7 +258,7 @@ export default async function BestSlugPage({
 
   const intro = isProfession
     ? `Ranked by patient ratings and review count, these are the top-rated ${label} in Uganda right now. Every listing is drawn from the official register, and each profile shows the practitioner's council, registration number and licence status alongside their patient feedback.`
-    : `Ranked by patient ratings and review count, these are the top-rated ${label} in Uganda right now. Each listing shows its location, patient rating and, where available, services and contact details — so you can compare before you visit.`;
+    : `Ranked by patient ratings and review count, these are the top-rated ${label} in Uganda right now. Each listing shows its location, patient rating and, where available, services and contact details, so you can compare before you visit.`;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">

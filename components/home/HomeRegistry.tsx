@@ -13,7 +13,7 @@ import { UsersIcon } from "@/components/home/HomeIcons";
 
 /**
  * Verified registry search block (second half of the "practitioners" shuffle
- * slot). Uses an estimated count — the exact 114k-row count is pure latency
+ * slot). Uses an estimated count, the exact 114k-row count is pure latency
  * here and pagination stays correct.
  */
 export default async function HomeRegistry({

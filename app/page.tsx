@@ -65,7 +65,7 @@ const HOME_SHUFFLE_PERMUTATIONS: HomeShuffleKey[][] = [
  * Daily-rotating homepage section order.
  *
  * The featured verified (claimed/paid) banner always stays pinned directly
- * under the hero — this only shuffles the three discovery blocks below it
+ * under the hero, this only shuffles the three discovery blocks below it
  * (jobs, practitioners, hospitals/pharmacies) so repeat visitors and
  * crawlers see a different layout each day.
  *
