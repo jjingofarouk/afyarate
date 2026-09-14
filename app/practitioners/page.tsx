@@ -3,7 +3,7 @@ import Link from "next/link";
 import PractitionerSearch from "@/components/PractitionerSearch";
 import { getProfessionCounts, searchPractitioners } from "@/lib/practitioners";
 import { getProfessions as getJobProfessions } from "@/lib/posts";
-import { slugify } from "@/lib/posts";
+import { pluralProfession, slugify } from "@/lib/posts";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import { PAGE_SIZE } from "@/lib/site";
 
@@ -56,7 +56,7 @@ export default async function PractitionersHubPage({
       itemListElement: counts.map((c, i) => ({
         "@type": "ListItem",
         position: i + 1,
-        name: `${c.profession}s in Uganda`,
+        name: `${pluralProfession(c.profession)} in Uganda`,
         url: `${SITE_URL}/practitioners/profession/${slugify(c.profession)}`,
       })),
     },
@@ -106,7 +106,7 @@ export default async function PractitionersHubPage({
               className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 transition hover:border-emerald-500 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-400"
             >
               <span className="text-sm font-medium text-slate-800 dark:text-slate-100">
-                {c.profession}s in Uganda
+                {pluralProfession(c.profession)} in Uganda
               </span>
               <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                 {c.count.toLocaleString()}

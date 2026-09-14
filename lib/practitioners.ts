@@ -208,6 +208,40 @@ export async function getTopRatedPractitioners(limit = 8): Promise<Practitioner[
   return ((data ?? []) as Row[]).map(mapPractitioner);
 }
 
+export interface FeaturedProfile {
+  practitioner: Practitioner;
+  details: ProfileDetails | null;
+}
+
+/** One practitioner to spotlight on the home page as the featured verified
+ *  profile. Prefers a claimed practitioner who left contact channels
+ *  (call/WhatsApp) so the contact CTAs work, photo-first; falls back to the
+ *  best-rated practitioner with a photo so the slot never breaks when no
+ *  claim exists yet. Returns null only when the registry is empty. */
+export async function getFeaturedVerifiedPractitioner(): Promise<FeaturedProfile | null> {
+  const supabase = createServerClient();
+  const { data } = await supabase
+    .from("practitioners_overview")
+    .select("*")
+    .eq("claimed", true)
+    .order("image_url", { ascending: true, nullsFirst: false })
+    .order("name", { ascending: true })
+    .limit(5);
+  for (const row of (data ?? []) as Row[]) {
+    const details = await getProfileDetails(Number(row.id));
+    if (details?.phone || details?.whatsapp) {
+      return { practitioner: mapPractitioner(row), details };
+    }
+  }
+  const top = await getTopRatedPractitioners(5).catch(() => []);
+  for (const p of top) {
+    if (!p.imageUrl) continue;
+    const details = await getProfileDetails(p.id).catch(() => null);
+    return { practitioner: p, details };
+  }
+  return null;
+}
+
 // cache(): dedupes within a single request, generateMetadata() and the page
 // body both look up the same practitioner, and this collapses that back to
 // one Supabase call. Scoped per-request only, so a rating submitted via

@@ -7,8 +7,6 @@ import ThemeToggle, { ThemeInitScript } from "@/components/ThemeToggle";
 import MobileNav from "@/components/MobileNav";
 import HeaderSearch from "@/components/HeaderSearch";
 import Footer from "@/components/Footer";
-import NoCopyScript from "@/components/NoCopy";
-import CopyNotice from "@/components/CopyNotice";
 import Lightbox from "@/components/Lightbox";
 import NewsletterFab from "@/components/NewsletterFab";
 import ClaimBanner from "@/components/ClaimBanner";
@@ -83,7 +81,6 @@ export default function RootLayout({
           content="ca-pub-3215272580656507"
         />
         <ThemeInitScript />
-        <NoCopyScript />
         {process.env.NODE_ENV === "production" && (
           <>
             <Script
@@ -137,7 +134,6 @@ export default function RootLayout({
 
         <Footer />
 
-        <CopyNotice />
         <Lightbox />
         <NewsletterFab />
         <ClaimBanner />

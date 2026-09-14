@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ClaimFlow from "@/components/ClaimFlow";
+import ContactForm from "@/components/ContactForm";
 
 export const metadata: Metadata = {
   title: "Claim your profile",
@@ -183,6 +184,20 @@ export default function ClaimPage() {
               <p className="mt-0.5 text-[11px] leading-snug text-slate-400">{t.sub}</p>
             </div>
           ))}
+        </div>
+
+        {/* Direct help: email us, same claim form as the contact page */}
+        <div className="mt-10">
+          <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
+            Need a hand? Email us directly
+          </h2>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            Stuck at any step, or prefer we handle it by email? Send your
+            details and we will verify your licence and get you set up.
+          </p>
+          <div className="mt-4">
+            <ContactForm initialTopic="claim" />
+          </div>
         </div>
       </div>
 

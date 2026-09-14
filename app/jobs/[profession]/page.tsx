@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getPosts, slugify, facetOptions } from "@/lib/posts";
+import { getPosts, pluralProfession, slugify, facetOptions } from "@/lib/posts";
 import type { FacetItem } from "@/lib/posts";
 import PostBoard from "@/components/PostBoard";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
@@ -123,7 +123,7 @@ export default async function JobProfessionPage({
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           {facet.count} {facet.count === 1 ? "vacancy is" : "vacancies are"} currently open for{" "}
-          {facet.label}s in Uganda, across hospitals, clinics, universities, NGOs and government.
+          {pluralProfession(facet.label)} in Uganda, across hospitals, clinics, universities, NGOs and government.
           New listings are added every week.
         </p>
       </header>

@@ -12,17 +12,33 @@ export function FacilityKindBadge({ kind }: { kind: FacilityKind }) {
   );
 }
 
-export function FacilityInitials({ name }: { name: string }) {
-  const initials = name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0] ?? "")
-    .join("")
-    .toUpperCase();
+// Clean Unsplash placeholders for facilities without their own photo.
+// Deterministic per facility (by id) so cards don't all show the same frame.
+const HOSPITAL_PHOTOS = [
+  "1586773860418-d37222d8fce3", // hospital building exterior
+  "1519494026892-80bbd2d6fd0d", // hospital corridor
+];
+const PHARMACY_PHOTOS = [
+  "1631549916768-4119b2e5f926", // pharmacy blister packs
+  "1587854692152-cbe660dbde88", // pharmacy shelves
+];
+
+export function facilityFallbackUrl(f: Pick<Facility, "id" | "kind">): string {
+  const pool = f.kind === "pharmacy" ? PHARMACY_PHOTOS : HOSPITAL_PHOTOS;
+  const photo = pool[Math.abs(Number(f.id)) % pool.length];
+  return `https://images.unsplash.com/photo-${photo}?w=800&q=70&auto=format&fit=crop`;
+}
+
+export function FacilityFallbackPhoto({ facility: f }: { facility: Facility }) {
   return (
-    <div className="grid size-full place-items-center bg-gradient-to-br from-sky-500 to-indigo-600 text-3xl font-bold text-white">
-      {initials}
-    </div>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={facilityFallbackUrl(f)}
+      alt=""
+      aria-hidden
+      loading="lazy"
+      className="h-full w-full object-cover"
+    />
   );
 }
 
@@ -42,7 +58,7 @@ export default function FacilityCard({ facility: f }: { facility: Facility }) {
             className="h-full w-full object-contain object-center"
           />
         ) : (
-          <FacilityInitials name={f.name} />
+          <FacilityFallbackPhoto facility={f} />
         )}
         <div className="absolute left-2 top-2">
           <FacilityKindBadge kind={f.kind} />

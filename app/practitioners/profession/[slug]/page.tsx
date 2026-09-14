@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProfessionCounts, getProfessions, searchPractitioners } from "@/lib/practitioners";
-import { getPosts, slugify } from "@/lib/posts";
+import { getPosts, pluralProfession, slugify } from "@/lib/posts";
 import PractitionerSearch from "@/components/PractitionerSearch";
 import { PAGE_SIZE, SITE_NAME, SITE_URL } from "@/lib/site";
 
@@ -17,7 +17,7 @@ function faqsFor(profession: string, count: number) {
   return [
     {
       q: `How do I find a licensed ${profession} in Uganda?`,
-      a: `Browse the ${count.toLocaleString()} registered ${profession}s listed on ${SITE_NAME}. Each profile shows the practitioner's council, registration number, licence status and expiry date so you can confirm they are currently licensed to practise in Uganda.`,
+      a: `Browse the ${count.toLocaleString()} registered ${pluralProfession(profession)} listed on ${SITE_NAME}. Each profile shows the practitioner's council, registration number, licence status and expiry date so you can confirm they are currently licensed to practise in Uganda.`,
     },
     {
       q: `Can I check a ${profession}'s licence before visiting?`,
@@ -44,8 +44,8 @@ export async function generateMetadata({
   const prof = counts.find((c) => slugify(c.profession) === slug);
   if (!prof) return { title: "Profession not found" };
   const year = new Date().getFullYear();
-  const title = `${prof.profession}s in Uganda: Licensed ${prof.profession}s (${year})`;
-  const description = `Find ${prof.count.toLocaleString()} registered ${prof.profession}s in Uganda with patient ratings and licence details. Verify their licence, read reviews and see ${prof.profession} jobs.`;
+  const title = `${pluralProfession(prof.profession)} in Uganda: Licensed ${pluralProfession(prof.profession)} (${year})`;
+  const description = `Find ${prof.count.toLocaleString()} registered ${pluralProfession(prof.profession)} in Uganda with patient ratings and licence details. Verify their licence, read reviews and see ${prof.profession} jobs.`;
   return {
     title,
     description,
@@ -58,13 +58,13 @@ export async function generateMetadata({
     alternates: { canonical: `/practitioners/profession/${slug}` },
     openGraph: {
       type: "website",
-      title: `${prof.profession}s in Uganda · ${SITE_NAME}`,
+      title: `${pluralProfession(prof.profession)} in Uganda · ${SITE_NAME}`,
       description,
       url: `${SITE_URL}/practitioners/profession/${slug}`,
     },
     twitter: {
       card: "summary_large_image",
-      title: `${prof.profession}s in Uganda · ${SITE_NAME}`,
+      title: `${pluralProfession(prof.profession)} in Uganda · ${SITE_NAME}`,
       description,
     },
   };
@@ -111,15 +111,15 @@ export default async function ProfessionPractitionersPage({
         name: "Practitioners",
         item: `${SITE_URL}/practitioners`,
       },
-      { "@type": "ListItem", position: 3, name: `${prof.profession}s in Uganda` },
+      { "@type": "ListItem", position: 3, name: `${pluralProfession(prof.profession)} in Uganda` },
     ],
   };
 
   const collectionLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: `${prof.profession}s in Uganda`,
-    description: `Registered, licensed ${prof.profession}s in Uganda with patient ratings.`,
+    name: `${pluralProfession(prof.profession)} in Uganda`,
+    description: `Registered, licensed ${pluralProfession(prof.profession)} in Uganda with patient ratings.`,
     url: `${SITE_URL}/practitioners/profession/${slug}`,
     mainEntity: {
       "@type": "ItemList",
@@ -148,17 +148,17 @@ export default async function ProfessionPractitionersPage({
         <span className="mx-1.5">/</span>
         <Link href="/practitioners" className="hover:text-emerald-700 dark:hover:text-emerald-400">Practitioners</Link>
         <span className="mx-1.5">/</span>
-        <span className="text-slate-600 dark:text-slate-400">{prof.profession}s in Uganda</span>
+        <span className="text-slate-600 dark:text-slate-400">{pluralProfession(prof.profession)} in Uganda</span>
       </nav>
 
       <header className="max-w-3xl">
         <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-          {prof.profession}s in Uganda ({year})
+          {pluralProfession(prof.profession)} in Uganda ({year})
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           There are{" "}
           <strong className="font-semibold text-slate-800 dark:text-slate-200">
-            {prof.count.toLocaleString()} registered {prof.profession}s
+            {prof.count.toLocaleString()} registered {pluralProfession(prof.profession)}
           </strong>{" "}
           in Uganda on {SITE_NAME}. Use the search below to find, filter and sort
           them. Every profile shows the practitioner&apos;s council, registration and
@@ -208,7 +208,7 @@ export default async function ProfessionPractitionersPage({
       {/* FAQ */}
       <section className="mx-auto mt-12 max-w-3xl border-t border-slate-100 pt-6 dark:border-slate-800">
         <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
-          Frequently asked questions about {prof.profession}s in Uganda
+          Frequently asked questions about {pluralProfession(prof.profession)} in Uganda
         </h2>
         <div className="mt-4 space-y-3">
           {faqs.map((f) => (
@@ -237,7 +237,7 @@ export default async function ProfessionPractitionersPage({
                 href={`/practitioners/profession/${slugify(p)}`}
                 className="text-emerald-700 underline dark:text-emerald-400"
               >
-                {p}s
+                {pluralProfession(p)}
               </Link>
             </span>
           ))}

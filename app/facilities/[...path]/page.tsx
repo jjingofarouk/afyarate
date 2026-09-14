@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import FacilityRatingForm from "@/components/FacilityRatingForm";
-import { FacilityInitials, FacilityKindBadge } from "@/components/FacilityCard";
+import { FacilityFallbackPhoto, FacilityKindBadge } from "@/components/FacilityCard";
 import FacilitySearch from "@/components/FacilitySearch";
 import FacilityPhotoUpload from "@/components/FacilityPhotoUpload";
 import FacilityPhotoGallery from "@/components/FacilityPhotoGallery";
@@ -180,7 +180,7 @@ async function FacilityDetailPage({ slug }: { slug: string }) {
                   className="h-full w-full object-contain object-center"
                 />
               ) : (
-                <FacilityInitials name={facility.name} />
+                <FacilityFallbackPhoto facility={facility} />
               )}
               <div className="absolute left-2 top-2">
                 <FacilityKindBadge kind={facility.kind} />

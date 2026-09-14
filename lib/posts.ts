@@ -77,6 +77,40 @@ export function slugifyListing(title: string, deadline: string | null): string {
   return deadline ? `${base}-${deadline}` : base;
 }
 
+// Registry cadres don't pluralise with a plain +s ("Nurse / Midwifes",
+// "Laboratorys", "Environmental Healths"), so every known profession has an
+// explicit plural. Unknown labels fall back to basic English rules.
+const PROFESSION_PLURALS: Record<string, string> = {
+  Doctor: "Doctors",
+  Dentist: "Dentists",
+  Pharmacist: "Pharmacists",
+  "Clinical Officer": "Clinical Officers",
+  "Nurse / Midwife": "Nurses / Midwives",
+  Laboratory: "Laboratory Professionals",
+  "Environmental Health": "Environmental Health Professionals",
+  "Radiography / Imaging": "Radiography / Imaging Professionals",
+  "Theatre / Anaesthesia": "Theatre / Anaesthesia Professionals",
+  "Physiotherapy / Occupational": "Physiotherapy / Occupational Therapists",
+  "Ophthalmology / Optometry": "Ophthalmology / Optometry Professionals",
+  "Nutrition / Dietetics": "Nutrition / Dietetics Professionals",
+  "Public Health": "Public Health Professionals",
+  "Mental Health": "Mental Health Professionals",
+  "Other Allied Health": "Other Allied Health Professionals",
+};
+
+export function pluralProfession(profession: string): string {
+  const hit = PROFESSION_PLURALS[profession.trim()];
+  if (hit) return hit;
+  const words = profession.split(" ");
+  const last = words[words.length - 1] ?? "";
+  let plural = last;
+  if (/(ife)$/i.test(last)) plural = last.slice(0, -3) + "ives";
+  else if (/[^aeiou]y$/i.test(last)) plural = last.slice(0, -1) + "ies";
+  else if (/(s|x|z|ch|sh)$/i.test(last)) plural = last + "es";
+  else if (!/s$/i.test(last)) plural = last + "s";
+  return [...words.slice(0, -1), plural].join(" ");
+}
+
 export interface FacetItem {
   slug: string;
   label: string;

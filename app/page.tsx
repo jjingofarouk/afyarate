@@ -15,6 +15,7 @@ import { getPosts, getProfessions, getLocations } from "@/lib/posts";
 import PractitionerSearch from "@/components/PractitionerSearch";
 import FacilityCard from "@/components/FacilityCard";
 import PostCard from "@/components/PostCard";
+import FeaturedVerifiedProfile from "@/components/home/FeaturedVerifiedProfile";
 import PostTypePanel from "@/components/home/PostTypePanel";
 import HomeSection from "@/components/home/HomeSection";
 import SpotlightListing from "@/components/home/SpotlightListing";
@@ -25,7 +26,7 @@ import { SlideIn } from "@/components/motion/SlideIn";
 import { StaggerGrid, StaggerItem } from "@/components/motion/StaggerGrid";
 import { AnimatedWords } from "@/components/motion/AnimatedWords";
 import { MotionImg } from "@/components/motion/MotionImg";
-import { slugify } from "@/lib/posts";
+import { pluralProfession, slugify } from "@/lib/posts";
 import {
   POST_TYPES,
   POST_TYPE_LABELS,
@@ -445,6 +446,9 @@ export default async function HomePage({
         </section>
       </FadeIn>
 
+      {/* Featured verified practitioner: loud banner directly under the hero */}
+      {ready && <FeaturedVerifiedProfile />}
+
       {/* Jump-to nav, makes the section stack obvious at a glance */}
       {ready && (
         <HomeSection tone="slate" compact>
@@ -702,7 +706,7 @@ export default async function HomePage({
                       className="group rounded-xl border border-slate-200 bg-white p-4 transition hover:border-emerald-500 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-400"
                     >
                       <div className="text-sm font-semibold text-slate-800 group-hover:text-emerald-700 dark:text-slate-100 dark:group-hover:text-emerald-400">
-                        {c.profession}s
+                        {pluralProfession(c.profession)}
                       </div>
                       <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                         {c.count.toLocaleString()} licensed

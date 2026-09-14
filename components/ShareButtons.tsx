@@ -26,9 +26,8 @@ export default function ShareButtons({ title, url }: { title: string; url?: stri
       // Fall through to legacy approach
     }
 
-    // Legacy fallback: textarea + execCommand (bypasses NoCopy via window flag)
+    // Legacy fallback: textarea + execCommand
     try {
-      (window as { __allowCopy?: boolean }).__allowCopy = true;
       const el = document.createElement("textarea");
       el.value = target;
       el.style.cssText = "position:fixed;top:0;left:0;opacity:0;pointer-events:none";
@@ -41,8 +40,6 @@ export default function ShareButtons({ title, url }: { title: string; url?: stri
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // Silent fail
-    } finally {
-      (window as { __allowCopy?: boolean }).__allowCopy = false;
     }
   }
 

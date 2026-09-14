@@ -7,7 +7,7 @@ import {
   getProfileDetails,
   getRatings,
 } from "@/lib/practitioners";
-import { slugify } from "@/lib/posts";
+import { pluralProfession, slugify } from "@/lib/posts";
 import { SITE_URL } from "@/lib/site";
 import { InitialsAvatar } from "@/components/PractitionerCard";
 import { Stars } from "@/components/Stars";
@@ -127,7 +127,7 @@ export default async function PractitionerPage({
             {
               "@type": "ListItem",
               position: 3,
-              name: `${practitioner.profession}s`,
+              name: `${pluralProfession(practitioner.profession)}`,
               item: `${SITE_URL}/practitioners/profession/${slugify(practitioner.profession)}`,
             },
           ]
@@ -212,7 +212,7 @@ export default async function PractitionerPage({
               href={`/practitioners/profession/${slugify(practitioner.profession)}`}
               className="hover:text-emerald-700 dark:hover:text-emerald-400"
             >
-              {practitioner.profession}s
+              {pluralProfession(practitioner.profession)}
             </Link>
           </>
         )}
@@ -443,7 +443,7 @@ export default async function PractitionerPage({
           )}
 
           {/* Ratings */}
-          <div className="mt-6 grid gap-6 md:grid-cols-2">
+          <div id="verify" className="mt-6 grid scroll-mt-24 gap-6 md:grid-cols-2">
             <RatingForm practitionerId={practitioner.id} />
 
             <div>
