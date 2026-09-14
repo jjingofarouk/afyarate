@@ -260,22 +260,50 @@ create or replace function public.search_random(
   p_profession text default ''
 )
 returns setof public.practitioners_overview
-language sql
+language plpgsql
 as $$
-  select * from public.practitioners_overview
-  where (p_q = ''
-         or search_name ilike '%' || p_q || '%'
-         or registration_no ilike '%' || p_q || '%'
-         or license_number ilike '%' || p_q || '%')
-    and (p_council = '' or council = p_council)
-    and (p_profession = '' or profession = p_profession)
-    and (p_status = 'all'
-         or (p_status = 'active' and licence_status = 'Active')
-         or (p_status = 'inactive'
-             and (licence_status <> 'Active' or licence_status is null)))
-  -- Practitioners with a profile photo always come first.
-  order by (image_url is not null) desc, random()
-  limit p_limit offset p_offset
+declare
+  tok text;
+  token_cond text := '';
+  sql text;
+begin
+  -- One AND-group per word: every word must match the name or the
+  -- registration/licence number, in any order (mirrors the PostgREST filter
+  -- in lib/practitioners.ts). Patterns are inlined as literals so the
+  -- planner sees constants and uses the trigram indexes; a parameterised
+  -- '%'||w||'%' pattern forces a 114k-row sequential scan.
+  for tok in
+    select replace(regexp_replace(w, '[%_(),]', '', 'g'), chr(92), '')
+    from unnest(regexp_split_to_array(p_q, '\s+')) as w
+    where w <> ''
+  loop
+    if tok = '' then continue; end if;
+    if token_cond <> '' then token_cond := token_cond || ' and '; end if;
+    token_cond := token_cond || format(
+      '(p.search_name ilike %L or p.registration_no ilike %L or p.license_number ilike %L)',
+      '%' || tok || '%', '%' || tok || '%', '%' || tok || '%');
+  end loop;
+  if token_cond = '' then token_cond := 'true'; end if;
+
+  -- Rating aggregates are joined once here, not once per row like the
+  -- practitioners_overview view's correlated subqueries, so broad browsing
+  -- doesn't pay a per-row lookup across the table before LIMIT applies.
+  sql := 'select p.*, r.avg_rating, r.rating_count '
+    || 'from public.practitioners p '
+    || 'left join (select practitioner_id, round(avg(rating)::numeric, 2) as avg_rating, '
+    || 'count(*) as rating_count from public.ratings group by practitioner_id) r '
+    || 'on r.practitioner_id = p.id '
+    || 'where (' || token_cond || ') '
+    || 'and (' || quote_literal(p_council) || ' = '''' or p.council = ' || quote_literal(p_council) || ') '
+    || 'and (' || quote_literal(p_profession) || ' = '''' or p.profession = ' || quote_literal(p_profession) || ') '
+    || 'and (' || quote_literal(p_status) || ' = ''all'' '
+    || 'or (' || quote_literal(p_status) || ' = ''active'' and p.licence_status = ''Active'') '
+    || 'or (' || quote_literal(p_status) || ' = ''inactive'' and (p.licence_status <> ''Active'' or p.licence_status is null))) '
+    || 'order by (p.image_url is not null) desc, random() '
+    || 'limit ' || greatest(coalesce(p_limit, 12), 1)
+    || ' offset ' || greatest(coalesce(p_offset, 0), 0);
+  return query execute sql;
+end;
 $$;
 
 -- ----------------------------------------------------------------------------
@@ -494,21 +522,50 @@ create or replace function public.search_random(
   p_profession text default ''
 )
 returns setof public.practitioners_overview
-language sql
+language plpgsql
 as $$
-  select * from public.practitioners_overview
-  where (p_q = ''
-         or search_name ilike '%' || p_q || '%'
-         or registration_no ilike '%' || p_q || '%'
-         or license_number ilike '%' || p_q || '%')
-    and (p_council = '' or council = p_council)
-    and (p_profession = '' or profession = p_profession)
-    and (p_status = 'all'
-         or (p_status = 'active' and licence_status = 'Active')
-         or (p_status = 'inactive'
-             and (licence_status <> 'Active' or licence_status is null)))
-  order by (image_url is not null) desc, random()
-  limit p_limit offset p_offset
+declare
+  tok text;
+  token_cond text := '';
+  sql text;
+begin
+  -- One AND-group per word: every word must match the name or the
+  -- registration/licence number, in any order (mirrors the PostgREST filter
+  -- in lib/practitioners.ts). Patterns are inlined as literals so the
+  -- planner sees constants and uses the trigram indexes; a parameterised
+  -- '%'||w||'%' pattern forces a 114k-row sequential scan.
+  for tok in
+    select replace(regexp_replace(w, '[%_(),]', '', 'g'), chr(92), '')
+    from unnest(regexp_split_to_array(p_q, '\s+')) as w
+    where w <> ''
+  loop
+    if tok = '' then continue; end if;
+    if token_cond <> '' then token_cond := token_cond || ' and '; end if;
+    token_cond := token_cond || format(
+      '(p.search_name ilike %L or p.registration_no ilike %L or p.license_number ilike %L)',
+      '%' || tok || '%', '%' || tok || '%', '%' || tok || '%');
+  end loop;
+  if token_cond = '' then token_cond := 'true'; end if;
+
+  -- Rating aggregates are joined once here, not once per row like the
+  -- practitioners_overview view's correlated subqueries, so broad browsing
+  -- doesn't pay a per-row lookup across the table before LIMIT applies.
+  sql := 'select p.*, r.avg_rating, r.rating_count '
+    || 'from public.practitioners p '
+    || 'left join (select practitioner_id, round(avg(rating)::numeric, 2) as avg_rating, '
+    || 'count(*) as rating_count from public.ratings group by practitioner_id) r '
+    || 'on r.practitioner_id = p.id '
+    || 'where (' || token_cond || ') '
+    || 'and (' || quote_literal(p_council) || ' = '''' or p.council = ' || quote_literal(p_council) || ') '
+    || 'and (' || quote_literal(p_profession) || ' = '''' or p.profession = ' || quote_literal(p_profession) || ') '
+    || 'and (' || quote_literal(p_status) || ' = ''all'' '
+    || 'or (' || quote_literal(p_status) || ' = ''active'' and p.licence_status = ''Active'') '
+    || 'or (' || quote_literal(p_status) || ' = ''inactive'' and (p.licence_status <> ''Active'' or p.licence_status is null))) '
+    || 'order by (p.image_url is not null) desc, random() '
+    || 'limit ' || greatest(coalesce(p_limit, 12), 1)
+    || ' offset ' || greatest(coalesce(p_offset, 0), 0);
+  return query execute sql;
+end;
 $$;
 
 create table if not exists public.claim_requests (

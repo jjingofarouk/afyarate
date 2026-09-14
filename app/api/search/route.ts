@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPostsPage } from "@/lib/posts";
-import { searchPractitioners, isDbReady } from "@/lib/practitioners";
-import { searchFacilities, isFacilitiesReady } from "@/lib/facilities";
+import { searchPractitioners } from "@/lib/practitioners";
+import { searchFacilities } from "@/lib/facilities";
 import { POST_TYPE_LABELS, FACILITY_KIND_LABELS } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -22,18 +22,23 @@ const PER_KIND_LIMIT = 4;
 
 export async function GET(req: NextRequest) {
   const q = (req.nextUrl.searchParams.get("q") ?? "").trim();
-  if (!q) return NextResponse.json({ items: [], total: 0 });
+  // Public, slow-changing data: let browsers reuse identical autocomplete
+  // queries briefly so retyping resolves instantly without a round trip.
+  const cacheHeaders = {
+    "Cache-Control": "public, max-age=30, stale-while-revalidate=60",
+  };
+  if (!q) return NextResponse.json({ items: [], total: 0 }, { headers: cacheHeaders });
 
-  const [dbReady, facilitiesReady] = await Promise.all([isDbReady(), isFacilitiesReady()]);
-
+  // NOTE: practitioners are searched with sort "name" (not "rating") so the
+  // header covers the whole registry. sort "rating" filters to practitioners
+  // with rating_count > 0, which would hide ~all unrated clinicians here.
+  // No separate readiness probes: each lookup already falls back to empty on
+  // error, and skipping the probes saves a full sequential database round
+  // trip on every keystroke.
   const [postsPage, practitionerResult, facilityResult] = await Promise.all([
     getPostsPage({ q, limit: PER_KIND_LIMIT }).catch(() => ({ items: [], total: 0 })),
-    dbReady
-      ? searchPractitioners({ q, sort: "rating", pageSize: PER_KIND_LIMIT, countMode: "estimated" }).catch(() => null)
-      : Promise.resolve(null),
-    facilitiesReady
-      ? searchFacilities({ q, sort: "rating", pageSize: PER_KIND_LIMIT, countMode: "estimated" }).catch(() => null)
-      : Promise.resolve(null),
+    searchPractitioners({ q, sort: "name", pageSize: PER_KIND_LIMIT, countMode: "estimated" }).catch(() => null),
+    searchFacilities({ q, sort: "rating", pageSize: PER_KIND_LIMIT, countMode: "estimated" }).catch(() => null),
   ]);
 
   const postHits: SearchHit[] = postsPage.items.map((p) => ({
@@ -70,5 +75,5 @@ export async function GET(req: NextRequest) {
     facility: facilityResult?.total ?? 0,
   };
 
-  return NextResponse.json({ items, totals });
+  return NextResponse.json({ items, totals }, { headers: cacheHeaders });
 }

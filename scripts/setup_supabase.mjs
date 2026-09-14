@@ -29,11 +29,48 @@ if (!url) {
 
 const sql = readFileSync(SCHEMA, "utf8");
 
-// Split into statements (schema.sql avoids functions/DO-blocks, so ';' is safe).
-const statements = sql
-  .split(/;\s*\n/)
-  .map((s) => s.trim())
-  .filter(Boolean);
+// Split into statements. Dollar-quoted function bodies ($$ ... $$, $tag$ ...)
+// may contain ';' + newline internally, so the split is aware of them and
+// only breaks on semicolons outside dollar quotes.
+function splitStatements(sql) {
+  const out = [];
+  let buf = "";
+  let i = 0;
+  let tag = null;
+  while (i < sql.length) {
+    if (tag === null) {
+      const m = /^\$[A-Za-z_][A-Za-z0-9_]*\$|^\$\$/.exec(sql.slice(i, i + 32));
+      if (m) {
+        tag = m[0];
+        buf += tag;
+        i += tag.length;
+        continue;
+      }
+      if (sql[i] === ";" && /^[ \t]*\r?\n/.test(sql.slice(i + 1))) {
+        out.push(buf);
+        buf = "";
+        const nl = sql.slice(i + 1).match(/^[ \t]*\r?\n/)[0].length;
+        i += 1 + nl;
+        continue;
+      }
+      buf += sql[i];
+      i += 1;
+    } else {
+      if (sql.startsWith(tag, i)) {
+        buf += tag;
+        i += tag.length;
+        tag = null;
+        continue;
+      }
+      buf += sql[i];
+      i += 1;
+    }
+  }
+  if (buf.trim()) out.push(buf);
+  return out.map((s) => s.trim()).filter(Boolean);
+}
+
+const statements = splitStatements(sql);
 
 const client = new Client({ connectionString: url, ssl: { rejectUnauthorized: false } });
 try {

@@ -87,13 +87,28 @@ export async function searchPractitioners(
   const countMode = opts.countMode ?? "exact";
 
   // Shared filter builder (used for both the count and the result queries).
+  // Names are matched token-by-token (AND): every whitespace-separated word
+  // must appear in the name or registration/licence number, in any order, so
+  // "sarah nakato", "nakato sarah" and "sarah" all find Sarah Nakato.
+  // Tokens strip PostgREST `or()` structural chars (`,`, `(`, `)`) and the
+  // LIKE wildcard `%` so punctuation in a query can't break the filter.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const buildFilters = (qb: any) => {
     if (q) {
-      const like = `%${q}%`;
-      qb = qb.or(
-        `search_name.ilike.${like},registration_no.ilike.${like},license_number.ilike.${like}`,
-      );
+      const tokens = q
+        .split(/\s+/)
+        .map((t) => t.replace(/[%(),]/g, ""))
+        .filter(Boolean);
+      if (tokens.length === 0) {
+        // Query was only punctuation: match nothing rather than everything.
+        qb = qb.eq("id", -1);
+      }
+      for (const tok of tokens) {
+        const like = `%${tok}%`;
+        qb = qb.or(
+          `search_name.ilike.${like},registration_no.ilike.${like},license_number.ilike.${like}`,
+        );
+      }
     }
     if (council) qb = qb.eq("council", council);
     if (profession) qb = qb.eq("profession", profession);
