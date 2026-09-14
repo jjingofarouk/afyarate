@@ -61,7 +61,7 @@ export default function PractitionerCard({ p }: { p: Practitioner }) {
         <h3 className="flex items-center gap-1.5 text-base font-semibold text-slate-900 group-hover:text-emerald-700 dark:text-slate-100 dark:group-hover:text-emerald-400">
           <span className="min-w-0 truncate">{p.name}</span>
           {p.claimed && (
-            <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+            <svg className="size-4 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" aria-hidden>
               <title>Verified profile</title>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
