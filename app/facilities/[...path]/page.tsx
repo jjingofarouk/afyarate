@@ -197,7 +197,10 @@ async function FacilityDetailPage({ slug }: { slug: string }) {
                 <FacilityKindBadge kind={facility.kind} />
                 {facility.claimed && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white shadow">
-                    ✓ Verified
+                    <svg className="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3" aria-hidden>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                    Verified
                   </span>
                 )}
               </div>
@@ -293,7 +296,10 @@ async function FacilityDetailPage({ slug }: { slug: string }) {
               {facility.name}
               {facility.claimed && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1 text-xs font-bold text-white">
-                  ✓ Verified
+                  <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                  Verified
                 </span>
               )}
             </h1>

@@ -30,6 +30,22 @@ const INITIAL_COUNT = 12;
 
 const VALID_KIND = new Set(["hospital", "pharmacy"]);
 
+function HospitalIcon() {
+  return (
+    <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V8l7-5 7 5v13M12 9v5M9.5 11.5h5" />
+    </svg>
+  );
+}
+
+function PharmacyIcon() {
+  return (
+    <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2M3 7h18M3 7v12a2 2 0 002 2h14a2 2 0 002-2V7M12 11v6M9 14h6" />
+    </svg>
+  );
+}
+
 export default async function FacilitiesPage({
   searchParams,
 }: {
@@ -106,7 +122,8 @@ export default async function FacilitiesPage({
               href="/facilities?kind=hospital"
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:border-emerald-500 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-emerald-400"
             >
-              🏥 Hospitals
+              <HospitalIcon />
+              Hospitals
               <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                 {stats.hospitals.toLocaleString()}
               </span>
@@ -115,7 +132,8 @@ export default async function FacilitiesPage({
               href="/facilities?kind=pharmacy"
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:border-emerald-500 hover:text-emerald-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-emerald-400"
             >
-              💊 Pharmacies
+              <PharmacyIcon />
+              Pharmacies
               <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                 {stats.pharmacies.toLocaleString()}
               </span>

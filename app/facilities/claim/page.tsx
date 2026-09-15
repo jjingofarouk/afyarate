@@ -38,10 +38,19 @@ export default function FacilityClaimPage() {
           </p>
         </div>
         <ul className="mt-8 space-y-4 text-sm text-slate-600 dark:text-slate-400">
-          <li>✓ Verified badge on your facility page</li>
-          <li>✓ Phone & WhatsApp buttons patients can tap</li>
-          <li>✓ Your services, description and photo</li>
-          <li>✓ Yours forever after one payment</li>
+          {[
+            "Verified badge on your facility page",
+            "Phone & WhatsApp buttons patients can tap",
+            "Your services, description and photo",
+            "Yours forever after one payment",
+          ].map((t) => (
+            <li key={t} className="flex items-start gap-2">
+              <svg className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+              {t}
+            </li>
+          ))}
         </ul>
       </div>
     </div>

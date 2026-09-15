@@ -63,8 +63,11 @@ export default function FacilityCard({ facility: f }: { facility: Facility }) {
         <div className="absolute left-2 top-2 flex gap-1.5">
           <FacilityKindBadge kind={f.kind} />
           {f.claimed && (
-            <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[11px] font-bold text-white">
-              ✓ Verified
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[11px] font-bold text-white">
+              <svg className="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3" aria-hidden>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+              Verified
             </span>
           )}
         </div>

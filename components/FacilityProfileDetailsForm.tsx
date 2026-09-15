@@ -202,7 +202,18 @@ export default function FacilityProfileDetailsForm({
         </div>
       )}
       <button type="submit" disabled={saving} className="mt-6 w-full rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-60">
-        {saving ? "Saving…" : saved ? "Saved ✓" : "Save my details"}
+        {saving ? (
+          "Saving…"
+        ) : saved ? (
+          <span className="inline-flex items-center justify-center gap-1.5">
+            <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+            Saved
+          </span>
+        ) : (
+          "Save my details"
+        )}
       </button>
     </form>
   );
