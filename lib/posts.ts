@@ -150,6 +150,20 @@ function slugMatches(slug: string | undefined, value: string | null): boolean {
   return !!slug && !!value && slugify(value) === slug;
 }
 
+/** Split a comma-separated filter param into slugs. Accepts slugs
+ *  ("nurse-midwife") or raw labels ("Nurse / Midwife") — each token is
+ *  slugified before comparing, so UI labels never silently match nothing. */
+function slugSet(raw: string | undefined): Set<string> | null {
+  if (!raw) return null;
+  const set = new Set(
+    raw
+      .split(",")
+      .map((s) => slugify(s.trim()))
+      .filter(Boolean),
+  );
+  return set.size > 0 ? set : null;
+}
+
 /** Sort key for "closing soon": open listings first (soonest deadline first),
  *  then rolling (no deadline), then closed, most recently closed first. Never
  *  drops closed listings, just moves them to the back. */
@@ -221,8 +235,11 @@ export async function getPosts(opts: PostSearchOptions = {}): Promise<Post[]> {
     postsCache = { data: posts, expires: Date.now() + POSTS_TTL_MS };
   }
   if (type && POST_TYPES.has(type)) posts = posts.filter((p) => p.type === type);
-  if (profession) posts = posts.filter((p) => slugMatches(profession, p.profession));
-  if (location) posts = posts.filter((p) => slugMatches(location, p.location));
+  // Profession/location accept one slug or several comma-separated slugs.
+  const profSlugs = slugSet(profession);
+  if (profSlugs) posts = posts.filter((p) => !!p.profession && profSlugs.has(slugify(p.profession)));
+  const locSlugs = slugSet(location);
+  if (locSlugs) posts = posts.filter((p) => !!p.location && locSlugs.has(slugify(p.location)));
   if (organization) posts = posts.filter((p) => slugMatches(organization, p.organization));
   if (tag) {
     const needle = tag.toLowerCase();

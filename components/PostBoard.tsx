@@ -4,6 +4,7 @@ import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { Post } from "@/lib/types";
 import type { PostSort } from "@/lib/posts";
+import { slugify } from "@/lib/practitioner-url";
 import PostCard from "./PostCard";
 import PostCardSkeleton from "./PostCardSkeleton";
 import SubscribeTeaser from "./SubscribeTeaser";
@@ -39,7 +40,8 @@ export default function PostBoard({
 }) {
   const [q, setQ] = useState(initialQuery);
   const [sort, setSort] = useState<PostSort>(initialSort);
-  const [professionFilter, setProfessionFilter] = useState("");
+  // Multi-select profession filter (labels); sent to the API as slugs.
+  const [professionFilters, setProfessionFilters] = useState<string[]>([]);
   const [locationFilter, setLocationFilter] = useState("");
   const [posts, setPosts] = useState(initialPosts);
   const [total, setTotal] = useState(initialTotal);
@@ -58,15 +60,16 @@ export default function PostBoard({
       limit: number,
       currentQ: string,
       currentSort: PostSort,
-      currentProf: string,
+      currentProfs: string[],
       currentLoc: string,
     ) => {
       const params = new URLSearchParams({ offset: String(offset), limit: String(limit) });
       if (type) params.set("type", type);
       if (profession) params.set("profession", profession);
-      else if (currentProf) params.set("profession", currentProf);
+      else if (currentProfs.length > 0)
+        params.set("profession", currentProfs.map((p) => slugify(p)).join(","));
       if (location) params.set("location", location);
-      else if (currentLoc) params.set("location", currentLoc);
+      else if (currentLoc) params.set("location", slugify(currentLoc));
       if (organization) params.set("organization", organization);
       if (tag) params.set("tag", tag);
       if (currentQ.trim()) params.set("q", currentQ.trim());
@@ -80,14 +83,14 @@ export default function PostBoard({
     async (
       currentQ: string,
       currentSort: PostSort,
-      currentProf: string,
+      currentProfs: string[],
       currentLoc: string,
       signal?: AbortSignal,
     ) => {
       setSearching(true);
       setError(null);
       try {
-        const params = buildParams(0, PAGE_SIZE, currentQ, currentSort, currentProf, currentLoc);
+        const params = buildParams(0, PAGE_SIZE, currentQ, currentSort, currentProfs, currentLoc);
         const res = await fetch(`/api/posts?${params.toString()}`, { signal });
         if (!res.ok) throw new Error(`Request failed (${res.status})`);
         const data = await res.json();
@@ -114,14 +117,14 @@ export default function PostBoard({
     const ctrl = new AbortController();
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      runSearch(q, sort, professionFilter, locationFilter, ctrl.signal);
+      runSearch(q, sort, professionFilters, locationFilter, ctrl.signal);
     }, 250);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       ctrl.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, sort, professionFilter, locationFilter]);
+  }, [q, sort, professionFilters, locationFilter]);
 
   const hasMore = posts.length < total;
   const remaining = total - posts.length;
@@ -130,7 +133,7 @@ export default function PostBoard({
     setLoadingMore(true);
     setError(null);
     try {
-      const params = buildParams(posts.length, PAGE_SIZE, q, sort, professionFilter, locationFilter);
+      const params = buildParams(posts.length, PAGE_SIZE, q, sort, professionFilters, locationFilter);
       const res = await fetch(`/api/posts?${params.toString()}`);
       if (!res.ok) throw new Error(`Request failed (${res.status})`);
       const data = await res.json();
@@ -190,48 +193,84 @@ export default function PostBoard({
         </div>
 
         {(showProfessionFilter || showLocationFilter) && (
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-3">
             {showProfessionFilter && (
-              <select
-                value={professionFilter}
-                onChange={(e) => setProfessionFilter(e.target.value)}
-                aria-label="Filter by profession"
-                className={selectCls}
-              >
-                <option value="">All professions</option>
-                {professions.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
+              <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter by profession">
+                <button
+                  type="button"
+                  onClick={() => setProfessionFilters([])}
+                  aria-pressed={professionFilters.length === 0}
+                  className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
+                    professionFilters.length === 0
+                      ? "bg-emerald-600 text-white"
+                      : "border border-slate-300 text-slate-600 hover:border-emerald-500 hover:text-emerald-700 dark:border-slate-700 dark:text-slate-300 dark:hover:text-emerald-400"
+                  }`}
+                >
+                  All
+                </button>
+                {professions.map((p) => {
+                  const active = professionFilters.includes(p);
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() =>
+                        setProfessionFilters((prev) =>
+                          prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]
+                        )
+                      }
+                      aria-pressed={active}
+                      className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
+                        active
+                          ? "bg-emerald-600 text-white"
+                          : "border border-slate-300 text-slate-600 hover:border-emerald-500 hover:text-emerald-700 dark:border-slate-700 dark:text-slate-300 dark:hover:text-emerald-400"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+              </div>
             )}
             {showLocationFilter && (
-              <select
-                value={locationFilter}
-                onChange={(e) => setLocationFilter(e.target.value)}
-                aria-label="Filter by location"
-                className={selectCls}
-              >
-                <option value="">All locations</option>
-                {locations.map((l) => (
-                  <option key={l} value={l}>
-                    {l}
-                  </option>
-                ))}
-              </select>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <select
+                  value={locationFilter}
+                  onChange={(e) => setLocationFilter(e.target.value)}
+                  aria-label="Filter by location"
+                  className={selectCls}
+                >
+                  <option value="">All locations</option>
+                  {locations.map((l) => (
+                    <option key={l} value={l}>
+                      {l}
+                    </option>
+                  ))}
+                </select>
+                {(professionFilters.length > 0 || locationFilter) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfessionFilters([]);
+                      setLocationFilter("");
+                    }}
+                    className="text-sm font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-800 dark:text-emerald-400"
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </div>
             )}
-            {(professionFilter || locationFilter) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setProfessionFilter("");
-                  setLocationFilter("");
-                }}
-                className="text-sm font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-800 dark:text-emerald-400"
-              >
-                Clear filters
-              </button>
+            {showProfessionFilter && !showLocationFilter && professionFilters.length > 0 && (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setProfessionFilters([])}
+                  className="text-sm font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-800 dark:text-emerald-400"
+                >
+                  Clear professions
+                </button>
+              </div>
             )}
           </div>
         )}
@@ -289,7 +328,7 @@ export default function PostBoard({
                 type="button"
                 onClick={() => {
                   setQ("");
-                  setProfessionFilter("");
+                  setProfessionFilters([]);
                   setLocationFilter("");
                 }}
                 className="text-emerald-700 underline dark:text-emerald-400"
