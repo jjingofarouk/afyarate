@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ClaimFlow from "@/components/ClaimFlow";
+import ClaimReach from "@/components/ClaimReach";
 import ContactForm from "@/components/ContactForm";
 
 export const metadata: Metadata = {
@@ -167,6 +168,11 @@ export default function ClaimPage() {
               </li>
             ))}
           </ul>
+        </div>
+
+        {/* Reach proof — the audience already in place */}
+        <div className="mt-8">
+          <ClaimReach />
         </div>
 
         {/* Trust tiles */}

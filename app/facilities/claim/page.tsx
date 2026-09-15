@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import FacilityClaimFlow from "@/components/FacilityClaimFlow";
+import ClaimReach from "@/components/ClaimReach";
+import ContactForm from "@/components/ContactForm";
 
 export const metadata: Metadata = {
   title: "Claim your facility",
@@ -52,6 +54,23 @@ export default function FacilityClaimPage() {
             </li>
           ))}
         </ul>
+
+        <div className="mt-8">
+          <ClaimReach />
+        </div>
+
+        <div className="mt-10">
+          <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-slate-50">
+            Need a hand? Message us directly
+          </h2>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            Stuck at any step, or prefer we handle it over email? Send your
+            facility details and we will verify it and get you set up.
+          </p>
+          <div className="mt-4">
+            <ContactForm initialTopic="facility" />
+          </div>
+        </div>
       </div>
     </div>
   );
