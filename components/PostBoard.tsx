@@ -23,6 +23,7 @@ export default function PostBoard({
   initialQuery = "",
   professions = [],
   locations = [],
+  initialSort = "newest",
 }: {
   initialPosts: Post[];
   total: number;
@@ -34,9 +35,10 @@ export default function PostBoard({
   initialQuery?: string;
   professions?: string[];
   locations?: string[];
+  initialSort?: PostSort;
 }) {
   const [q, setQ] = useState(initialQuery);
-  const [sort, setSort] = useState<PostSort>("featured");
+  const [sort, setSort] = useState<PostSort>(initialSort);
   const [professionFilter, setProfessionFilter] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [posts, setPosts] = useState(initialPosts);
@@ -68,7 +70,7 @@ export default function PostBoard({
       if (organization) params.set("organization", organization);
       if (tag) params.set("tag", tag);
       if (currentQ.trim()) params.set("q", currentQ.trim());
-      if (currentSort !== "featured") params.set("sort", currentSort);
+      params.set("sort", currentSort);
       return params;
     },
     [type, profession, location, organization, tag],
@@ -181,9 +183,9 @@ export default function PostBoard({
             aria-label="Sort listings"
             className={selectCls}
           >
+            <option value="newest">Newest</option>
             <option value="featured">Featured</option>
             <option value="closingSoon">Closing soon</option>
-            <option value="newest">Newest</option>
           </select>
         </div>
 

@@ -38,7 +38,7 @@ export default async function OrganizationPage({
   const facets = await getOrganizations();
   const facet = facets.find((f) => f.slug === slug);
   if (!facet) notFound();
-  const posts = await getPosts({ organization: slug });
+  const posts = await getPosts({ organization: slug, sort: "newest" });
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">

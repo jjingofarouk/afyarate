@@ -36,7 +36,7 @@ export default async function ProfessionPage({
   const facets = await getProfessions();
   const facet = facets.find((f) => f.slug === slug);
   if (!facet) notFound();
-  const posts = await getPosts({ profession: slug });
+  const posts = await getPosts({ profession: slug, sort: "newest" });
   const salaryPosts = posts.filter((post) => post.salary).slice(0, 3);
   const topEmployers = [...new Set(posts.map((post) => post.organization))].slice(0, 5);
 

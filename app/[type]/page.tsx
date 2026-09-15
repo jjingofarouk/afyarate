@@ -94,7 +94,7 @@ export default async function TypePage({
   const t = SLUG_TO_TYPE[type];
   if (!t) notFound();
   const meta = META[t];
-  const posts = await getPosts({ type: t, q });
+  const posts = await getPosts({ type: t, q, sort: "newest" });
   const h1 =
     t === "job" ? "Medical & Health Jobs in Uganda" : `${meta.short} in Uganda`;
   const count = posts.length;

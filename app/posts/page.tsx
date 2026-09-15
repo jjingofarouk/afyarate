@@ -33,7 +33,7 @@ export default async function PostsPage({
 }) {
   const { type, tag, q } = await searchParams;
   if (!type && !tag && !q) redirect("/jobs");
-  const posts = await getPosts({ type, tag, q });
+  const posts = await getPosts({ type, tag, q, sort: "newest" });
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -109,6 +109,7 @@ export default async function PostsPage({
               type={type}
               tag={tag}
               initialQuery={q}
+              initialSort="newest"
               professions={facetOptions(posts, (p) => p.profession)}
               locations={facetOptions(posts, (p) => p.location)}
             />

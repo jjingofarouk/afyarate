@@ -76,7 +76,7 @@ export default async function JobProfessionPage({
   const facet = facets.find((f) => f.slug === slug);
   if (!facet) notFound();
 
-  const posts = await getPosts({ type: "job", profession: slug });
+  const posts = await getPosts({ type: "job", profession: slug, sort: "newest" });
   const year = new Date().getFullYear();
 
   const breadcrumbLd = {
@@ -164,6 +164,7 @@ export default async function JobProfessionPage({
             total={posts.length}
             type="job"
             profession={slug}
+            initialSort="newest"
             locations={facetOptions(posts, (p) => p.location)}
           />
         </div>

@@ -42,7 +42,7 @@ export default async function LocationPage({
   const facet = facets.find((f) => f.slug === slug);
   if (!facet) notFound();
   const [posts, facilities] = await Promise.all([
-    getPosts({ location: slug }),
+    getPosts({ location: slug, sort: "newest" }),
     searchFacilities({ city: facet.label, sort: "rating", page: 1, pageSize: 4 }).catch(
       () => null,
     ),
