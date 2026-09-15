@@ -78,7 +78,7 @@ export default async function Footer() {
               </svg>
               {DISPATCH_PHONE_DISPLAY}
             </a>
-            <p className="mt-2 text-xs text-slate-500">24/7 ambulance dispatch</p>
+            <p className="mt-2 text-xs text-slate-500">Emergency? One tap connects you to an ambulance, day or night</p>
           </div>
 
           <nav aria-label="Best of Uganda">
