@@ -291,7 +291,7 @@ export default async function Footer() {
         {/* Fund strip: visible on every page of the site. */}
         <div className="mt-10 flex flex-col items-center justify-between gap-3 rounded-2xl border border-amber-400/25 bg-amber-400/5 px-6 py-4 text-center sm:flex-row sm:text-left">
           <p className="text-sm text-slate-300">
-            <span className="font-semibold text-white">Rate Musawo is free and has no ads.</span>{" "}
+            <span className="font-semibold text-white">Rate My Musawo is free and has no ads.</span>{" "}
             Reader support keeps the registry fresh.
           </p>
           <a

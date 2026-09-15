@@ -4,7 +4,7 @@ import AmbulanceRegisterForm from "@/components/AmbulanceRegisterForm";
 
 export const metadata: Metadata = {
   title: "Register Your Ambulance Service",
-  description: "List your ambulance or patient transport service on Rate Musawo. Reviewed before publishing.",
+  description: "List your ambulance or patient transport service on Rate My Musawo. Reviewed before publishing.",
   alternates: { canonical: "/ambulances/new" },
 };
 

@@ -139,8 +139,8 @@ export default function ContactForm({ initialTopic }: { initialTopic?: TopicValu
           phone: phone || undefined,
           organization: organization || undefined,
           topic: TOPICS.find((t) => t.value === topic)?.label ?? topic,
-          from_name: "Rate Musawo",
-          subject: subject || "Message from Rate Musawo",
+          from_name: "Rate My Musawo",
+          subject: subject || "Message from Rate My Musawo",
           message,
           ...Object.fromEntries(Object.entries(extras).filter(([, v]) => v)),
           botcheck: "", // honeypot, must stay empty

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createBrowserClient } from "@/lib/supabase/client";
+import { formatFeeWithUsd } from "@/lib/currency";
 
 const inputClass =
   "w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-emerald-900/40";
@@ -216,6 +217,11 @@ export default function ProfileDetailsForm({
               <label htmlFor="pd-fee" className={labelClass}>Consultation fee</label>
               <input id="pd-fee" value={consultationFee} onChange={(e) => setConsultationFee(e.target.value)}
                 placeholder="e.g. UGX 30,000" className={`mt-1.5 ${inputClass}`} />
+              {consultationFee.trim() && (
+                <p className="mt-1 text-xs text-slate-400">
+                  Patients will see: {formatFeeWithUsd(consultationFee) ?? consultationFee}
+                </p>
+              )}
             </div>
             <div>
               <label htmlFor="pd-avail" className={labelClass}>Availability</label>

@@ -26,17 +26,17 @@ export const HELP_ARTICLES: HelpArticle[] = [
   {
     slug: "what-is-rate-musawo",
     collection: "Getting Started",
-    title: "What is Rate Musawo?",
+    title: "What is Rate My Musawo?",
     summary:
-      "Rate Musawo is a free directory of Uganda's licensed health professionals, with patient ratings and a healthcare job board.",
+      "Rate My Musawo is a free directory of Uganda's licensed health professionals, with patient ratings and a healthcare job board.",
     updated: "6 August 2026",
     related: ["how-does-rate-musawo-work", "is-rate-musawo-free", "is-rate-musawo-a-healthcare-provider"],
     blocks: [
       {
         type: "p",
-        text: "Rate Musawo is a free, independent website that helps patients in Uganda find licensed doctors, nurses, pharmacists and allied health workers and learn from other patients' experiences before choosing where to seek care.",
+        text: "Rate My Musawo is a free, independent website that helps patients in Uganda find licensed doctors, nurses, pharmacists and allied health workers and learn from other patients' experiences before choosing where to seek care.",
       },
-      { type: "h2", text: "What you can do on Rate Musawo" },
+      { type: "h2", text: "What you can do on Rate My Musawo" },
       {
         type: "ul",
         items: [
@@ -52,14 +52,14 @@ export const HELP_ARTICLES: HelpArticle[] = [
       },
       {
         type: "note",
-        text: "Rate Musawo is not operated by, or affiliated with, any medical council or the Government of Uganda. Licensing data is republished from official council sources. See [Where does the licensing data come from?](/help/where-does-the-data-come-from)",
+        text: "Rate My Musawo is not operated by, or affiliated with, any medical council or the Government of Uganda. Licensing data is republished from official council sources. See [Where does the licensing data come from?](/help/where-does-the-data-come-from)",
       },
     ],
   },
   {
     slug: "how-does-rate-musawo-work",
     collection: "Getting Started",
-    title: "How does Rate Musawo work?",
+    title: "How does Rate My Musawo work?",
     summary:
       "From the homepage you can search the registry, open a practitioner's profile to check their licence status and read ratings, and leave your own review.",
     updated: "6 August 2026",
@@ -67,7 +67,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     blocks: [
       {
         type: "p",
-        text: "Using Rate Musawo is simple and free. To get started, go to the homepage and type a practitioner's name, profession or location into the search box. You can also filter the results by profession and by council.",
+        text: "Using Rate My Musawo is simple and free. To get started, go to the homepage and type a practitioner's name, profession or location into the search box. You can also filter the results by profession and by council.",
       },
       { type: "h2", text: "Open a practitioner's profile" },
       {
@@ -89,38 +89,38 @@ export const HELP_ARTICLES: HelpArticle[] = [
   {
     slug: "is-rate-musawo-free",
     collection: "Getting Started",
-    title: "Is Rate Musawo free?",
+    title: "Is Rate My Musawo free?",
     summary:
-      "Yes. Searching the registry, reading ratings and submitting reviews on Rate Musawo are 100% free for patients.",
+      "Yes. Searching the registry, reading ratings and submitting reviews on Rate My Musawo are 100% free for patients.",
     updated: "6 August 2026",
     related: ["what-is-rate-musawo", "is-rate-musawo-a-healthcare-provider"],
     blocks: [
       {
         type: "p",
-        text: "Yes! Searching for practitioners, viewing profiles, reading ratings and submitting your own review is completely free. You never need to pay to use Rate Musawo.",
+        text: "Yes! Searching for practitioners, viewing profiles, reading ratings and submitting your own review is completely free. You never need to pay to use Rate My Musawo.",
       },
       {
         type: "p",
-        text: "Any fees you pay to see a doctor are between you and the facility or practitioner, not Rate Musawo. We don't book appointments, handle payments, or set consultation prices.",
+        text: "Any fees you pay to see a doctor are between you and the facility or practitioner, not Rate My Musawo. We don't book appointments, handle payments, or set consultation prices.",
       },
       {
         type: "note",
-        text: "If you are ever asked to pay to use Rate Musawo itself, that request did not come from us. Please report it via the contact page.",
+        text: "If you are ever asked to pay to use Rate My Musawo itself, that request did not come from us. Please report it via the contact page.",
       },
     ],
   },
   {
     slug: "where-is-rate-musawo-available",
     collection: "Getting Started",
-    title: "Where is Rate Musawo available?",
+    title: "Where is Rate My Musawo available?",
     summary:
-      "Rate Musawo covers Uganda's national registry of licensed health professionals, and the job board focuses on healthcare opportunities in Uganda.",
+      "Rate My Musawo covers Uganda's national registry of licensed health professionals, and the job board focuses on healthcare opportunities in Uganda.",
     updated: "6 August 2026",
     related: ["what-is-rate-musawo", "how-does-rate-musawo-work"],
     blocks: [
       {
         type: "p",
-        text: "Rate Musawo covers the national registry of health professionals licensed to practise in Uganda, published by the Uganda Medical & Dental Practitioners Council (UMPDC), the Uganda Nurses & Midwives Council, and the Allied Health Professionals Council.",
+        text: "Rate My Musawo covers the national registry of health professionals licensed to practise in Uganda, published by the Uganda Medical & Dental Practitioners Council (UMPDC), the Uganda Nurses & Midwives Council, and the Allied Health Professionals Council.",
       },
       {
         type: "p",
@@ -135,15 +135,15 @@ export const HELP_ARTICLES: HelpArticle[] = [
   {
     slug: "is-rate-musawo-a-healthcare-provider",
     collection: "Getting Started",
-    title: "Is Rate Musawo a healthcare provider?",
+    title: "Is Rate My Musawo a healthcare provider?",
     summary:
-      "No. Rate Musawo is an independent directory and rating site, it does not provide medical care, diagnoses or treatment advice.",
+      "No. Rate My Musawo is an independent directory and rating site, it does not provide medical care, diagnoses or treatment advice.",
     updated: "6 August 2026",
     related: ["how-we-verify-health-professionals", "reviews-faq"],
     blocks: [
       {
         type: "p",
-        text: "No. Rate Musawo is not a healthcare provider. It is an independent directory that republishes licensing information from official Ugandan councils and hosts patient ratings. It does not employ practitioners, provide medical services, or offer treatment.",
+        text: "No. Rate My Musawo is not a healthcare provider. It is an independent directory that republishes licensing information from official Ugandan councils and hosts patient ratings. It does not employ practitioners, provide medical services, or offer treatment.",
       },
       {
         type: "p",
@@ -152,7 +152,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "h2", text: "Questions about your treatment" },
       {
         type: "p",
-        text: "If you have questions about a treatment plan, prescriptions, lab results or medical records, contact the doctor's clinic directly. Rate Musawo cannot help with medical questions, book appointments, or answer for individual practitioners.",
+        text: "If you have questions about a treatment plan, prescriptions, lab results or medical records, contact the doctor's clinic directly. Rate My Musawo cannot help with medical questions, book appointments, or answer for individual practitioners.",
       },
       {
         type: "note",
@@ -163,7 +163,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
   {
     slug: "who-writes-the-reviews",
     collection: "Ratings & Reviews",
-    title: "Who writes the reviews on Rate Musawo?",
+    title: "Who writes the reviews on Rate My Musawo?",
     summary:
       "Ratings are written by patients and members of the public about their own experiences. Each profile shows the average rating and the individual comments.",
     updated: "6 August 2026",
@@ -171,7 +171,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     blocks: [
       {
         type: "p",
-        text: "Ratings on Rate Musawo are written by patients and members of the public about their own experiences with a health worker. Anyone can rate a practitioner, you don't need an account, so the feedback reflects a broad range of patient experiences.",
+        text: "Ratings on Rate My Musawo are written by patients and members of the public about their own experiences with a health worker. Anyone can rate a practitioner, you don't need an account, so the feedback reflects a broad range of patient experiences.",
       },
       { type: "h2", text: "What appears on a profile" },
       {
@@ -185,7 +185,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "h2", text: "Ratings are community opinions" },
       {
         type: "p",
-        text: "Ratings are not fact-checked or endorsed by Rate Musawo, and they are not a measure of a practitioner's clinical competence. They reflect subjective experience, communication, professionalism, wait times, and should be read as one signal among many, alongside the practitioner's licence status and your own judgement.",
+        text: "Ratings are not fact-checked or endorsed by Rate My Musawo, and they are not a measure of a practitioner's clinical competence. They reflect subjective experience, communication, professionalism, wait times, and should be read as one signal among many, alongside the practitioner's licence status and your own judgement.",
       },
     ],
   },
@@ -262,12 +262,12 @@ export const HELP_ARTICLES: HelpArticle[] = [
     updated: "6 August 2026",
     related: ["who-writes-the-reviews", "how-do-i-rate-a-health-worker", "how-to-write-a-helpful-review"],
     blocks: [
-      { type: "h2", text: "Why should I trust the reviews on Rate Musawo?" },
+      { type: "h2", text: "Why should I trust the reviews on Rate My Musawo?" },
       {
         type: "p",
         text: "Reviews are written by real patients about their own experiences, and we publish positive, negative and in-between feedback. That said, ratings are community opinions, they are not independently verified, so read them as one signal alongside licence status and your own judgement.",
       },
-      { type: "h2", text: "Does Rate Musawo only post positive reviews?" },
+      { type: "h2", text: "Does Rate My Musawo only post positive reviews?" },
       {
         type: "p",
         text: "No. We publish the full range of patient feedback. There is no payment, affiliation or relationship with practitioners that would bias what is shown, and practitioners cannot have reviews removed simply because they are negative.",
@@ -312,7 +312,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     blocks: [
       {
         type: "p",
-        text: "The registry on Rate Musawo is built from official licensing data published by the Uganda Medical & Dental Practitioners Council (UMPDC), the Uganda Nurses & Midwives Council, and the Allied Health Professionals Council.",
+        text: "The registry on Rate My Musawo is built from official licensing data published by the Uganda Medical & Dental Practitioners Council (UMPDC), the Uganda Nurses & Midwives Council, and the Allied Health Professionals Council.",
       },
       { type: "h2", text: "What each profile shows" },
       {
@@ -346,7 +346,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     blocks: [
       {
         type: "p",
-        text: "Rate Musawo combines two kinds of information with very different sources:",
+        text: "Rate My Musawo combines two kinds of information with very different sources:",
       },
       { type: "h2", text: "Licensing data, from official councils" },
       {
@@ -393,7 +393,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
   {
     slug: "how-we-handle-data-and-privacy",
     collection: "Data & Privacy",
-    title: "How Rate Musawo handles data and privacy",
+    title: "How Rate My Musawo handles data and privacy",
     summary:
       "We collect very little: ratings you submit and basic analytics. We don't require accounts and we don't sell personal information.",
     updated: "6 August 2026",
@@ -449,7 +449,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       { type: "h2", text: "Open a listing" },
       {
         type: "p",
-        text: "Each listing shows the organization, location, deadline, eligibility and a full description. Most listings include a link to the original source or an application email, apply directly through the organization, not through Rate Musawo.",
+        text: "Each listing shows the organization, location, deadline, eligibility and a full description. Most listings include a link to the original source or an application email, apply directly through the organization, not through Rate My Musawo.",
       },
       { type: "h2", text: "Is applying free?" },
       {
@@ -458,7 +458,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
       },
       {
         type: "note",
-        text: "Always read the original posting carefully. Rate Musawo aggregates listings for convenience but the organization's own posting is the authoritative source.",
+        text: "Always read the original posting carefully. Rate My Musawo aggregates listings for convenience but the organization's own posting is the authoritative source.",
       },
     ],
   },

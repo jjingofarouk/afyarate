@@ -11,6 +11,7 @@ import {
 } from "@/lib/practitioners";
 import { slugify } from "@/lib/posts";
 import { SITE_URL } from "@/lib/site";
+import { formatFeeWithUsd } from "@/lib/currency";
 import PractitionerPhotoCarousel from "@/components/PractitionerPhotoCarousel";
 import { Stars } from "@/components/Stars";
 import RatingForm from "@/components/RatingForm";
@@ -538,7 +539,7 @@ export default async function PractitionerPage({
                 <div className="flex justify-between gap-4 border-b border-emerald-100 py-2 text-sm dark:border-emerald-900/40">
                   <dt className="shrink-0 text-slate-500 dark:text-slate-400">Consultation fee</dt>
                   <dd className="text-right font-medium text-slate-800 dark:text-slate-200">
-                    {details?.consultationFee ?? <Missing />}
+                    {formatFeeWithUsd(details?.consultationFee) ?? <Missing />}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-4 border-b border-emerald-100 py-2 text-sm dark:border-emerald-900/40">

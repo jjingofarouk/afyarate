@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     "Browse medical and health jobs, internships, scholarships, grants and fellowships in Uganda by employer: hospitals, universities, NGOs, government ministries and international organisations.",
   alternates: { canonical: "/organizations" },
   openGraph: {
-    title: "Browse Health Jobs by Organization in Uganda · Rate Musawo",
+    title: "Browse Health Jobs by Organization in Uganda · Rate My Musawo",
     description:
       "Find health sector jobs and opportunities in Uganda by organisation.",
     type: "website",

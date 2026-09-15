@@ -1,5 +1,5 @@
 /**
- * Rate Musawo, one-off claim-profile email sender.
+ * Rate My Musawo, one-off claim-profile email sender.
  * Usage:
  *   node scripts/send_claim_email.mjs --dry    # preview subject + HTML, send nothing
  *   node scripts/send_claim_email.mjs --send   # actually send via Gmail
@@ -17,7 +17,7 @@ const SEND = args.includes("--send");
 
 // ── Edit me ──────────────────────────────────────────────────────────────
 const TO = "linhomalk@gmail.com";
-const SUBJECT = "Your Rate Musawo verified profile is live - complete payment within 48hrs";
+const SUBJECT = "Your Rate My Musawo verified profile is live - complete payment within 48hrs";
 
 const SITE = "https://ratemusawo.online";
 const PROFILE_URL = `${SITE}/practitioners/407036`;
@@ -42,9 +42,9 @@ const html = `<!DOCTYPE html>
 
         <!-- Header -->
         <tr><td style="background:#0f4c24;border-radius:12px 12px 0 0;padding:20px 24px;text-align:center;">
-          <img src="${SITE}/logo.png" alt="Rate Musawo" width="52" height="52"
+          <img src="${SITE}/logo.png" alt="Rate My Musawo" width="52" height="52"
             style="border-radius:8px;display:block;margin:0 auto 10px;">
-          <p style="margin:0;font-size:21px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Rate Musawo</p>
+          <p style="margin:0;font-size:21px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Rate My Musawo</p>
           <p style="margin:3px 0 0;font-size:12px;color:#86efac;letter-spacing:0.2px;">Jobs, grants, scholarships, fellowships, conferences, & more for Uganda's health workers</p>
         </td></tr>
 
@@ -54,7 +54,7 @@ const html = `<!DOCTYPE html>
             Hello <strong>Colline Lule</strong>,
           </p>
           <p style="margin:0 0 14px;font-size:15px;color:#374151;line-height:1.7;">
-            Good news, your claimed profile on Rate Musawo is now live. It shows your
+            Good news, your claimed profile on Rate My Musawo is now live. It shows your
             verified licence badge (Allied Health Professionals Council, Clinical Officer)
             together with your phone and WhatsApp <strong>+256705264361</strong>, so patients
             can reach you directly with no middleman.
@@ -95,9 +95,9 @@ const html = `<!DOCTYPE html>
           </td></tr></table>
 
           <p style="margin:20px 0 0;font-size:15px;color:#374151;line-height:1.7;">
-            Thank you for joining Rate Musawo.<br>
+            Thank you for joining Rate My Musawo.<br>
             Best regards,<br>
-            <strong>Rate Musawo Team</strong>
+            <strong>Rate My Musawo Team</strong>
           </p>
         </td></tr>
 
@@ -121,7 +121,7 @@ const html = `<!DOCTYPE html>
 
 const text = `Hello Colline Lule,
 
-Good news, your claimed profile on Rate Musawo is now live:
+Good news, your claimed profile on Rate My Musawo is now live:
 ${PROFILE_URL}
 
 It shows your verified licence badge (Allied Health Professionals Council, Clinical Officer) together with your phone and WhatsApp +256705264361, so patients can reach you directly with no middleman.
@@ -133,9 +133,9 @@ ${EDIT_URL}
 
 PAYMENT, due within 48 hours: please send the one-time fee of ${AMOUNT} to ${PAY_NUMBER} (MTN / Airtel Money), then reply to this email with your transaction ID so we can attach your receipt. If payment is not received within 48 hours, the profile will be unclaimed until payment is confirmed.
 
-Thank you for joining Rate Musawo.
+Thank you for joining Rate My Musawo.
 Best regards,
-Rate Musawo Team`;
+Rate My Musawo Team`;
 
 if (!SEND) {
   console.log(`TO: ${TO}\nSUBJECT: ${SUBJECT}\n`);
@@ -154,7 +154,7 @@ const transporter = nodemailer.createTransport({
 
 try {
   await transporter.sendMail({
-    from: `"Rate Musawo" <${process.env.GMAIL_USER}>`,
+    from: `"Rate My Musawo" <${process.env.GMAIL_USER}>`,
     to: TO,
     subject: SUBJECT,
     text,

@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 
 const FAQS = [
   {
-    q: "Is Rate Musawo free to use?",
+    q: "Is Rate My Musawo free to use?",
     a: "Yes. Searching the registry, browsing jobs and opportunities, and reading facility and practitioner pages is completely free.",
   },
   {

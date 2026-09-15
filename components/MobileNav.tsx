@@ -28,7 +28,7 @@ function CountBadge({ n }: { n: number | undefined }) {
   const label = formatCount(n);
   if (!label) return null;
   return (
-    <span className="ml-auto shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+    <span className="ml-auto shrink-0 rounded-full bg-red-600 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-white">
       {label}
     </span>
   );

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     "Browse medical and health jobs, internships, scholarships, grants and fellowships in Uganda by location: Kampala, Mbarara, Gulu, Jinja, Arua and more.",
   alternates: { canonical: "/locations" },
   openGraph: {
-    title: "Browse Health Jobs by Location in Uganda · Rate Musawo",
+    title: "Browse Health Jobs by Location in Uganda · Rate My Musawo",
     description:
       "Find health sector jobs and opportunities in Uganda by location.",
     type: "website",
