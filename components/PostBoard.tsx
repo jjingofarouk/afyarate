@@ -42,6 +42,9 @@ export default function PostBoard({
   const [sort, setSort] = useState<PostSort>(initialSort);
   // Multi-select profession filter (labels); sent to the API as slugs.
   const [professionFilters, setProfessionFilters] = useState<string[]>([]);
+  // Long profession lists collapse behind "show more" so the pills don't
+  // take over the page. Selected pills always stay visible.
+  const [showAllProfs, setShowAllProfs] = useState(false);
   const [locationFilter, setLocationFilter] = useState("");
   const [posts, setPosts] = useState(initialPosts);
   const [total, setTotal] = useState(initialTotal);
@@ -148,6 +151,16 @@ export default function PostBoard({
   const showProfessionFilter = !profession && professions.length > 0;
   const showLocationFilter = !location && locations.length > 0;
 
+  const VISIBLE_PROFS = 8;
+  const hiddenProfCount = Math.max(0, professions.length - VISIBLE_PROFS);
+  const visibleProfs =
+    showProfessionFilter && !showAllProfs
+      ? [
+          ...professions.slice(0, VISIBLE_PROFS),
+          ...professionFilters.filter((p) => !professions.slice(0, VISIBLE_PROFS).includes(p)),
+        ]
+      : professions;
+
   const selectCls =
     "rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100";
 
@@ -208,7 +221,7 @@ export default function PostBoard({
                 >
                   All
                 </button>
-                {professions.map((p) => {
+                {visibleProfs.map((p) => {
                   const active = professionFilters.includes(p);
                   return (
                     <button
@@ -230,6 +243,15 @@ export default function PostBoard({
                     </button>
                   );
                 })}
+                {showProfessionFilter && hiddenProfCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllProfs((v) => !v)}
+                    className="rounded-full px-3.5 py-1.5 text-sm font-semibold text-emerald-700 underline-offset-2 hover:underline dark:text-emerald-400"
+                  >
+                    {showAllProfs ? "Show less" : `Show more (${hiddenProfCount} more)`}
+                  </button>
+                )}
               </div>
             )}
             {showLocationFilter && (
