@@ -20,8 +20,7 @@ const typeIcon = (
 
 function formatCount(n: number | undefined): string | null {
   if (!n) return null;
-  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`;
-  return String(n);
+  return n.toLocaleString("en-US");
 }
 
 function CountBadge({ n }: { n: number | undefined }) {
