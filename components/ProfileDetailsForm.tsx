@@ -321,7 +321,7 @@ export function SupportLinks() {
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <a
-          href={`https://wa.me/${process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "256700000000"}?text=${encodeURIComponent(
+          href={`https://wa.me/${process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "256751360385"}?text=${encodeURIComponent(
             "Hi! I just claimed my Musawo profile and I need help setting it up."
           )}`}
           target="_blank"

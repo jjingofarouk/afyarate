@@ -11,7 +11,7 @@ import {
 } from "@/lib/practitioners";
 import { slugify } from "@/lib/posts";
 import { SITE_URL } from "@/lib/site";
-import { InitialsAvatar } from "@/components/PractitionerCard";
+import PractitionerPhotoCarousel from "@/components/PractitionerPhotoCarousel";
 import { Stars } from "@/components/Stars";
 import RatingForm from "@/components/RatingForm";
 import ShareButtons from "@/components/ShareButtons";
@@ -182,9 +182,15 @@ export default async function PractitionerPage({
   const telHref = details?.phone ? `tel:${details.phone.replace(/\s/g, "")}` : null;
   const specialties = details?.specialties ?? [];
   const languages = details?.languages ?? [];
-  // A claimant-uploaded photo wins over the scraped registry image everywhere
-  // on this page — faces drive bookings, and payers dress their own window.
-  const photoSrc = details?.photoUrl || practitioner.imageUrl || null;
+  // Carousel: claimant-uploaded photo first, then registry / licence photos.
+  // getPractitioner() already prefers the claimed photo in imageUrl, so dedupe
+  // to avoid showing the same face twice.
+  const carouselPhotos = [
+    details?.photoUrl,
+    practitioner.imageUrl,
+    ...licenses.map((l) => l.imageUrl),
+  ].filter((u): u is string => Boolean(u));
+  const photoList = [...new Set(carouselPhotos)];
   const socials = [
     { label: "Facebook", href: normalizeUrl(details?.facebook ?? null), Icon: FacebookIcon },
     { label: "X", href: normalizeHandle(details?.xHandle ?? null, "https://x.com/"), Icon: XIcon },
@@ -308,17 +314,8 @@ export default async function PractitionerPage({
                   : ""
               }
             >
-              <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-              {photoSrc ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={photoSrc}
-                  alt={practitioner.name}
-                  className="h-full w-full object-contain object-top"
-                />
-              ) : (
-                <InitialsAvatar name={practitioner.name} />
-              )}
+              <div className="relative w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+              <PractitionerPhotoCarousel photos={photoList} name={practitioner.name} />
               {practitioner.claimed && (
                 <span
                   title="Verified profile"

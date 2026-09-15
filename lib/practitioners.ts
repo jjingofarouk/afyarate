@@ -36,6 +36,40 @@ function mapPractitioner(row: Row): Practitioner {
   };
 }
 
+/**
+ * Claimed (paid) practitioners can upload their own preferred photo to
+ * profile_details.photo_url. List queries don't join that table, so cards
+ * would keep showing the stale registry image. Batch-fetch claimed photos
+ * for the given ids and prefer them over image_url — one query per list,
+ * not per row.
+ */
+async function attachClaimedPhotos<T extends { id: number; imageUrl: string | null }>(
+  items: T[]
+): Promise<T[]> {
+  if (items.length === 0) return items;
+  try {
+    const supabase = createServerClient();
+    const ids = [...new Set(items.map((i) => i.id))];
+    const { data } = await supabase
+      .from("profile_details")
+      .select("practitioner_id, photo_url")
+      .in("practitioner_id", ids);
+    if (!data) return items;
+    const photoById = new Map<number, string>();
+    for (const r of data as Row[]) {
+      const url = asString(r.photo_url);
+      if (url) photoById.set(Number(r.practitioner_id), url);
+    }
+    if (photoById.size === 0) return items;
+    return items.map((item) => {
+      const claimed = photoById.get(item.id);
+      return claimed ? { ...item, imageUrl: claimed } : item;
+    });
+  } catch {
+    return items;
+  }
+}
+
 export interface SearchOptions {
   q?: string;
   council?: string;
@@ -179,8 +213,11 @@ export async function searchPractitioners(
   }
 
   const [councils, professions] = await Promise.all([getCouncils(), getProfessions()]);
+  const mapped = items.map(mapPractitioner);
+  // Claimed photo wins in every card / carousel — single batched lookup.
+  const withPhotos = await attachClaimedPhotos(mapped);
   return {
-    items: items.map(mapPractitioner),
+    items: withPhotos,
     total: count,
     page,
     pageSize,
@@ -205,7 +242,7 @@ export async function getTopRatedPractitioners(limit = 8): Promise<Practitioner[
     .order("name", { ascending: true })
     .limit(limit);
   if (error) throw new Error(error.message);
-  return ((data ?? []) as Row[]).map(mapPractitioner);
+  return attachClaimedPhotos(((data ?? []) as Row[]).map(mapPractitioner));
 }
 
 export interface FeaturedProfile {
@@ -230,7 +267,10 @@ export async function getFeaturedVerifiedPractitioner(): Promise<FeaturedProfile
   for (const row of (data ?? []) as Row[]) {
     const details = await getProfileDetails(Number(row.id));
     if (details?.phone || details?.whatsapp) {
-      return { practitioner: mapPractitioner(row), details };
+      const p = mapPractitioner(row);
+      // Claimed upload wins on the featured spotlight too.
+      if (details?.photoUrl) p.imageUrl = details.photoUrl;
+      return { practitioner: p, details };
     }
   }
   const top = await getTopRatedPractitioners(5).catch(() => []);
@@ -254,7 +294,10 @@ export const getPractitioner = cache(async (id: number): Promise<Practitioner | 
     .eq("id", id)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  return data ? mapPractitioner(data) : null;
+  if (!data) return null;
+  const mapped = mapPractitioner(data);
+  const [withPhoto] = await attachClaimedPhotos([mapped]);
+  return withPhoto ?? mapped;
 });
 
 export async function getLicenses(

@@ -21,6 +21,7 @@ import {
   getFacility,
   getFacilityCities,
   getFacilityPhotos,
+  getFacilityProfileDetails,
   getFacilityRatings,
   searchFacilities,
 } from "@/lib/facilities";
@@ -121,10 +122,20 @@ async function FacilityDetailPage({ slug }: { slug: string }) {
   const facility = await getFacility(slug);
   if (!facility) notFound();
 
-  const [ratings, photos] = await Promise.all([
+  const [ratings, photos, claimedDetails] = await Promise.all([
     getFacilityRatings(facility.id),
     getFacilityPhotos(facility.id),
+    getFacilityProfileDetails(facility.id).catch(() => null),
   ]);
+  // Carousel: claimant photo first, then directory image, then community photos.
+  const carouselPhotos = [
+    claimedDetails?.photoUrl,
+    facility.imageUrl,
+    ...photos.map((p) => p.imageUrl),
+  ].filter((u): u is string => Boolean(u));
+  const galleryPhotos = [...new Set(carouselPhotos)];
+  const mainPhoto = galleryPhotos[0] ?? null;
+  const waDigits = claimedDetails?.whatsapp?.replace(/\D/g, "");
   const kind = FACILITY_KIND_LABELS[facility.kind];
   const serviceGroups: ServiceGroup[] =
     facility.kind === "pharmacy" ? PHARMACY_SERVICE_GROUPS : HOSPITAL_SERVICE_GROUPS;
@@ -172,19 +183,29 @@ async function FacilityDetailPage({ slug }: { slug: string }) {
         <FadeIn className="lg:col-span-1">
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-              {facility.imageUrl ? (
+              {mainPhoto ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={facility.imageUrl}
+                  src={mainPhoto}
                   alt={facility.name}
-                  className="h-full w-full object-contain object-center"
+                  className="h-full w-full object-cover object-center"
                 />
               ) : (
                 <FacilityFallbackPhoto facility={facility} />
               )}
-              <div className="absolute left-2 top-2">
+              <div className="absolute left-2 top-2 flex gap-1.5">
                 <FacilityKindBadge kind={facility.kind} />
+                {facility.claimed && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1 text-[11px] font-bold text-white shadow">
+                    ✓ Verified
+                  </span>
+                )}
               </div>
+              {galleryPhotos.length > 1 && (
+                <span className="absolute bottom-2 right-2 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-semibold text-white">
+                  {galleryPhotos.length} photos
+                </span>
+              )}
             </div>
             <div className="p-5">
               <div className="mt-1 flex items-center gap-2">
@@ -224,14 +245,57 @@ async function FacilityDetailPage({ slug }: { slug: string }) {
                   {facility.phone}
                 </a>
               )}
+              {waDigits && (
+                <a
+                  href={`https://wa.me/${waDigits}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 flex items-center justify-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-bold text-white hover:brightness-95"
+                >
+                  WhatsApp this facility
+                </a>
+              )}
+              {!facility.claimed ? (
+                <Link
+                  href="/facilities/claim"
+                  className="mt-3 block rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-center text-sm font-bold text-emerald-800 hover:border-emerald-400 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+                >
+                  Is this your facility? Verify it — UGX 5,000 once →
+                </Link>
+              ) : (
+                claimedDetails?.website && (
+                  <a
+                    href={claimedDetails.website.startsWith("http") ? claimedDetails.website : `https://${claimedDetails.website}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 block text-center text-sm font-semibold text-emerald-700 underline dark:text-emerald-400"
+                  >
+                    Visit website →
+                  </a>
+                )
+              )}
             </div>
           </div>
         </FadeIn>
 
         <FadeIn delay={0.1} className="lg:col-span-2">
+          {!facility.claimed && (
+            <div className="mb-4 rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+              <span className="font-bold">Run this facility?</span> Claim it to add your
+              phone, WhatsApp, services and photo — verified forever.{" "}
+              <Link href="/facilities/claim" className="font-bold underline">
+                Claim for UGX 5,000 →
+              </Link>
+            </div>
+          )}
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
+            <h1 className="flex flex-wrap items-center gap-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
               {facility.name}
+              {facility.claimed && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1 text-xs font-bold text-white">
+                  ✓ Verified
+                </span>
+              )}
             </h1>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               {kind.label}

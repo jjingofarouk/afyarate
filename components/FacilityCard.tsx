@@ -55,19 +55,29 @@ export default function FacilityCard({ facility: f }: { facility: Facility }) {
             src={f.imageUrl}
             alt={f.name}
             loading="lazy"
-            className="h-full w-full object-contain object-center"
+            className="h-full w-full object-cover object-center"
           />
         ) : (
           <FacilityFallbackPhoto facility={f} />
         )}
-        <div className="absolute left-2 top-2">
+        <div className="absolute left-2 top-2 flex gap-1.5">
           <FacilityKindBadge kind={f.kind} />
+          {f.claimed && (
+            <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[11px] font-bold text-white">
+              ✓ Verified
+            </span>
+          )}
         </div>
       </div>
 
       <div className="flex flex-1 flex-col gap-1.5 p-4">
-        <h3 className="line-clamp-2 text-base font-semibold leading-snug text-slate-900 group-hover:text-emerald-700 dark:text-slate-100 dark:group-hover:text-emerald-400">
-          {f.name}
+        <h3 className="line-clamp-2 flex items-start gap-1.5 text-base font-semibold leading-snug text-slate-900 group-hover:text-emerald-700 dark:text-slate-100 dark:group-hover:text-emerald-400">
+          <span className="min-w-0">{f.name}</span>
+          {f.claimed && (
+            <svg className="mt-0.5 size-4 shrink-0 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5" aria-label="Verified facility">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          )}
         </h3>
         <p className="line-clamp-1 text-xs text-slate-500 dark:text-slate-400">
           {f.city ?? f.region ?? f.address}

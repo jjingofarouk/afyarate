@@ -24,7 +24,7 @@ export default function RatedPractitionerCard({ p }: { p: Practitioner }) {
               src={p.imageUrl}
               alt={p.name}
               loading="lazy"
-              className="size-full object-contain object-top"
+              className="size-full object-cover object-top"
             />
           ) : (
             <InitialsAvatar name={p.name} />

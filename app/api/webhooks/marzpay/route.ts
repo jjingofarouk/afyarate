@@ -61,31 +61,74 @@ export async function POST(req: NextRequest) {
 
   const db = createAdminClient();
 
+  // Practitioner claims (section 8) …
   const { data: claim } = await db
     .from("claim_requests")
     .select("id, status, practitioner_id")
     .eq("marzpay_reference", reference)
     .maybeSingle();
 
-  if (!claim) return NextResponse.json({ received: true });
+  if (claim) {
+    if (event === "collection.completed" || payload.transaction?.status === "completed") {
+      if (claim.status !== "paid") {
+        await db
+          .from("claim_requests")
+          .update({
+            status: "paid",
+            paid_at: new Date().toISOString(),
+            provider_txn_id: payload.collection?.provider_transaction_id ?? null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", claim.id)
+          .neq("status", "paid");
+
+        await db
+          .from("practitioners")
+          .update({ claimed: true })
+          .eq("id", claim.practitioner_id)
+          .eq("claimed", false);
+      }
+    } else if (
+      event === "collection.failed" ||
+      event === "collection.cancelled" ||
+      payload.transaction?.status === "failed"
+    ) {
+      if (claim.status === "processing" || claim.status === "matched") {
+        await db
+          .from("claim_requests")
+          .update({ status: "failed", updated_at: new Date().toISOString() })
+          .eq("id", claim.id);
+      }
+    }
+    return NextResponse.json({ received: true });
+  }
+
+  // Facility claims (section 8b) — same idempotent pattern.
+  const { data: fClaim } = await db
+    .from("facility_claim_requests")
+    .select("id, status, facility_id")
+    .eq("marzpay_reference", reference)
+    .maybeSingle();
+
+  if (!fClaim) return NextResponse.json({ received: true });
 
   if (event === "collection.completed" || payload.transaction?.status === "completed") {
-    if (claim.status !== "paid") {
+    if (fClaim.status !== "paid") {
       await db
-        .from("claim_requests")
+        .from("facility_claim_requests")
         .update({
           status: "paid",
           paid_at: new Date().toISOString(),
           provider_txn_id: payload.collection?.provider_transaction_id ?? null,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", claim.id)
+        .eq("id", fClaim.id)
         .neq("status", "paid");
 
       await db
-        .from("practitioners")
+        .from("facilities")
         .update({ claimed: true })
-        .eq("id", claim.practitioner_id)
+        .eq("id", fClaim.facility_id)
         .eq("claimed", false);
     }
   } else if (
@@ -93,11 +136,11 @@ export async function POST(req: NextRequest) {
     event === "collection.cancelled" ||
     payload.transaction?.status === "failed"
   ) {
-    if (claim.status === "processing" || claim.status === "matched") {
+    if (fClaim.status === "processing" || fClaim.status === "matched") {
       await db
-        .from("claim_requests")
+        .from("facility_claim_requests")
         .update({ status: "failed", updated_at: new Date().toISOString() })
-        .eq("id", claim.id);
+        .eq("id", fClaim.id);
     }
   }
 

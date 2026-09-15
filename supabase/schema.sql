@@ -643,6 +643,72 @@ create policy "profile details are publicly readable"
   on public.profile_details for select using (true);
 
 -- ----------------------------------------------------------------------------
+-- 8b. Facility claims (paid, one-time forever) + claimant-managed details.
+--     Mirrors section 8 for practitioners: a facility auto-matches by name,
+--     pays UGX 5,000 once via MarzPay, webhook flips to 'paid' and marks
+--     facilities.claimed. Import-owned columns stay scraper-owned; claimant
+--     edits live in facility_profile_details and win at read time.
+-- ----------------------------------------------------------------------------
+alter table public.facilities add column if not exists claimed boolean not null default false;
+
+-- Views expand `f.*` at CREATE time like practitioners_overview did, so
+-- re-create facilities_overview to always expose `claimed`.
+drop view if exists public.facilities_overview;
+create view public.facilities_overview as
+select
+  f.*,
+  (select round(avg(r.rating)::numeric, 2) from public.facility_ratings r
+    where r.facility_id = f.id) as avg_rating,
+  (select count(*) from public.facility_ratings r
+    where r.facility_id = f.id) as rating_count
+from public.facilities f;
+
+create table if not exists public.facility_claim_requests (
+  id bigint generated always as identity primary key,
+  facility_id bigint not null references public.facilities (id) on delete cascade,
+  requester_name text not null,
+  phone text not null,
+  email text,
+  status text not null default 'processing'
+    check (status in ('matched','processing','paid','failed')),
+  marzpay_reference text unique,
+  marzpay_txn_uuid text,
+  provider_txn_id text,
+  amount integer not null default 5000,
+  paid_at timestamptz,
+  edit_token text unique,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists facility_claims_facility on public.facility_claim_requests (facility_id);
+create index if not exists facility_claims_status on public.facility_claim_requests (status);
+-- One paid claim per facility, ever.
+create unique index if not exists facility_claims_one_paid_per_facility
+  on public.facility_claim_requests (facility_id) where status = 'paid';
+
+create table if not exists public.facility_profile_details (
+  facility_id bigint primary key references public.facilities (id) on delete cascade,
+  phone text,
+  whatsapp text,
+  description text,
+  services text[] default '{}',
+  photo_url text,
+  website text,
+  facebook text,
+  x_handle text,
+  instagram text,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.facility_claim_requests enable row level security;
+alter table public.facility_profile_details enable row level security;
+
+-- No public policies on facility_claim_requests (service role only).
+drop policy if exists "facility profile details are publicly readable" on public.facility_profile_details;
+create policy "facility profile details are publicly readable"
+  on public.facility_profile_details for select using (true);
+
+-- ----------------------------------------------------------------------------
 -- 7. Grants for the anon/authenticated roles used by the publishable key
 -- ----------------------------------------------------------------------------
 grant usage on schema public to anon, authenticated;
@@ -652,6 +718,7 @@ grant select on public.practitioners, public.licenses, public.ratings, public.po
 grant select on public.facilities, public.facility_ratings,
               public.facilities_overview to anon, authenticated;
 grant select on public.profile_details to anon, authenticated;
+grant select on public.facility_profile_details to anon, authenticated;
 grant insert on public.ratings to anon, authenticated;
 grant insert on public.posts to anon, authenticated;
 grant insert on public.facility_ratings to anon, authenticated;

@@ -161,6 +161,19 @@ export interface Facility {
   avgRating: number | null;
   ratingCount: number;
   services: string[];
+  claimed?: boolean;
+}
+
+export interface FacilityProfileDetails {
+  phone: string | null;
+  whatsapp: string | null;
+  description: string | null;
+  services: string[];
+  photoUrl: string | null;
+  website: string | null;
+  facebook: string | null;
+  xHandle: string | null;
+  instagram: string | null;
 }
 
 export interface FacilityRating {

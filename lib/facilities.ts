@@ -4,6 +4,7 @@ import { createAdminClient } from "./supabase/admin";
 import type {
   Facility,
   FacilityKind,
+  FacilityProfileDetails,
   FacilityRating,
   FacilitySearchResult,
 } from "./types";
@@ -32,7 +33,86 @@ function mapFacility(row: Row): Facility {
     avgRating: row.avg_rating != null ? Number(row.avg_rating) : null,
     ratingCount: Number(row.rating_count ?? 0),
     services: Array.isArray(row.services) ? (row.services as string[]) : [],
+    claimed: Boolean((row as Record<string, unknown>).claimed),
   };
+}
+
+/** Claimant-managed details for a verified facility. Null when never filled in. */
+export async function getFacilityProfileDetails(
+  facilityId: number
+): Promise<FacilityProfileDetails | null> {
+  const supabase = createServerClient();
+  const { data, error } = await supabase
+    .from("facility_profile_details")
+    .select(
+      "phone, whatsapp, description, services, photo_url, website, facebook, x_handle, instagram"
+    )
+    .eq("facility_id", facilityId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) return null;
+  const r = data as unknown as Row;
+  const services = Array.isArray(r.services)
+    ? (r.services as unknown[]).map((s) => String(s)).filter(Boolean)
+    : [];
+  if (
+    !asString(r.phone) &&
+    !asString(r.whatsapp) &&
+    !asString(r.description) &&
+    services.length === 0 &&
+    !asString(r.photo_url) &&
+    !asString(r.website) &&
+    !asString(r.facebook) &&
+    !asString(r.x_handle) &&
+    !asString(r.instagram)
+  ) {
+    return null;
+  }
+  return {
+    phone: asString(r.phone),
+    whatsapp: asString(r.whatsapp),
+    description: asString(r.description),
+    services,
+    photoUrl: asString(r.photo_url),
+    website: asString(r.website),
+    facebook: asString(r.facebook),
+    xHandle: asString(r.x_handle),
+    instagram: asString(r.instagram),
+  };
+}
+
+/**
+ * Claimed photo/phone win in lists. One batched lookup per search, not per row.
+ */
+async function attachClaimedFacilityDetails(items: Facility[]): Promise<Facility[]> {
+  if (items.length === 0) return items;
+  try {
+    const supabase = createServerClient();
+    const ids = [...new Set(items.map((i) => i.id))];
+    const { data } = await supabase
+      .from("facility_profile_details")
+      .select("facility_id, photo_url, phone, description")
+      .in("facility_id", ids);
+    if (!data) return items;
+    const byId = new Map<number, Row>();
+    for (const r of data as Row[]) byId.set(Number(r.facility_id), r);
+    if (byId.size === 0) return items;
+    return items.map((item) => {
+      const d = byId.get(item.id);
+      if (!d) return item;
+      const photo = asString(d.photo_url);
+      const phone = asString(d.phone);
+      const desc = asString(d.description);
+      return {
+        ...item,
+        ...(photo ? { imageUrl: photo } : {}),
+        ...(phone ? { phone } : {}),
+        ...(desc ? { description: desc } : {}),
+      };
+    });
+  } catch {
+    return items;
+  }
 }
 
 export interface FacilityPhoto {
@@ -291,8 +371,10 @@ export async function searchFacilities(
   const [{ data, count, error }, { data: cityRows }] = await Promise.all([query, citiesQuery]);
   if (error) throw new Error(error.message);
 
+  const mapped = ((data ?? []) as Row[]).map(mapFacility);
+  const items = await attachClaimedFacilityDetails(mapped);
   return {
-    items: ((data ?? []) as Row[]).map(mapFacility),
+    items,
     total: count ?? 0,
     page,
     pageSize,
@@ -319,7 +401,18 @@ export const getFacility = cache(async (slug: string): Promise<Facility | null> 
     .eq("slug", slug)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  return data ? mapFacility(data as Row) : null;
+  if (!data) return null;
+  const base = mapFacility(data as Row);
+  // Claimed details win for phone / description / photo / services.
+  const claimed = await getFacilityProfileDetails(base.id).catch(() => null);
+  if (!claimed) return base;
+  return {
+    ...base,
+    phone: claimed.phone ?? base.phone,
+    description: claimed.description ?? base.description,
+    imageUrl: claimed.photoUrl ?? base.imageUrl,
+    services: claimed.services.length > 0 ? claimed.services : base.services,
+  };
 });
 
 export async function getFacilityRatings(
