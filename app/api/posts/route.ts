@@ -145,6 +145,18 @@ export async function POST(req: NextRequest) {
     insert.tags = (b.tags as unknown[]).filter((t) => typeof t === "string").slice(0, 10);
   }
 
+  // Optional owner handle: whoever posts with a handle can later manage
+  // applicants for this listing from /employers (see posts.owner_profile_id).
+  const owner =
+    typeof b.ownerProfileId === "string" ? b.ownerProfileId.trim()
+    : typeof b.owner_profile_id === "string" ? b.owner_profile_id.trim()
+    : "";
+  if (
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(owner)
+  ) {
+    insert.owner_profile_id = owner;
+  }
+
   // NOTE: no .select()/.single() here. The SELECT RLS policy only exposes
   // status='published' rows, so a RETURNING clause re-checks the fresh draft
   // against that policy and fails with 42501 ("new row violates row-level

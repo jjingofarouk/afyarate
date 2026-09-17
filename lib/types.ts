@@ -194,3 +194,164 @@ export interface FacilitySearchResult {
   kinds: FacilityKind[];
   cities: string[];
 }
+
+// ---------------------------------------------------------------------------
+// MOHU merge: accounts, jobs pipeline, community, messaging, updates.
+// Identity is a one-click profile handle (uuid, no passwords) until Supabase
+// Auth lands; the handle is stored in localStorage (see lib/handle.ts).
+// ---------------------------------------------------------------------------
+
+export type ProfileRole = "member" | "jobseeker" | "employer" | "admin";
+
+export interface Profile {
+  id: string;
+  handle: string;
+  displayName: string;
+  email: string | null;
+  phone: string | null;
+  role: ProfileRole;
+  organization: string | null;
+  cadre: string | null;
+  location: string | null;
+  bio: string | null;
+  skills: string | null;
+  verified: boolean;
+}
+
+export interface Organization {
+  id: number;
+  slug: string;
+  name: string;
+  website: string | null;
+  description: string | null;
+  logoUrl: string | null;
+  verified: boolean;
+}
+
+export interface SeekerProfile {
+  profileId: string;
+  seekingTitle: string | null;
+  availability: string | null;
+  desiredRoles: string | null;
+  desiredLocations: string | null;
+  employmentPreference: string | null;
+  skills: string | null;
+  expectedSalary: string | null;
+  publicSummary: string | null;
+  showEmail: boolean;
+  showPhone: boolean;
+  cvVisibility: "private" | "employers" | "public";
+  active: boolean;
+  profile?: Profile | null;
+}
+
+export type ApplicationStatus =
+  | "submitted"
+  | "reviewing"
+  | "shortlisted"
+  | "rejected"
+  | "hired";
+
+export interface JobApplication {
+  id: number;
+  postId: number;
+  applicantName: string;
+  applicantEmail: string;
+  applicantPhone: string | null;
+  coverNote: string | null;
+  cvUrl: string | null;
+  status: ApplicationStatus;
+  createdAt: string;
+}
+
+export type CommunityVisibility = "public" | "followers" | "following" | "network";
+
+export interface CommunityPost {
+  id: number;
+  profileId: string | null;
+  authorName: string;
+  body: string;
+  visibility: CommunityVisibility;
+  likeCount: number;
+  commentCount: number;
+  likedByMe: boolean;
+  createdAt: string;
+}
+
+export interface CommunityComment {
+  id: number;
+  postId: number;
+  authorName: string;
+  body: string;
+  createdAt: string;
+}
+
+export type ConnectionStatus =
+  | "pending"
+  | "accepted"
+  | "in_progress"
+  | "completed"
+  | "declined"
+  | "cancelled";
+
+export interface ConnectionRequest {
+  id: number;
+  senderName: string;
+  targetType: "member" | "practitioner" | "facility" | "organization";
+  targetId: number | null;
+  requestType: string;
+  subject: string;
+  details: string;
+  status: ConnectionStatus;
+  createdAt: string;
+}
+
+export interface DmThread {
+  id: number;
+  otherProfileId: string;
+  otherName: string;
+  lastBody: string | null;
+  unread: number;
+  updatedAt: string;
+}
+
+export interface DmMessage {
+  id: number;
+  threadId: number;
+  senderProfileId: string | null;
+  senderName: string;
+  body: string;
+  mine: boolean;
+  createdAt: string;
+}
+
+export interface HealthUpdate {
+  id: number;
+  authorName: string;
+  title: string;
+  body: string;
+  sourceUrl: string | null;
+  likeCount: number;
+  commentCount: number;
+  likedByMe: boolean;
+  createdAt: string;
+}
+
+export interface Broadcast {
+  id: number;
+  title: string;
+  message: string;
+  audience: string;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface PlatformFeedback {
+  id: number;
+  authorName: string;
+  rating: number;
+  feedbackText: string;
+  helpful: number;
+  notHelpful: number;
+  createdAt: string;
+}

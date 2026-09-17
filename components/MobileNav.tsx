@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { POST_TYPES, POST_TYPE_LABELS } from "@/lib/types";
+import { POST_TYPES, POST_TYPE_LABELS, type PostType } from "@/lib/types";
 import ThemeToggle from "@/components/ThemeToggle";
+import AuthButton from "@/components/AuthButton";
 
 const sectionLabelClass =
   "px-3 pt-5 pb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500";
@@ -40,6 +41,13 @@ interface NavCounts {
   facilities: number;
   ambulances: number;
 }
+
+// Only the busiest boards show inline; the rest live under "More types" so
+// the drawer stays scannable.
+const FEATURED_TYPES: PostType[] = ["job", "internship", "scholarship", "grant"];
+const MORE_TYPES: PostType[] = POST_TYPES.filter(
+  (t): t is PostType => !(FEATURED_TYPES as string[]).includes(t),
+);
 
 export default function MobileNav() {
   const [open, setOpen] = useState(false);
@@ -113,7 +121,10 @@ export default function MobileNav() {
               </div>
 
               <nav className="mt-2 flex flex-1 flex-col">
-                <Link href="/posts/new" onClick={close} className="mt-4 rounded-xl bg-emerald-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-emerald-700">
+                <div onClick={close}>
+                  <AuthButton full />
+                </div>
+                <Link href="/posts/new" onClick={close} className="mt-3 rounded-xl bg-emerald-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-emerald-700">
                   + Post a listing
                 </Link>
 
@@ -145,6 +156,7 @@ export default function MobileNav() {
                   </svg>
                   Stats
                 </Link>
+                <p className={sectionLabelClass}>Jobs &amp; Opportunities</p>
                 <Link href="/posts" onClick={close} className={linkClass}>
                   <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
@@ -152,14 +164,73 @@ export default function MobileNav() {
                   All listings
                   <CountBadge n={counts?.total} />
                 </Link>
-                {POST_TYPES.map((t) => (
+                {FEATURED_TYPES.map((t) => (
                   <Link key={t} href={`/${POST_TYPE_LABELS[t].plural.toLowerCase()}`} onClick={close} className={linkClass}>
                     {typeIcon}
                     {POST_TYPE_LABELS[t].plural}
                     <CountBadge n={counts?.byType[t]} />
                   </Link>
                 ))}
+                <details className="group">
+                  <summary className={`${linkClass} cursor-pointer list-none`}>
+                    {typeIcon}
+                    More types
+                    <span className="ml-auto text-xs text-slate-400 transition group-open:rotate-90">▶</span>
+                  </summary>
+                  {MORE_TYPES.map((t) => (
+                    <Link key={t} href={`/${POST_TYPE_LABELS[t].plural.toLowerCase()}`} onClick={close} className={`${linkClass} pl-9`}>
+                      {POST_TYPE_LABELS[t].plural}
+                      <CountBadge n={counts?.byType[t]} />
+                    </Link>
+                  ))}
+                </details>
 
+                <p className={sectionLabelClass}>Workspace</p>
+
+                <p className={sectionLabelClass}>People</p>
+                <Link href="/community" onClick={close} className={linkClass}>
+                  <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6-4a3 3 0 11-2.83-4" />
+                  </svg>
+                  Community
+                </Link>
+                <Link href="/seeking" onClick={close} className={linkClass}>
+                  <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Jobseekers
+                </Link>
+                <p className={sectionLabelClass}>Workspace</p>
+                <Link href="/messages" onClick={close} className={linkClass}>
+                  <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h8m-8 4h5M21 12a9 9 0 01-13.2 7.9L3 21l1.1-4.8A9 9 0 1121 12z" />
+                  </svg>
+                  Messages
+                </Link>
+                <Link href="/applications" onClick={close} className={linkClass}>
+                  <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2-8H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2z" />
+                  </svg>
+                  My applications
+                </Link>
+                <Link href="/employers" onClick={close} className={linkClass}>
+                  <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M9 13h.01M9 17h.01M15 9h.01M15 13h.01M15 17h.01" />
+                  </svg>
+                  Employers
+                </Link>
+                <Link href="/saved" onClick={close} className={linkClass}>
+                  <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z" />
+                  </svg>
+                  Saved listings
+                </Link>
+                <Link href="/alerts" onClick={close} className={linkClass}>
+                  <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-4-5.7V5a2 2 0 10-4 0v.3A6 6 0 006 11v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                  Job alerts
+                </Link>
                 <Link href="/about" onClick={close} className={linkClass}>
                   <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />

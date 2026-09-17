@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Manage Newsletter Preferences | Rate My Musawo",
+  title: "Manage Newsletter Preferences | Medical Opportunities Hub Uganda",
   robots: { index: false },
 };
 
@@ -56,7 +56,7 @@ function InvalidLink() {
         </p>
         <a href="/"
           className="mt-6 inline-block rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700">
-          Back to Rate My Musawo
+          Back to Medical Opportunities Hub Uganda
         </a>
       </div>
     </div>
@@ -70,11 +70,11 @@ function NotFound() {
         <p className="text-4xl">🔍</p>
         <h1 className="mt-4 text-xl font-bold text-slate-900 dark:text-slate-50">Link not recognised</h1>
         <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-          This preferences link has expired or is invalid. Check your latest email from Rate My Musawo for a fresh link.
+          This preferences link has expired or is invalid. Check your latest email from Medical Opportunities Hub Uganda for a fresh link.
         </p>
         <a href="/"
           className="mt-6 inline-block rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700">
-          Back to Rate My Musawo
+          Back to Medical Opportunities Hub Uganda
         </a>
       </div>
     </div>

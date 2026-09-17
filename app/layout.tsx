@@ -10,6 +10,8 @@ import Footer from "@/components/Footer";
 import Lightbox from "@/components/Lightbox";
 import NewsletterFab from "@/components/NewsletterFab";
 import ClaimBanner from "@/components/ClaimBanner";
+import AuthProvider from "@/lib/auth-context";
+import AuthButton from "@/components/AuthButton";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -110,6 +112,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+        <AuthProvider>
         <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
           <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
             <Link href="/" className="flex shrink-0 items-center gap-2">
@@ -130,6 +133,9 @@ export default function RootLayout({
               <div className="hidden sm:block">
                 <ThemeToggle />
               </div>
+              <div className="hidden sm:block">
+                <AuthButton />
+              </div>
               <MobileNav />
             </div>
           </div>
@@ -142,6 +148,7 @@ export default function RootLayout({
         <Lightbox />
         <NewsletterFab />
         <ClaimBanner />
+        </AuthProvider>
       </body>
     </html>
   );

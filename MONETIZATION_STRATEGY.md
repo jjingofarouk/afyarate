@@ -227,7 +227,7 @@ free and may want to contribute.
 - Modal: slide-up sheet on mobile (same pattern as `ClaimBanner`), phone
   input + amount selector (1k / 2k / 5k / other), MarzPay STK push,
   single success screen. No polling needed — close on push sent, thank user.
-- Copy: "Rate My Musawo is free and has no ads. If it helped you find a job,
+- Copy: "Medical Opportunities Hub Uganda is free and has no ads. If it helped you find a job,
   verify a doctor, or reach a hospital, a small contribution keeps it going."
 
 ### Implementation order

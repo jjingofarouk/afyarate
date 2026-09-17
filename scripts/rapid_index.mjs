@@ -4,7 +4,7 @@
  * Usage: node scripts/rapid_index.mjs [--dry-run]
  *
  * Google officially documents this API for JobPosting / BroadcastEvent pages
- * only. Rate My Musawo's /posts/[slug] pages already carry JobPosting structured
+ * only. Medical Opportunities Hub Uganda's /posts/[slug] pages already carry JobPosting structured
  * data (lib/jobPosting.ts), so job/opportunity posts are the intended,
  * fully-supported use case here, not a workaround. They're prioritized first:
  * newest posts first (a listing's value decays toward its deadline, and

@@ -6,6 +6,8 @@ import { TypeBadge } from "@/components/PostCard";
 import PostGrid from "@/components/PostGrid";
 import ShareButtons from "@/components/ShareButtons";
 import PostViewNudge from "@/components/PostViewNudge";
+import ApplyForm from "@/components/ApplyForm";
+import SaveButton from "@/components/SaveButton";
 import { POST_TYPE_LABELS, type Post, type PostType } from "@/lib/types";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { jobPostingSchema } from "@/lib/jobPosting";
@@ -640,6 +642,11 @@ export default async function PostDetailPage({
               </svg>
             </a>
           )}
+
+          <div className="flex flex-wrap gap-x-3">
+            <ApplyForm postId={post.id} />
+            <SaveButton postId={post.id} />
+          </div>
 
           {post.tags.length > 0 && (
             <div className="mt-6 flex flex-wrap gap-2">

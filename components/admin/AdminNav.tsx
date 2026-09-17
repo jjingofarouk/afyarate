@@ -41,6 +41,11 @@ export default function AdminNav() {
       label: "Ambulances",
       active: pathname.startsWith("/admin/ambulances"),
     },
+    {
+      href: "/admin/moderation",
+      label: "Moderation",
+      active: pathname.startsWith("/admin/moderation"),
+    },
   ];
 
   async function logout() {

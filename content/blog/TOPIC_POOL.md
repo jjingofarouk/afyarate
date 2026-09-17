@@ -1,6 +1,6 @@
 # Blog topic pool
 
-Full list of candidate topics discussed for the Rate My Musawo blog. Check
+Full list of candidate topics discussed for the Medical Opportunities Hub Uganda blog. Check
 a box when the article is written and published so we never repeat one
 by accident. File name in `content/blog/` is noted once written.
 

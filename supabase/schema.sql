@@ -725,3 +725,567 @@ grant insert on public.facility_ratings to anon, authenticated;
 grant insert on public.newsletter_subscribers to anon, authenticated;
 grant usage on all sequences in schema public to anon, authenticated;
 grant execute on function public.search_random(integer, integer, text, text, text, text) to anon, authenticated;
+
+-- ----------------------------------------------------------------------------
+-- 9. MOHU merge: accounts, jobs pipeline, community, messaging, updates.
+--    Ported from the legacy PHP/MySQL build (public_html/schema.sql + the
+--    mohu_* runtime tables). No-password identity model: a profile handle
+--    (uuid) is created in one click and stored in the browser, matching this
+--    app's existing anon + rate-limit + moderation idiom (ratings, posts).
+--    Password auth (Supabase Auth) is the planned follow-up; until then anon
+--    insert is open and edits are admin-only except where noted.
+-- ----------------------------------------------------------------------------
+create extension if not exists pgcrypto;
+
+-- 9a. Profiles: lightweight member/employer identity (replaces `users`).
+create table if not exists public.profiles (
+  id uuid primary key default gen_random_uuid(),
+  handle text not null unique,
+  display_name text not null,
+  email text,
+  phone text,
+  role text not null default 'member'
+    check (role in ('member','jobseeker','employer','admin')),
+  organization text,
+  cadre text,
+  location text,
+  bio text,
+  skills text,
+  verified boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- 9b. Organizations (employer pages, verification).
+create table if not exists public.organizations (
+  id bigint generated always as identity primary key,
+  slug text not null unique,
+  name text not null,
+  website text,
+  description text,
+  logo_url text,
+  owner_profile_id uuid references public.profiles (id) on delete set null,
+  verified boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+-- 9c. Jobseeker "open to work" profiles (replaces jobseeker_seeking_profiles).
+create table if not exists public.seeker_profiles (
+  profile_id uuid primary key references public.profiles (id) on delete cascade,
+  seeking_title text,
+  availability text,
+  desired_roles text,
+  desired_locations text,
+  employment_preference text,
+  skills text,
+  expected_salary text,
+  public_summary text,
+  show_email boolean not null default false,
+  show_phone boolean not null default false,
+  cv_visibility text not null default 'private'
+    check (cv_visibility in ('private','employers','public')),
+  active boolean not null default true,
+  updated_at timestamptz not null default now()
+);
+
+-- 9d. Job alerts (email digests for new listings).
+create table if not exists public.job_alerts (
+  id bigint generated always as identity primary key,
+  email text not null,
+  keyword text,
+  category text,
+  cadre text,
+  location text,
+  frequency text not null default 'daily' check (frequency in ('daily','weekly')),
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+-- 9e. Applications to a listing (replaces `applications`; targets posts).
+create table if not exists public.applications (
+  id bigint generated always as identity primary key,
+  post_id bigint not null references public.posts (id) on delete cascade,
+  applicant_name text not null,
+  applicant_email text not null,
+  applicant_phone text,
+  cover_note text,
+  cv_url text,
+  status text not null default 'submitted'
+    check (status in ('submitted','reviewing','shortlisted','rejected','hired')),
+  created_at timestamptz not null default now(),
+  unique (post_id, applicant_email)
+);
+create index if not exists applications_post on public.applications (post_id);
+create index if not exists applications_status on public.applications (status);
+
+-- 9f. Saved listings (replaces saved_opportunities).
+create table if not exists public.saved_listings (
+  profile_id uuid not null references public.profiles (id) on delete cascade,
+  post_id bigint not null references public.posts (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (profile_id, post_id)
+);
+
+-- 9g. Community feed (replaces mohu_community_posts + comments + likes).
+create table if not exists public.community_posts (
+  id bigint generated always as identity primary key,
+  profile_id uuid references public.profiles (id) on delete set null,
+  author_name text not null,
+  body text not null,
+  visibility text not null default 'public'
+    check (visibility in ('public','followers','following','network')),
+  status text not null default 'published'
+    check (status in ('published','hidden','deleted')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists community_posts_feed on public.community_posts (status, created_at desc);
+create index if not exists community_posts_author on public.community_posts (profile_id, created_at desc);
+
+create table if not exists public.community_comments (
+  id bigint generated always as identity primary key,
+  post_id bigint not null references public.community_posts (id) on delete cascade,
+  profile_id uuid references public.profiles (id) on delete set null,
+  author_name text not null,
+  body text not null,
+  status text not null default 'published'
+    check (status in ('published','hidden','deleted')),
+  created_at timestamptz not null default now()
+);
+create index if not exists community_comments_post on public.community_comments (post_id, created_at);
+
+create table if not exists public.community_likes (
+  post_id bigint not null references public.community_posts (id) on delete cascade,
+  profile_id uuid not null references public.profiles (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (post_id, profile_id)
+);
+
+-- 9h. Follows (replaces mohu_user_follows).
+create table if not exists public.follows (
+  follower_profile_id uuid not null references public.profiles (id) on delete cascade,
+  followed_profile_id uuid not null references public.profiles (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (follower_profile_id, followed_profile_id),
+  check (follower_profile_id <> followed_profile_id)
+);
+
+-- 9i. Connection requests to people / practitioners / facilities / orgs
+--     (replaces mohu_connection_requests + mohu_request_messages).
+create table if not exists public.connection_requests (
+  id bigint generated always as identity primary key,
+  sender_profile_id uuid references public.profiles (id) on delete set null,
+  sender_name text not null,
+  recipient_profile_id uuid references public.profiles (id) on delete set null,
+  target_type text not null default 'member'
+    check (target_type in ('member','practitioner','facility','organization')),
+  target_id bigint,
+  request_type text not null default 'other'
+    check (request_type in ('message','appointment_service','consultation_enquiry','referral','other')),
+  subject text not null,
+  details text not null,
+  status text not null default 'pending'
+    check (status in ('pending','accepted','in_progress','completed','declined','cancelled')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists connection_requests_sender on public.connection_requests (sender_profile_id, created_at desc);
+create index if not exists connection_requests_recipient on public.connection_requests (recipient_profile_id, status, created_at desc);
+
+create table if not exists public.request_messages (
+  id bigint generated always as identity primary key,
+  request_id bigint not null references public.connection_requests (id) on delete cascade,
+  sender_profile_id uuid references public.profiles (id) on delete set null,
+  sender_name text not null,
+  body text not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists request_messages_request on public.request_messages (request_id, created_at);
+
+-- 9j. Direct messages (replaces mohu_direct_threads + mohu_direct_messages).
+create table if not exists public.dm_threads (
+  id bigint generated always as identity primary key,
+  participant_a uuid not null references public.profiles (id) on delete cascade,
+  participant_b uuid not null references public.profiles (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (participant_a, participant_b),
+  check (participant_a <> participant_b)
+);
+
+create table if not exists public.dm_messages (
+  id bigint generated always as identity primary key,
+  thread_id bigint not null references public.dm_threads (id) on delete cascade,
+  sender_profile_id uuid references public.profiles (id) on delete set null,
+  sender_name text not null,
+  body text not null,
+  read_at timestamptz,
+  created_at timestamptz not null default now()
+);
+create index if not exists dm_messages_thread on public.dm_messages (thread_id, id);
+
+-- 9k. Health information updates (replaces mohu_health_updates + likes +
+--     comments). Admin/verified posts surface first.
+create table if not exists public.health_updates (
+  id bigint generated always as identity primary key,
+  profile_id uuid references public.profiles (id) on delete set null,
+  author_name text not null,
+  title text not null,
+  body text not null,
+  source_url text,
+  status text not null default 'published' check (status in ('published','hidden')),
+  is_admin boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create index if not exists health_updates_feed on public.health_updates (status, created_at desc);
+
+create table if not exists public.health_update_likes (
+  update_id bigint not null references public.health_updates (id) on delete cascade,
+  profile_id uuid not null references public.profiles (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (update_id, profile_id)
+);
+
+create table if not exists public.health_update_comments (
+  id bigint generated always as identity primary key,
+  update_id bigint not null references public.health_updates (id) on delete cascade,
+  profile_id uuid references public.profiles (id) on delete set null,
+  author_name text not null,
+  body text not null,
+  status text not null default 'published' check (status in ('published','hidden')),
+  created_at timestamptz not null default now()
+);
+create index if not exists health_update_comments_update on public.health_update_comments (update_id, created_at);
+
+-- 9l. Broadcasts / announcements (replaces mohu_broadcasts + reads).
+create table if not exists public.broadcasts (
+  id bigint generated always as identity primary key,
+  title text not null,
+  message text not null,
+  audience text not null default 'all'
+    check (audience in ('all','member','jobseeker','employer')),
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.broadcast_reads (
+  broadcast_id bigint not null references public.broadcasts (id) on delete cascade,
+  profile_id uuid not null references public.profiles (id) on delete cascade,
+  read_at timestamptz not null default now(),
+  primary key (broadcast_id, profile_id)
+);
+
+-- 9m. Platform feedback + helpfulness votes (replaces mohu_feedback).
+create table if not exists public.platform_feedback (
+  id bigint generated always as identity primary key,
+  profile_id uuid references public.profiles (id) on delete set null,
+  author_name text not null,
+  rating smallint not null check (rating between 1 and 5),
+  feedback_text text not null,
+  status text not null default 'approved' check (status in ('approved','hidden')),
+  created_at timestamptz not null default now()
+);
+create index if not exists platform_feedback_feed on public.platform_feedback (status, created_at desc);
+
+create table if not exists public.feedback_votes (
+  feedback_id bigint not null references public.platform_feedback (id) on delete cascade,
+  profile_id uuid not null references public.profiles (id) on delete cascade,
+  vote smallint not null check (vote in (-1, 1)),
+  created_at timestamptz not null default now(),
+  primary key (feedback_id, profile_id)
+);
+
+-- 9n. Support inbox (replaces mohu_contact_messages + mohu_problem_reports).
+create table if not exists public.contact_messages (
+  id bigint generated always as identity primary key,
+  name text not null,
+  email text not null,
+  subject text not null,
+  message text not null,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.problem_reports (
+  id bigint generated always as identity primary key,
+  profile_id uuid references public.profiles (id) on delete set null,
+  reporter_name text not null,
+  reporter_email text,
+  subject text not null,
+  details text not null,
+  page_url text,
+  status text not null default 'open'
+    check (status in ('open','in_progress','resolved')),
+  created_at timestamptz not null default now()
+);
+create index if not exists problem_reports_status on public.problem_reports (status, created_at desc);
+
+-- 9o. Notifications (per-profile inbox for application + request updates).
+create table if not exists public.notifications (
+  id bigint generated always as identity primary key,
+  profile_id uuid not null references public.profiles (id) on delete cascade,
+  type text not null,
+  title text not null,
+  body text,
+  link text,
+  is_read boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create index if not exists notifications_profile on public.notifications (profile_id, is_read, created_at desc);
+
+-- ----------------------------------------------------------------------------
+-- 9p. RLS: public reads of published/approved/active rows; anyone may insert
+--     (rate-limited in the API routes, moderated by admin); deletes only for
+--     toggle tables (likes/follows/saved/reads) so unlike/unfollow/unsave work.
+-- ----------------------------------------------------------------------------
+alter table public.profiles enable row level security;
+alter table public.organizations enable row level security;
+alter table public.seeker_profiles enable row level security;
+alter table public.job_alerts enable row level security;
+alter table public.applications enable row level security;
+alter table public.saved_listings enable row level security;
+alter table public.community_posts enable row level security;
+alter table public.community_comments enable row level security;
+alter table public.community_likes enable row level security;
+alter table public.follows enable row level security;
+alter table public.connection_requests enable row level security;
+alter table public.request_messages enable row level security;
+alter table public.dm_threads enable row level security;
+alter table public.dm_messages enable row level security;
+alter table public.health_updates enable row level security;
+alter table public.health_update_likes enable row level security;
+alter table public.health_update_comments enable row level security;
+alter table public.broadcasts enable row level security;
+alter table public.broadcast_reads enable row level security;
+alter table public.platform_feedback enable row level security;
+alter table public.feedback_votes enable row level security;
+alter table public.contact_messages enable row level security;
+alter table public.problem_reports enable row level security;
+alter table public.notifications enable row level security;
+
+-- Public read policies.
+drop policy if exists "profiles are publicly readable" on public.profiles;
+create policy "profiles are publicly readable" on public.profiles for select using (true);
+
+drop policy if exists "organizations are publicly readable" on public.organizations;
+create policy "organizations are publicly readable" on public.organizations for select using (true);
+
+drop policy if exists "active seeker profiles are publicly readable" on public.seeker_profiles;
+create policy "active seeker profiles are publicly readable" on public.seeker_profiles for select using (active = true);
+
+drop policy if exists "published community posts are publicly readable" on public.community_posts;
+create policy "published community posts are publicly readable" on public.community_posts for select using (status = 'published');
+
+drop policy if exists "published community comments are publicly readable" on public.community_comments;
+create policy "published community comments are publicly readable" on public.community_comments for select using (status = 'published');
+
+drop policy if exists "community likes are publicly readable" on public.community_likes;
+create policy "community likes are publicly readable" on public.community_likes for select using (true);
+
+drop policy if exists "follows are publicly readable" on public.follows;
+create policy "follows are publicly readable" on public.follows for select using (true);
+
+drop policy if exists "published health updates are publicly readable" on public.health_updates;
+create policy "published health updates are publicly readable" on public.health_updates for select using (status = 'published');
+
+drop policy if exists "health update likes are publicly readable" on public.health_update_likes;
+create policy "health update likes are publicly readable" on public.health_update_likes for select using (true);
+
+drop policy if exists "published health update comments are publicly readable" on public.health_update_comments;
+create policy "published health update comments are publicly readable" on public.health_update_comments for select using (status = 'published');
+
+drop policy if exists "active broadcasts are publicly readable" on public.broadcasts;
+create policy "active broadcasts are publicly readable" on public.broadcasts for select using (is_active = true);
+
+drop policy if exists "approved feedback is publicly readable" on public.platform_feedback;
+create policy "approved feedback is publicly readable" on public.platform_feedback for select using (status = 'approved');
+
+drop policy if exists "feedback votes are publicly readable" on public.feedback_votes;
+create policy "feedback votes are publicly readable" on public.feedback_votes for select using (true);
+
+-- Anyone may insert (API routes validate + rate-limit; admin moderates).
+drop policy if exists "anyone can create a profile" on public.profiles;
+create policy "anyone can create a profile" on public.profiles for insert with check (true);
+drop policy if exists "anyone can register an organization" on public.organizations;
+create policy "anyone can register an organization" on public.organizations for insert with check (true);
+drop policy if exists "anyone can create a seeker profile" on public.seeker_profiles;
+create policy "anyone can create a seeker profile" on public.seeker_profiles for insert with check (true);
+drop policy if exists "anyone can create a job alert" on public.job_alerts;
+create policy "anyone can create a job alert" on public.job_alerts for insert with check (true);
+drop policy if exists "anyone can apply to a listing" on public.applications;
+create policy "anyone can apply to a listing" on public.applications for insert with check (true);
+drop policy if exists "anyone can save a listing" on public.saved_listings;
+create policy "anyone can save a listing" on public.saved_listings for insert with check (true);
+drop policy if exists "anyone can post to the community" on public.community_posts;
+create policy "anyone can post to the community" on public.community_posts for insert with check (status = 'published');
+drop policy if exists "anyone can comment" on public.community_comments;
+create policy "anyone can comment" on public.community_comments for insert with check (status = 'published');
+drop policy if exists "anyone can like" on public.community_likes;
+create policy "anyone can like" on public.community_likes for insert with check (true);
+drop policy if exists "anyone can follow" on public.follows;
+create policy "anyone can follow" on public.follows for insert with check (true);
+drop policy if exists "anyone can send a connection request" on public.connection_requests;
+create policy "anyone can send a connection request" on public.connection_requests for insert with check (status = 'pending');
+drop policy if exists "anyone can message a request" on public.request_messages;
+create policy "anyone can message a request" on public.request_messages for insert with check (true);
+drop policy if exists "anyone can open a dm thread" on public.dm_threads;
+create policy "anyone can open a dm thread" on public.dm_threads for insert with check (true);
+drop policy if exists "anyone can send a dm" on public.dm_messages;
+create policy "anyone can send a dm" on public.dm_messages for insert with check (true);
+drop policy if exists "anyone can post a health update" on public.health_updates;
+create policy "anyone can post a health update" on public.health_updates for insert with check (status = 'published' and is_admin = false);
+drop policy if exists "anyone can like a health update" on public.health_update_likes;
+create policy "anyone can like a health update" on public.health_update_likes for insert with check (true);
+drop policy if exists "anyone can comment on a health update" on public.health_update_comments;
+create policy "anyone can comment on a health update" on public.health_update_comments for insert with check (status = 'published');
+drop policy if exists "anyone can mark a broadcast read" on public.broadcast_reads;
+create policy "anyone can mark a broadcast read" on public.broadcast_reads for insert with check (true);
+drop policy if exists "anyone can leave feedback" on public.platform_feedback;
+create policy "anyone can leave feedback" on public.platform_feedback for insert with check (status = 'approved');
+drop policy if exists "anyone can vote on feedback" on public.feedback_votes;
+create policy "anyone can vote on feedback" on public.feedback_votes for insert with check (true);
+drop policy if exists "anyone can contact support" on public.contact_messages;
+create policy "anyone can contact support" on public.contact_messages for insert with check (true);
+drop policy if exists "anyone can report a problem" on public.problem_reports;
+create policy "anyone can report a problem" on public.problem_reports for insert with check (status = 'open');
+
+-- Toggle deletes (unlike / unfollow / unsave / unlike-update).
+drop policy if exists "anyone can unlike" on public.community_likes;
+create policy "anyone can unlike" on public.community_likes for delete using (true);
+drop policy if exists "anyone can unfollow" on public.follows;
+create policy "anyone can unfollow" on public.follows for delete using (true);
+drop policy if exists "anyone can unsave" on public.saved_listings;
+create policy "anyone can unsave" on public.saved_listings for delete using (true);
+drop policy if exists "anyone can remove a health update like" on public.health_update_likes;
+create policy "anyone can remove a health update like" on public.health_update_likes for delete using (true);
+drop policy if exists "anyone can remove a job alert" on public.job_alerts;
+create policy "anyone can remove a job alert" on public.job_alerts for delete using (true);
+
+-- Seeker profiles are updatable by anyone pre-auth (revisit with Supabase Auth).
+drop policy if exists "anyone can update a seeker profile" on public.seeker_profiles;
+create policy "anyone can update a seeker profile" on public.seeker_profiles for update using (true) with check (true);
+
+-- Grants for the anon/authenticated roles used by the publishable key.
+grant select on public.profiles, public.organizations, public.seeker_profiles,  public.community_posts, public.community_comments, public.community_likes,
+  public.follows, public.health_updates, public.health_update_likes,
+  public.health_update_comments, public.broadcasts, public.platform_feedback,
+  public.feedback_votes to anon, authenticated;
+grant insert on public.profiles, public.organizations, public.seeker_profiles,
+  public.job_alerts, public.applications, public.saved_listings,
+  public.community_posts, public.community_comments, public.community_likes,
+  public.follows, public.connection_requests, public.request_messages,
+  public.dm_threads, public.dm_messages, public.health_updates,
+  public.health_update_likes, public.health_update_comments,
+  public.broadcast_reads, public.platform_feedback, public.feedback_votes,
+  public.contact_messages, public.problem_reports to anon, authenticated;
+grant delete on public.community_likes, public.follows, public.saved_listings,
+  public.health_update_likes, public.job_alerts to anon, authenticated;
+grant update on public.seeker_profiles to anon, authenticated;
+
+-- ----------------------------------------------------------------------------
+-- 10. Hiring workspace: applicant dashboard, document vault, employer pipeline.
+-- ----------------------------------------------------------------------------
+
+-- Who submitted the listing (handle uuid). Lets employers self-serve their
+-- own applicants at /employers without passwords; older listings without an
+-- owner stay admin-managed.
+alter table public.posts add column if not exists owner_profile_id uuid
+  references public.profiles (id) on delete set null;
+
+-- Which handle applied (nullable so guest applications keep working).
+alter table public.applications add column if not exists profile_id uuid
+  references public.profiles (id) on delete set null;
+create index if not exists applications_profile on public.applications (profile_id);
+
+-- Which vault document was attached to the application.
+alter table public.applications add column if not exists document_id bigint;
+
+-- Document vault: CVs, certificates, licences. Files live in the private
+-- `applicant-docs` storage bucket; this table is the index. Reads/writes go
+-- through /api/documents (service role verifies profile_id), so no public
+-- RLS data policies beyond authenticated reads of one's own rows via the API.
+create table if not exists public.documents (
+  id bigint generated always as identity primary key,
+  profile_id uuid not null references public.profiles (id) on delete cascade,
+  label text not null,
+  kind text not null default 'cv'
+    check (kind in ('cv','certificate','licence','transcript','other')),
+  storage_path text not null,
+  mime_type text,
+  size_bytes integer not null default 0,
+  created_at timestamptz not null default now()
+);
+create index if not exists documents_profile on public.documents (profile_id, created_at desc);
+
+alter table public.applications enable row level security;
+alter table public.documents enable row level security;
+alter table public.notifications enable row level security;
+
+-- Applications and vault rows are NOT publicly readable (they contain emails
+-- and private files). Reads happen server-side in /api/applications and
+-- /api/documents via the service role, filtered by profile_id — so no anon
+-- select policy here; RLS denies by default. Writes stay anon-insert
+-- (rate-limited in the API, moderated by admin/employer).
+
+-- Private bucket for vault files. No public storage policies: all access is
+-- mediated by /api/documents with short-lived signed URLs.
+insert into storage.buckets (id, name, public)
+values ('applicant-docs', 'applicant-docs', false)
+on conflict (id) do nothing;
+
+grant select on public.documents to anon, authenticated;
+grant select on public.applications to anon, authenticated;
+
+-- ----------------------------------------------------------------------------
+-- 11. Supabase Auth (email + password): verified-user RLS on private tables.
+--     profiles.id doubles as the auth user id for logged-in members; legacy
+--     one-click handles keep working until migrated via /api/profiles/migrate.
+-- ----------------------------------------------------------------------------
+
+-- Applicants can read their own applications when logged in.
+drop policy if exists "users can read their own applications" on public.applications;
+create policy "users can read their own applications"
+  on public.applications for select
+  to authenticated
+  using (profile_id = auth.uid());
+
+-- Vault owners have full access to their rows when logged in (the API still
+-- mediates storage bytes via the private bucket + signed URLs).
+drop policy if exists "users can read their own documents" on public.documents;
+create policy "users can read their own documents"
+  on public.documents for select
+  to authenticated
+  using (profile_id = auth.uid());
+
+drop policy if exists "users can add their own documents" on public.documents;
+create policy "users can add their own documents"
+  on public.documents for insert
+  to authenticated
+  with check (profile_id = auth.uid());
+
+drop policy if exists "users can delete their own documents" on public.documents;
+create policy "users can delete their own documents"
+  on public.documents for delete
+  to authenticated
+  using (profile_id = auth.uid());
+
+-- Private vault bucket: owners read/write only their own folder
+-- (<user-id>/...), enforced by storage RLS for logged-in users.
+drop policy if exists "owners can read their vault files" on storage.objects;
+create policy "owners can read their vault files"
+  on storage.objects for select
+  to authenticated
+  using (bucket_id = 'applicant-docs' and auth.uid()::text = (storage.foldername(name))[1]);
+
+drop policy if exists "owners can upload vault files" on storage.objects;
+create policy "owners can upload vault files"
+  on storage.objects for insert
+  to authenticated
+  with check (bucket_id = 'applicant-docs' and auth.uid()::text = (storage.foldername(name))[1]);
+
+drop policy if exists "owners can delete their vault files" on storage.objects;
+create policy "owners can delete their vault files"
+  on storage.objects for delete
+  to authenticated
+  using (bucket_id = 'applicant-docs' and auth.uid()::text = (storage.foldername(name))[1]);
+
+grant insert, delete on public.documents to authenticated;

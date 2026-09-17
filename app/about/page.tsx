@@ -15,7 +15,7 @@ const FOUNDER_WHATSAPP_LINK = "https://wa.me/256751360385";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Rate My Musawo was built by Dr. Farouk Jjingo, a Ugandan doctor. Verified practitioners, patient ratings, health jobs and facilities across Uganda.",
+    "Medical Opportunities Hub Uganda was built by Dr. Farouk Jjingo, a Ugandan doctor. Verified practitioners, patient ratings, health jobs and facilities across Uganda.",
   alternates: { canonical: "/about" },
 };
 
@@ -23,13 +23,13 @@ const personJsonLd = {
   "@context": "https://schema.org",
   "@type": "Person",
   name: FOUNDER_NAME,
-  jobTitle: "Founder, Rate My Musawo",
+  jobTitle: "Founder, Medical Opportunities Hub Uganda",
   description:
-    "Ugandan medical doctor building Rate My Musawo: verified practitioner profiles, patient ratings, and health jobs across Uganda.",
+    "Ugandan medical doctor building Medical Opportunities Hub Uganda: verified practitioner profiles, patient ratings, and health jobs across Uganda.",
   image: `${SITE_URL}/founder.jpg`,
   url: FOUNDER_LINKEDIN,
   sameAs: [FOUNDER_LINKEDIN],
-  worksFor: { "@type": "Organization", name: "Rate My Musawo", url: SITE_URL },
+  worksFor: { "@type": "Organization", name: "Medical Opportunities Hub Uganda", url: SITE_URL },
 };
 
 export default async function AboutPage() {
@@ -53,10 +53,10 @@ export default async function AboutPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
       />
-      <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">About Rate My Musawo</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">About Medical Opportunities Hub Uganda</h1>
       <div className="mt-6 space-y-5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
         <p>
-          <strong>Rate My Musawo</strong> (Luganda for <em>health worker</em>) is the
+          <strong>Medical Opportunities Hub Uganda</strong> (Luganda for <em>health worker</em>) is the
           home for Uganda&apos;s health workers and the patients they serve.
           Patients can verify a practitioner&apos;s licence, read ratings from
           other patients, find hospitals, pharmacies and ambulance services.
@@ -133,7 +133,7 @@ export default async function AboutPage() {
                 Founder · Medical Doctor
               </p>
               <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                Rate My Musawo is a small, growing project I built and still maintain
+                Medical Opportunities Hub Uganda is a small, growing project I built and still maintain
                 myself, alongside my clinical work. I started it so that any
                 patient in Uganda can check who is treating them, and so that
                 good clinicians get found. And it works the other way too:
@@ -179,7 +179,7 @@ export default async function AboutPage() {
               LinkedIn
             </a>
             <a
-              href={`mailto:${DEVELOPER_EMAIL}?subject=${encodeURIComponent("Feedback about Rate My Musawo")}`}
+              href={`mailto:${DEVELOPER_EMAIL}?subject=${encodeURIComponent("Feedback about Medical Opportunities Hub Uganda")}`}
               style={{ animationDelay: "0.6s" }}
               className="contact-shake inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:border-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
             >
@@ -202,7 +202,7 @@ export default async function AboutPage() {
 
         <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Support the project</h2>
         <p>
-          Rate My Musawo is free for patients and has no ads. It is kept alive by
+          Medical Opportunities Hub Uganda is free for patients and has no ads. It is kept alive by
           claimed-profile fees from practitioners, plus contributions from
           readers who chip in.
           If the site helped you verify a doctor, find a job, or reach a
@@ -215,7 +215,7 @@ export default async function AboutPage() {
         </p>
         <div className="flex flex-wrap gap-3">
           <a
-            href={`mailto:${DEVELOPER_EMAIL}?subject=${encodeURIComponent("Funding Rate My Musawo")}`}
+            href={`mailto:${DEVELOPER_EMAIL}?subject=${encodeURIComponent("Funding Medical Opportunities Hub Uganda")}`}
             className="cta-bob inline-flex items-center gap-2 rounded-xl bg-amber-400 px-6 py-3 text-sm font-extrabold text-emerald-950 shadow-lg transition hover:bg-amber-300"
           >
             <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2" aria-hidden>
@@ -234,7 +234,7 @@ export default async function AboutPage() {
         <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Disclaimer</h2>
         <p>
           Licensing information is shown exactly as published by the portal and may
-          lag the regulator&apos;s records. Rate My Musawo is not affiliated with any
+          lag the regulator&apos;s records. Medical Opportunities Hub Uganda is not affiliated with any
           council or regulator. Always verify directly with the relevant
           council or the official portal for matters that matter (e.g. emergencies,
           legal or credentialing purposes).
@@ -245,7 +245,7 @@ export default async function AboutPage() {
 
       {/* Sticky fund CTA: floats at the bottom while reading this page only. */}
       <a
-        href={`mailto:${DEVELOPER_EMAIL}?subject=${encodeURIComponent("Funding Rate My Musawo")}`}
+        href={`mailto:${DEVELOPER_EMAIL}?subject=${encodeURIComponent("Funding Medical Opportunities Hub Uganda")}`}
         className="fixed bottom-4 left-1/2 z-40 inline-flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-amber-400 px-6 py-3 text-sm font-extrabold text-emerald-950 shadow-2xl transition hover:bg-amber-300"
       >
         <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.4" aria-hidden>

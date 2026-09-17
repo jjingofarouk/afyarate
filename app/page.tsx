@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 
 const FAQS = [
   {
-    q: "Is Rate My Musawo free to use?",
+    q: "Is Medical Opportunities Hub Uganda free to use?",
     a: "Yes. Searching the registry, browsing jobs and opportunities, and reading facility and practitioner pages is completely free.",
   },
   {

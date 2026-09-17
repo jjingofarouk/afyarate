@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { createBrowserClient } from "@/lib/supabase/client";
+import { getProfileId } from "@/lib/handle";
 import { POST_TYPES, POST_TYPE_LABELS } from "@/lib/types";
 
 const inputClass =
@@ -77,7 +78,9 @@ export default function NewPostPage() {
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, image_url: imageUrl }),
+        // Owner handle (if the poster has one): unlocks applicant management
+        // for this listing at /employers once published.
+        body: JSON.stringify({ ...form, image_url: imageUrl, ownerProfileId: getProfileId() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Something went wrong submitting the listing.");

@@ -222,6 +222,31 @@ export default async function Footer() {
                   Post a listing
                 </Link>
               </li>
+              <li>
+                <Link href="/seeking" className={linkClass}>
+                  Jobseekers
+                </Link>
+              </li>
+              <li>
+                <Link href="/alerts" className={linkClass}>
+                  Job alerts
+                </Link>
+              </li>
+              <li>
+                <Link href="/saved" className={linkClass}>
+                  Saved listings
+                </Link>
+              </li>
+              <li>
+                <Link href="/applications" className={linkClass}>
+                  My applications
+                </Link>
+              </li>
+              <li>
+                <Link href="/employers" className={linkClass}>
+                  Employer workspace
+                </Link>
+              </li>
             </ul>
           </nav>
 
@@ -291,7 +316,7 @@ export default async function Footer() {
         {/* Fund strip: visible on every page of the site. */}
         <div className="mt-10 flex flex-col items-center justify-between gap-3 rounded-2xl border border-amber-400/25 bg-amber-400/5 px-6 py-4 text-center sm:flex-row sm:text-left">
           <p className="text-sm text-slate-300">
-            <span className="font-semibold text-white">Rate My Musawo is free and has no ads.</span>{" "}
+            <span className="font-semibold text-white">Medical Opportunities Hub Uganda is free and has no ads.</span>{" "}
             Reader support keeps the registry fresh.
           </p>
           <a

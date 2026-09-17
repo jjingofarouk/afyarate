@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { POST_TYPES, POST_TYPE_LABELS } from "@/lib/types";
+import { POST_TYPE_LABELS, type PostType } from "@/lib/types";
 
 const itemClass =
   "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-emerald-400";
+
+const FEATURED_TYPES: PostType[] = ["job", "internship", "scholarship", "grant"];
 
 export default function DesktopNav() {
   const [open, setOpen] = useState(false);
@@ -49,7 +51,7 @@ export default function DesktopNav() {
                 All listings
               </Link>
               <div className="mx-2 my-1 border-t border-slate-100 dark:border-slate-800" />
-              {POST_TYPES.map((t) => (
+              {FEATURED_TYPES.map((t) => (
                 <Link
                   key={t}
                   href={`/${POST_TYPE_LABELS[t].plural.toLowerCase()}`}
@@ -77,6 +79,15 @@ export default function DesktopNav() {
       </Link>
       <Link href="/ambulances" className="rounded-lg px-1 py-1 transition hover:text-emerald-700 dark:hover:text-emerald-400">
         Ambulances
+      </Link>
+      <Link href="/community" className="rounded-lg px-1 py-1 transition hover:text-emerald-700 dark:hover:text-emerald-400">
+        Community
+      </Link>
+      <Link href="/seeking" className="rounded-lg px-1 py-1 transition hover:text-emerald-700 dark:hover:text-emerald-400">
+        Jobseekers
+      </Link>
+      <Link href="/employers" className="rounded-lg px-1 py-1 transition hover:text-emerald-700 dark:hover:text-emerald-400">
+        Employers
       </Link>
       <Link href="/stats/uganda" className="rounded-lg px-1 py-1 transition hover:text-emerald-700 dark:hover:text-emerald-400">
         Stats
