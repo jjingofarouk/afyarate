@@ -341,7 +341,7 @@ export default async function Footer() {
             Reader support keeps the registry fresh.
           </p>
           <a
-            href="mailto:ratemusawo@gmail.com?subject=Funding%20Medical%20Opportunities%20Hub%20Uganda"
+            href="mailto:jobsopportunityug@gmail.com?subject=Funding%20Medical%20Opportunities%20Hub%20Uganda"
             className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-amber-400 px-5 py-2.5 text-sm font-extrabold text-emerald-950 transition hover:bg-amber-300"
           >
             Fund this project!

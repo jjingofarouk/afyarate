@@ -115,7 +115,10 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
         <AuthProvider>
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-navy-900 dark:bg-navy-950/90">
+        {/* z-40 so the search dropdown inside it clears every piece of page
+            content (nothing in main goes above z-10) while still sitting below
+            the z-50 modals and the mobile nav panel. */}
+        <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-navy-900 dark:bg-navy-950/90">
           <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
             <Link
               href="/"

@@ -245,6 +245,56 @@ export async function getTopRatedPractitioners(limit = 8): Promise<Practitioner[
   return attachClaimedPhotos(((data ?? []) as Row[]).map(mapPractitioner));
 }
 
+/** The three regulator councils a Ugandan health worker is registered with, in
+ *  the order the home page shows them: medical & dental, nursing & midwifery,
+ *  then allied health. */
+const HOME_COUNCIL_PATTERNS = [
+  "%Medical & Dental%",
+  "%Nurses & Midwives%",
+  "%Allied Health%",
+];
+
+/** One practitioner for a single council, photo-first because the home card is
+ *  photo-led, then by name so the pick is stable between requests.
+ *
+ *  The second tier matters for real data: every one of the 47k Nurses &
+ *  Midwives records currently has licence_status "Inactive" (their published
+ *  expiry dates are stale) while registration_status is "Active", so without
+ *  it that council would contribute no card at all. The fallback still leads
+ *  with a photo (the card is photo-led) and then takes the most recent expiry,
+ *  and the card shows the council's real status rather than hiding it. */
+async function oneFeaturedPerCouncil(pattern: string): Promise<Practitioner[]> {
+  const supabase = createServerClient();
+  const tiers = [
+    { column: "licence_status", byExpiry: false },
+    { column: "registration_status", byExpiry: true },
+  ];
+  for (const tier of tiers) {
+    let qb = supabase
+      .from("practitioners_overview")
+      .select("*")
+      .ilike("council", pattern)
+      .eq(tier.column, "Active");
+    qb = qb.order("image_url", { ascending: true, nullsFirst: false });
+    if (tier.byExpiry) {
+      qb = qb.order("license_expiry_date", { ascending: false, nullsFirst: false });
+    }
+    const { data, error } = await qb.order("name", { ascending: true }).limit(1);
+    if (!error && data && data.length > 0) {
+      return ((data ?? []) as Row[]).map(mapPractitioner);
+    }
+  }
+  return [];
+}
+
+/** Three practitioners for the home page's registry section, one per regulator
+ *  council, so the row shows the breadth of the register instead of three of a
+ *  kind. */
+export async function getFeaturedPractitionersByCouncil(): Promise<Practitioner[]> {
+  const slots = await Promise.all(HOME_COUNCIL_PATTERNS.map(oneFeaturedPerCouncil));
+  return attachClaimedPhotos(slots.flat());
+}
+
 export interface FeaturedProfile {
   practitioner: Practitioner;
   details: ProfileDetails | null;

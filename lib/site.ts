@@ -16,6 +16,6 @@ export const SUPPORT_EMAIL_LINK = "/contact";
 // the home page emergency (ambulance) and recruiter (hiring) sections.
 export const DISPATCH_PHONE_DISPLAY = "+256 751 360385";
 export const DISPATCH_PHONE_LINK = "tel:+256751360385";
-export const HIRING_EMAIL = "ratemusawo@gmail.com";
+export const HIRING_EMAIL = "jobsopportunityug@gmail.com";
 export const HIRING_EMAIL_LINK = `mailto:${HIRING_EMAIL}?subject=${encodeURIComponent("Hiring health workers via Medical Opportunities Hub Uganda")}`;
 export const NEWSLETTER_AUDIENCE_SIZE = "50,000+";

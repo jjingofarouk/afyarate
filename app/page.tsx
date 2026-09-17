@@ -168,7 +168,7 @@ export default async function HomePage({
         <HomeRatings />
       </Suspense>
       <Suspense fallback={<PlainFallback />}>
-        <HomeRegistry q={q} />
+        <HomeRegistry />
       </Suspense>
       <Suspense fallback={<SkyFallback />}>
         <HomeFacilities />

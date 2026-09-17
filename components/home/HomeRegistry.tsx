@@ -1,40 +1,28 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import {
+  getFeaturedPractitionersByCouncil,
   getProfessionCounts,
   isDbReady,
-  searchPractitioners,
 } from "@/lib/practitioners";
-import { PAGE_SIZE } from "@/lib/site";
 import { pluralProfession, slugify } from "@/lib/posts";
-import PractitionerSearch from "@/components/PractitionerSearch";
+import PractitionerCard from "@/components/PractitionerCard";
 import HomeSection from "@/components/home/HomeSection";
 import { UsersIcon } from "@/components/home/HomeIcons";
+import { StaggerGrid, StaggerItem } from "@/components/motion/StaggerGrid";
 
 /**
- * Verified registry search block (second half of the "practitioners" shuffle
- * slot). Uses an estimated count, the exact 114k-row count is pure latency
- * here and pagination stays correct.
+ * Verified registry block: three practitioners the register is built from, one
+ * from each regulator council (medical & dental, nursing & midwifery, allied
+ * health), plus the profession counts to browse deeper. One row, like the
+ * top-rated block. The search box and its filters live at /practitioners, and
+ * the hero search already covers looking someone up by name from here.
  */
-export default async function HomeRegistry({
-  q,
-  style,
-}: {
-  q?: string;
-  style?: CSSProperties;
-}) {
+export default async function HomeRegistry({ style }: { style?: CSSProperties }) {
   const ready = await isDbReady().catch(() => false);
-  const [initialResults, practitionerProfessions] = await Promise.all([
-    ready
-      ? searchPractitioners({
-          q,
-          status: "all",
-          sort: "random",
-          page: 1,
-          pageSize: PAGE_SIZE,
-          countMode: "estimated",
-        }).catch(() => undefined)
-      : Promise.resolve(undefined),
+  const [featured, practitionerProfessions] = await Promise.all([
+    ready ? getFeaturedPractitionersByCouncil().catch(() => []) : Promise.resolve([]),
     ready ? getProfessionCounts().catch(() => []) : Promise.resolve([]),
   ]);
 
@@ -45,8 +33,8 @@ export default async function HomeRegistry({
       tone="white"
       eyebrow="Verified registry"
       eyebrowIcon={<UsersIcon />}
-      title="Search licensed practitioners"
-      description="Search every licensed health professional in Uganda by name, profession, council or licence number and check their registration status."
+      title="Licensed practitioners"
+      description="One from each regulator council: doctors and dentists, nurses and midwives, and allied health professionals. Every profile carries the licence status the council published, and the full register can be searched by name, profession or licence number."
       action={{ href: "/practitioners", label: "Browse by profession" }}
     >
       {!ready ? (
@@ -66,9 +54,28 @@ export default async function HomeRegistry({
         </div>
       ) : (
         <>
-          <PractitionerSearch initialQuery={q ?? ""} initialData={initialResults} />
+          {featured.length > 0 && (
+            <>
+              <StaggerGrid className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {featured.map((p) => (
+                  <StaggerItem key={p.id}>
+                    <PractitionerCard p={p} />
+                  </StaggerItem>
+                ))}
+              </StaggerGrid>
+              <div className="mt-6 flex justify-center">
+                <Link
+                  href="/practitioners"
+                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500"
+                >
+                  See more licensed practitioners
+                  <ArrowRight className="size-4" aria-hidden />
+                </Link>
+              </div>
+            </>
+          )}
           {practitionerProfessions.length > 0 && (
-            <div className="mt-2">
+            <div className={featured.length > 0 ? "mt-10" : "mt-2"}>
               <p className="px-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Browse by profession
               </p>

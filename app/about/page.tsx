@@ -6,7 +6,7 @@ import AvatarWithFallback from "@/components/AvatarWithFallback";
 import { SITE_URL } from "@/lib/site";
 
 // Project funding contact.
-const DEVELOPER_EMAIL = "ratemusawo@gmail.com";
+const DEVELOPER_EMAIL = "jobsopportunityug@gmail.com";
 
 // The team. Both are co-founders with equal standing, so the section below
 // renders from this one list in this one order instead of two hand-written
@@ -38,7 +38,7 @@ const COFOUNDERS: CoFounder[] = [
     name: "Dr. Farouk Jjingo",
     role: "Co-founder · Medical Doctor",
     photo: "/farouk.webp",
-    email: "ratemusawo@gmail.com",
+    email: "jobsopportunityug@gmail.com",
     phoneDisplay: "+256 751 360385",
     phoneLink: "tel:+256751360385",
     whatsappLink: "https://wa.me/256751360385",

@@ -82,6 +82,12 @@ export default function SiteSearch({
   const formRef = useRef<HTMLFormElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  // Identical queries (backspacing, or retyping what you just searched) come
+  // straight back from memory, so the dropdown is already open on the next
+  // tick instead of waiting on a round trip.
+  const queryCache = useRef(
+    new Map<string, { items: SearchHit[]; totals: Record<SearchHit["kind"], number> }>(),
+  );
 
   useEffect(() => {
     const query = q.trim();
@@ -93,6 +99,15 @@ export default function SiteSearch({
       setOpen(false);
       return;
     }
+    const cached = queryCache.current.get(query);
+    if (cached) {
+      setItems(cached.items);
+      setTotals(cached.totals);
+      setOpen(true);
+      setActiveIndex(-1);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     debounceRef.current = setTimeout(async () => {
       abortRef.current?.abort();
@@ -102,8 +117,19 @@ export default function SiteSearch({
         const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`, { signal: ctrl.signal });
         if (!res.ok) throw new Error(`Request failed (${res.status})`);
         const data = await res.json();
-        setItems(data.items ?? []);
-        setTotals(data.totals ?? { post: 0, practitioner: 0, facility: 0 });
+        const nextItems = (data.items ?? []) as SearchHit[];
+        const nextTotals = (data.totals ?? {
+          post: 0,
+          practitioner: 0,
+          facility: 0,
+        }) as Record<SearchHit["kind"], number>;
+        if (queryCache.current.size > 40) {
+          const oldest = queryCache.current.keys().next().value;
+          if (oldest !== undefined) queryCache.current.delete(oldest);
+        }
+        queryCache.current.set(query, { items: nextItems, totals: nextTotals });
+        setItems(nextItems);
+        setTotals(nextTotals);
         setOpen(true);
         setActiveIndex(-1);
       } catch (e) {
@@ -114,7 +140,7 @@ export default function SiteSearch({
       } finally {
         setLoading(false);
       }
-    }, 200);
+    }, 80);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
@@ -234,7 +260,7 @@ export default function SiteSearch({
           <div
             id={`${idBase}-listbox`}
             role="listbox"
-            className="absolute left-0 right-0 top-full z-30 mt-2 max-h-[70vh] overflow-auto rounded-2xl border border-slate-200 bg-white py-1.5 shadow-lg dark:border-slate-700 dark:bg-slate-900"
+            className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[70vh] overflow-auto rounded-2xl border border-slate-200 bg-white py-1.5 shadow-lg dark:border-slate-700 dark:bg-slate-900"
           >
             {items.length === 0 ? (
               <div className="px-3.5 py-3 text-sm text-slate-500 dark:text-slate-400">
