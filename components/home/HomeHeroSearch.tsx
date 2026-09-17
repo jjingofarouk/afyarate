@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SiteSearch from "@/components/SiteSearch";
 import { getPosts } from "@/lib/posts";
 import { slugify } from "@/lib/practitioner-url";
 
@@ -14,33 +15,78 @@ const CHIPS: { label: string; href: string }[] = [
   { label: "All", href: "/posts" },
 ];
 
-const FIELD =
-  "min-w-0 rounded-xl border-0 bg-transparent px-3 py-2.5 text-slate-900 outline-none placeholder:text-slate-500";
+const SELECT_CLASS =
+  "min-w-0 rounded-xl border-0 bg-transparent px-3 py-2.5 text-slate-900 outline-none sm:w-52";
 
-function Shell({ children }: { children: React.ReactNode }) {
+/**
+ * Hero search. Renders the same SiteSearch component as the header, so the two
+ * behave identically: one live dropdown covering jobs & opportunities,
+ * licensed practitioners and facilities. The only additions here are the type
+ * chips and a location refinement, which is hero-only.
+ *
+ * The location list is deduplicated by city: stored locations are free text and
+ * routinely repeat the same place ("Kampala" and "Kampala, Uganda"), so
+ * counting raw values would offer Kampala three times over.
+ */
+export default async function HomeHeroSearch() {
+  const posts = await getPosts().catch(() => []);
+
+  // Locations are free text, so the same place turns up written several ways
+  // ("Kampala", "Kampala, Uganda", "Mbarara", "Mbarara City, Western Uganda").
+  // Take the leading city, drop a trailing qualifier, and count the merges, or
+  // the picker offers Kampala twice and Mbarara three times.
+  const cityOf = (location: string | null | undefined): string | null => {
+    const first = location?.split(",")[0]?.trim();
+    if (!first) return null;
+    // Only strip qualifiers that really are qualifiers. "Town" is deliberately
+    // not in this list: it would turn "Cape Town" into "Cape".
+    const normalised = first.replace(/\s+(City|Municipality)$/i, "").trim();
+    // Skip junk values: a couple of rows carry a stray symbol instead of a
+    // place, and the country itself is not a city.
+    if (normalised.length < 2 || !/[a-z]/i.test(normalised)) return null;
+    if (slugify(normalised) === "uganda") return null;
+    return normalised;
+  };
+
+  const byCity = new Map<string, number>();
+  for (const p of posts) {
+    const city = cityOf(p.location);
+    if (!city) continue;
+    byCity.set(city, (byCity.get(city) ?? 0) + 1);
+  }
+  const cities = [...byCity.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 12)
+    .map(([city]) => city);
+
   return (
     <div className="mx-auto mt-8 w-full max-w-3xl">
-      <form action="/posts" method="get" className="w-full">
-        <div className="flex flex-col gap-2 rounded-2xl border border-white/20 bg-white/95 p-2 shadow-2xl backdrop-blur sm:flex-row sm:items-center">
-          <label className="sr-only" htmlFor="hero-q">
-            Search opportunities
-          </label>
-          <input
-            id="hero-q"
-            name="q"
-            type="search"
-            placeholder="Search opportunities (nurse, internship, Mbarara…)"
-            className={`${FIELD} flex-1`}
-          />
-          {children}
-          <button
-            type="submit"
-            className="shrink-0 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-500"
-          >
-            Search
-          </button>
-        </div>
-      </form>
+      <SiteSearch
+        variant="hero"
+        placeholder="Search opportunities, doctors, hospitals…"
+        extraControls={
+          <>
+            <label className="sr-only" htmlFor="hero-location">
+              Location
+            </label>
+            <select
+              id="hero-location"
+              name="location"
+              defaultValue=""
+              className={SELECT_CLASS}
+            >
+              <option value="">All locations</option>
+              {/* Slugs, not labels: the listing filter compares slugs and now
+                  also matches the leading city segment. */}
+              {cities.map((city) => (
+                <option key={city} value={slugify(city)}>
+                  {city}
+                </option>
+              ))}
+            </select>
+          </>
+        }
+      />
 
       <div className="mt-4 flex flex-wrap justify-center gap-2">
         {CHIPS.map((c) => (
@@ -59,48 +105,9 @@ function Shell({ children }: { children: React.ReactNode }) {
 
 /** Rendered while the location list resolves, so the hero never waits on it. */
 export function HeroSearchFallback() {
-  return <Shell>{null}</Shell>;
-}
-
-/**
- * Hero search: keyword + location, straight to the listing results, with the
- * busiest boards one tap below. A plain GET form, so it works without
- * JavaScript and ships no client bundle. Mirrors the search in the hero of the
- * original MOHU platform.
- *
- * The location list is the twelve most-used locations across live listings,
- * submitted as slugs: the listing filter splits its value on commas and
- * compares slugs, so a raw "Mbarara, Uganda" would never have matched.
- */
-export default async function HomeHeroSearch() {
-  const posts = await getPosts().catch(() => []);
-  const counts = new Map<string, number>();
-  for (const p of posts) {
-    if (p.location) counts.set(p.location, (counts.get(p.location) ?? 0) + 1);
-  }
-  const locations = [...counts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 12)
-    .map(([label]) => label);
-
   return (
-    <Shell>
-      <label className="sr-only" htmlFor="hero-location">
-        Location
-      </label>
-      <select
-        id="hero-location"
-        name="location"
-        defaultValue=""
-        className={`${FIELD} sm:w-52`}
-      >
-        <option value="">All Uganda</option>
-        {locations.map((l) => (
-          <option key={l} value={slugify(l)}>
-            {l}
-          </option>
-        ))}
-      </select>
-    </Shell>
+    <div className="mx-auto mt-8 w-full max-w-3xl">
+      <SiteSearch variant="hero" placeholder="Search opportunities, doctors, hospitals…" />
+    </div>
   );
 }

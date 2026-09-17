@@ -5,7 +5,7 @@ import Script from "next/script";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import ThemeToggle, { ThemeInitScript } from "@/components/ThemeToggle";
 import MobileNav from "@/components/MobileNav";
-import HeaderSearch from "@/components/HeaderSearch";
+import SiteSearch from "@/components/SiteSearch";
 import Footer from "@/components/Footer";
 import Lightbox from "@/components/Lightbox";
 import NewsletterFab from "@/components/NewsletterFab";
@@ -143,7 +143,7 @@ export default function RootLayout({
               </span>
             </Link>
             <div className="min-w-0 flex-1">
-              <HeaderSearch />
+              <SiteSearch />
             </div>
             <div className="flex items-center gap-1">
               <div className="hidden sm:block">

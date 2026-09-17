@@ -152,7 +152,7 @@ export default function NewsletterFab() {
   return (
     <>
       {/* FAB */}
-      <div className="fixed bottom-5 right-5 z-40 fab-pop">
+      <div className="fixed bottom-5 right-5 z-40 fab-pop" data-floating>
         {/* Ping dot */}
         <span className="pointer-events-none absolute -right-1 -top-1 flex size-3.5">
           <span className="fab-ping absolute inline-flex size-full rounded-full bg-emerald-400" />

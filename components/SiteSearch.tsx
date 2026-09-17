@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Briefcase, Building2, Search, UserRound, type LucideIcon } from "lucide-react";
 import type { SearchHit } from "@/app/api/search/route";
 
 const MIN_CHARS = 2;
@@ -16,35 +17,14 @@ function initials(name: string): string {
     .toUpperCase();
 }
 
-function BriefcaseIcon() {
-  return (
-    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18a47.99 47.99 0 01-12.756 0c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0" />
-    </svg>
-  );
-}
-
-function PersonIcon() {
-  return (
-    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-    </svg>
-  );
-}
-
-function BuildingIcon() {
-  return (
-    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-    </svg>
-  );
-}
-
-const KIND_META = {
-  post: { icon: BriefcaseIcon, avatarClass: "bg-gradient-to-br from-emerald-500 to-teal-600" },
-  practitioner: { icon: PersonIcon, avatarClass: "bg-gradient-to-br from-sky-500 to-blue-600" },
-  facility: { icon: BuildingIcon, avatarClass: "bg-gradient-to-br from-rose-500 to-orange-500" },
-} as const;
+const KIND_META: Record<
+  SearchHit["kind"],
+  { icon: LucideIcon; avatarClass: string }
+> = {
+  post: { icon: Briefcase, avatarClass: "bg-gradient-to-br from-emerald-500 to-teal-600" },
+  practitioner: { icon: UserRound, avatarClass: "bg-gradient-to-br from-sky-500 to-blue-600" },
+  facility: { icon: Building2, avatarClass: "bg-gradient-to-br from-rose-500 to-orange-500" },
+};
 
 const SEE_ALL: Record<SearchHit["kind"], { label: string; href: (q: string) => string }> = {
   post: { label: "jobs & opportunities", href: (q) => `/posts?q=${encodeURIComponent(q)}` },
@@ -52,11 +32,50 @@ const SEE_ALL: Record<SearchHit["kind"], { label: string; href: (q: string) => s
   facility: { label: "facilities", href: (q) => `/facilities?q=${encodeURIComponent(q)}` },
 };
 
-export default function HeaderSearch() {
+const INPUT_CLASS: Record<"header" | "hero", string> = {
+  header:
+    "w-full rounded-full border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/40",
+  // Sits inside a light pill on top of the hero photograph.
+  hero: "w-full rounded-xl border-0 bg-transparent py-2.5 pl-9 pr-3 text-slate-900 outline-none placeholder:text-slate-500",
+};
+
+const ROW_CLASS: Record<"header" | "hero", string> = {
+  header: "relative",
+  hero: "relative flex flex-col gap-2 rounded-2xl border border-white/20 bg-white/95 p-2 shadow-2xl backdrop-blur sm:flex-row sm:items-center",
+};
+
+/**
+ * The one search box used by both the header and the home hero, so the two can
+ * never drift apart in behaviour: same `/api/search` endpoint, same debounce,
+ * same grouped dropdown across jobs & opportunities, licensed practitioners and
+ * facilities, and the same keyboard navigation.
+ *
+ * It is still a plain GET form (`action="/posts"`), so pressing Enter with no
+ * option highlighted works without JavaScript, and no result is a dead end.
+ *
+ * `extraControls` is a slot for filters that only make sense in one place (the
+ * hero's location select). Both instances can appear on the same page, so all
+ * element ids are namespaced by variant.
+ */
+export default function SiteSearch({
+  variant = "header",
+  extraControls,
+  placeholder = "Search jobs, doctors, hospitals…",
+}: {
+  variant?: "header" | "hero";
+  extraControls?: React.ReactNode;
+  placeholder?: string;
+}) {
+  const isHero = variant === "hero";
+  const idBase = isHero ? "hero-search" : "site-search";
   const router = useRouter();
   const [q, setQ] = useState("");
   const [items, setItems] = useState<SearchHit[]>([]);
-  const [totals, setTotals] = useState<Record<SearchHit["kind"], number>>({ post: 0, practitioner: 0, facility: 0 });
+  const [totals, setTotals] = useState<Record<SearchHit["kind"], number>>({
+    post: 0,
+    practitioner: 0,
+    facility: 0,
+  });
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -166,46 +185,54 @@ export default function HeaderSearch() {
       action="/posts"
       method="get"
       role="search"
-      className="min-w-0 flex-1"
+      className={isHero ? "w-full" : "min-w-0 flex-1"}
       onSubmit={() => setOpen(false)}
     >
-      <label htmlFor="site-search" className="sr-only">
+      <label htmlFor={idBase} className="sr-only">
         Search jobs, practitioners and facilities
       </label>
-      <div className="relative">
-        <svg
-          aria-hidden="true"
-          className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" />
-        </svg>
-        <input
-          id="site-search"
-          name="q"
-          type="search"
-          autoComplete="off"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onKeyDown={onKeyDown}
-          onFocus={() => {
-            if (items.length && q.trim().length >= MIN_CHARS) setOpen(true);
-          }}
-          placeholder="Search jobs, doctors, hospitals…"
-          role="combobox"
-          aria-expanded={showDropdown}
-          aria-controls="site-search-listbox"
-          aria-autocomplete="list"
-          aria-activedescendant={activeIndex >= 0 ? `site-search-option-${activeIndex}` : undefined}
-          className="w-full rounded-full border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/40"
-        />
+      <div className={ROW_CLASS[variant]}>
+        <div className="relative min-w-0 flex-1">
+          <Search
+            aria-hidden
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+            strokeWidth={2}
+          />
+          <input
+            id={idBase}
+            name="q"
+            type="search"
+            autoComplete="off"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={onKeyDown}
+            onFocus={() => {
+              if (items.length && q.trim().length >= MIN_CHARS) setOpen(true);
+            }}
+            placeholder={placeholder}
+            role="combobox"
+            aria-expanded={showDropdown}
+            aria-controls={`${idBase}-listbox`}
+            aria-autocomplete="list"
+            aria-activedescendant={activeIndex >= 0 ? `${idBase}-option-${activeIndex}` : undefined}
+            className={INPUT_CLASS[variant]}
+          />
+        </div>
+
+        {extraControls}
+
+        {isHero && (
+          <button
+            type="submit"
+            className="shrink-0 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-500"
+          >
+            Search
+          </button>
+        )}
 
         {showDropdown && (
           <div
-            id="site-search-listbox"
+            id={`${idBase}-listbox`}
             role="listbox"
             className="absolute left-0 right-0 top-full z-30 mt-2 max-h-[70vh] overflow-auto rounded-2xl border border-slate-200 bg-white py-1.5 shadow-lg dark:border-slate-700 dark:bg-slate-900"
           >
@@ -225,7 +252,7 @@ export default function HeaderSearch() {
                         return (
                           <li key={hit.id} role="presentation">
                             <Link
-                              id={`site-search-option-${i}`}
+                              id={`${idBase}-option-${i}`}
                               role="option"
                               aria-selected={activeIndex === i}
                               href={hit.href}
@@ -251,7 +278,7 @@ export default function HeaderSearch() {
                                   {hit.title}
                                 </span>
                                 <span className="flex items-center gap-1 truncate text-xs text-slate-500 dark:text-slate-400">
-                                  <Icon />
+                                  <Icon aria-hidden className="size-3.5 shrink-0" />
                                   {hit.subtitle}
                                 </span>
                               </span>
@@ -266,7 +293,7 @@ export default function HeaderSearch() {
                           return (
                             <li role="presentation">
                               <Link
-                                id={`site-search-option-${i}`}
+                                id={`${idBase}-option-${i}`}
                                 role="option"
                                 aria-selected={activeIndex === i}
                                 href={SEE_ALL[g.kind].href(q.trim())}
@@ -279,7 +306,7 @@ export default function HeaderSearch() {
                                     : "hover:bg-slate-50 dark:hover:bg-slate-800/60"
                                 }`}
                               >
-                                See all {totals[g.kind].toLocaleString()} {SEE_ALL[g.kind].label}
+                                See all {totals[g.kind].toLocaleString()} {SEE_ALL[g.kind].label} →
                               </Link>
                             </li>
                           );

@@ -239,7 +239,23 @@ export async function getPosts(opts: PostSearchOptions = {}): Promise<Post[]> {
   const profSlugs = slugSet(profession);
   if (profSlugs) posts = posts.filter((p) => !!p.profession && profSlugs.has(slugify(p.profession)));
   const locSlugs = slugSet(location);
-  if (locSlugs) posts = posts.filter((p) => !!p.location && locSlugs.has(slugify(p.location)));
+  if (locSlugs) {
+    posts = posts.filter((p) => {
+      if (!p.location) return false;
+      const full = slugify(p.location);
+      // Locations are free text and usually carry a region ("Kampala, Uganda",
+      // "Mbarara City, Western Uganda", "Kakiri, Wakiso District, Uganda"), so
+      // match the leading city as well as the whole string.
+      const city = slugify(p.location.split(",")[0] ?? "");
+      for (const needle of locSlugs) {
+        if (full === needle || city === needle) return true;
+        // A trailing qualifier must not split one place in two: asking for
+        // "mbarara" should find "Mbarara City" listings too.
+        if (city.startsWith(`${needle}-`)) return true;
+      }
+      return false;
+    });
+  }
   if (organization) posts = posts.filter((p) => slugMatches(organization, p.organization));
   if (tag) {
     const needle = tag.toLowerCase();

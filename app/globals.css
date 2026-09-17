@@ -67,6 +67,14 @@ textarea::placeholder {
   font-size: 1.125rem; /* 18px */
 }
 
+/* While the mobile drawer is open, hide widgets that are pinned to the
+   viewport (newsletter pill, job-alert nudge). They sit below the drawer in
+   z-order but still paint over the menu on narrow screens. The flag is set on
+   <html> by components/MobileNav.tsx. */
+html[data-nav-open="true"] [data-floating] {
+  display: none;
+}
+
 /* Newsletter FAB animations */
 @keyframes fab-wiggle {
   0%   { transform: rotate(0deg) scale(1); }

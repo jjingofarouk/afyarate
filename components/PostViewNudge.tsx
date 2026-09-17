@@ -74,6 +74,7 @@ export default function PostViewNudge({
       {/* Compact teaser, bottom-right chip */}
       {!open && (
         <div
+          data-floating
           className="fixed bottom-20 right-4 z-40 w-[min(300px,calc(100vw-2rem))] rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900"
           style={{ animation: "fab-pop 0.35s ease-out both" }}
         >
