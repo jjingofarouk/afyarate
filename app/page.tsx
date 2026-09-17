@@ -118,7 +118,7 @@ export default async function HomePage({
       {/* Hero, full-bleed photo, edge to edge, with text overlaid */}
       <FadeIn>
         <section className="relative flex min-h-[420px] items-center overflow-hidden sm:min-h-[480px] lg:min-h-[600px]">
-          {/* The founder's brand pair: the same Kampala-and-lake view at
+          {/* The brand pair: the same Kampala-and-lake view at
               sunrise (light mode) and dusk (dark mode), so the hero matches the
               theme instead of fighting it. */}
           <MotionImg

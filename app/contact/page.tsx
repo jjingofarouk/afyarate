@@ -18,7 +18,7 @@ export default async function ContactPage({
 
   return (
     <>
-      {/* Full-bleed brand band using the founder's artwork. */}
+      {/* Full-bleed brand band using the team's artwork. */}
       <section className="relative flex min-h-[240px] items-end overflow-hidden sm:min-h-[300px] lg:min-h-[340px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img

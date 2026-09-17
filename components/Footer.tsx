@@ -255,7 +255,7 @@ export default async function Footer() {
             <ul className={`mt-4 ${colClass}`}>
               <li>
                 <Link href="/about" className={linkClass}>
-                  About &amp; founder
+                  About us
                 </Link>
               </li>
               <li>

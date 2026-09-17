@@ -5,49 +5,69 @@ import { getStats } from "@/lib/practitioners";
 import AvatarWithFallback from "@/components/AvatarWithFallback";
 import { SITE_URL } from "@/lib/site";
 
-// Contact paths for the founder section.
+// Project funding contact.
 const DEVELOPER_EMAIL = "ratemusawo@gmail.com";
-const FOUNDER_NAME = "Dr. Farouk Jjingo";
-const FOUNDER_LINKEDIN = "https://www.linkedin.com/in/farouk-jjingo-0341b01a5/";
-const FOUNDER_PHONE_DISPLAY = "+256 751 360385";
-const FOUNDER_PHONE_LINK = "tel:+256751360385";
-const FOUNDER_WHATSAPP_LINK = "https://wa.me/256751360385";
-// Co-founder: details to confirm — full name, title, photo (/ashraf.jpg in
-// public/), and contact links. Initials avatar renders until the photo lands.
-const COFOUNDER_NAME = "Ashraf";
-const COFOUNDER_TITLE = "Co-founder";
-const COFOUNDER_BIO =
-  "Ashraf co-leads Medical Opportunities Hub Uganda. He built and ran the original MOHU jobs and community platform at medicalopportunities.ug — the employer network, jobseeker community and health-worker outreach that this merged platform is built on. He leads partnerships, employer relations and community growth.";
+
+// The team. Both are co-founders with equal standing, so the section below
+// renders from this one list in this one order instead of two hand-written
+// cards — that is what keeps them genuinely at parity. Ashraf's name leads.
+// Contact details are the ones already published by the platform.
+interface CoFounder {
+  name: string;
+  role: string;
+  bio: string;
+  photo: string;
+  email: string;
+  phoneDisplay: string;
+  phoneLink: string;
+  whatsappLink?: string;
+  linkedin?: string;
+}
+
+const COFOUNDERS: CoFounder[] = [
+  {
+    name: "Dr. Kasagga Ashraf",
+    role: "Co-founder · Medical Doctor",
+    photo: "/ashraf.webp",
+    email: "jobsopportunityug@gmail.com",
+    phoneDisplay: "+256 791 884070",
+    phoneLink: "tel:+256791884070",
+    bio: "Ashraf built and ran the original Medical Opportunities Hub platform: the employer network, the jobseeker community and the health-worker outreach this site grew out of. He leads partnerships, employer relations and community growth, and keeps the listings and alerts reaching the right people.",
+  },
+  {
+    name: "Dr. Farouk Jjingo",
+    role: "Co-founder · Medical Doctor",
+    photo: "/farouk.webp",
+    email: "ratemusawo@gmail.com",
+    phoneDisplay: "+256 751 360385",
+    phoneLink: "tel:+256751360385",
+    whatsappLink: "https://wa.me/256751360385",
+    linkedin: "https://www.linkedin.com/in/farouk-jjingo-0341b01a5/",
+    bio: "Farouk builds and maintains the registry side: the verified licensing data, patient ratings, and the hospital and pharmacy directory. He started that work so any patient in Uganda can check who is treating them and so good clinicians get found, and keeps it running alongside his clinical work.",
+  },
+];
 
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Medical Opportunities Hub Uganda was built by Dr. Farouk Jjingo, a Ugandan doctor. Verified practitioners, patient ratings, health jobs and facilities across Uganda.",
+    "Medical Opportunities Hub Uganda was built by two Ugandan doctors, Dr. Kasagga Ashraf and Dr. Farouk Jjingo. Verified practitioners, patient ratings, health jobs and facilities across Uganda.",
   alternates: { canonical: "/about" },
 };
 
+// Built from the same list as the page, so search engines see the same team,
+// in the same order, with the same job titles.
 const personJsonLd = {
   "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Person",
-      name: FOUNDER_NAME,
-      jobTitle: "Founder, Medical Opportunities Hub Uganda",
-      description:
-        "Ugandan medical doctor building Medical Opportunities Hub Uganda: verified practitioner profiles, patient ratings, and health jobs across Uganda.",
-      image: `${SITE_URL}/founder.jpg`,
-      url: FOUNDER_LINKEDIN,
-      sameAs: [FOUNDER_LINKEDIN],
-      worksFor: { "@type": "Organization", name: "Medical Opportunities Hub Uganda", url: SITE_URL },
-    },
-    {
-      "@type": "Person",
-      name: COFOUNDER_NAME,
-      jobTitle: `${COFOUNDER_TITLE}, Medical Opportunities Hub Uganda`,
-      description: COFOUNDER_BIO,
-      worksFor: { "@type": "Organization", name: "Medical Opportunities Hub Uganda", url: SITE_URL },
-    },
-  ],
+  "@graph": COFOUNDERS.map((c) => ({
+    "@type": "Person",
+    name: c.name,
+    jobTitle: "Co-founder, Medical Opportunities Hub Uganda",
+    description: c.bio,
+    image: `${SITE_URL}${c.photo}`,
+    email: c.email,
+    ...(c.linkedin ? { url: c.linkedin, sameAs: [c.linkedin] } : {}),
+    worksFor: { "@type": "Organization", name: "Medical Opportunities Hub Uganda", url: SITE_URL },
+  })),
 };
 
 export default async function AboutPage() {
@@ -67,7 +87,7 @@ export default async function AboutPage() {
     : [];
   return (
     <>
-      {/* Full-bleed brand band using the founder's artwork. */}
+      {/* Full-bleed brand band using the team's artwork. */}
       <section className="relative flex min-h-[240px] items-end overflow-hidden sm:min-h-[300px] lg:min-h-[340px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -153,111 +173,86 @@ export default async function AboutPage() {
 
         <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Who built this</h2>
         <div className="space-y-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
-            <div className="size-24 shrink-0 overflow-hidden rounded-full bg-slate-100 ring-4 ring-emerald-100 dark:bg-slate-800 dark:ring-emerald-900/50">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/founder.jpg"
-                alt="Dr. Farouk Jjingo"
-                loading="lazy"
-                className="size-full object-cover object-top"
-              />
+          {COFOUNDERS.map((c) => (
+            <div
+              key={c.name}
+              className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+            >
+              <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
+                <div className="grid size-24 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 text-3xl font-black text-emerald-700 ring-4 ring-emerald-100 dark:bg-emerald-900/50 dark:text-emerald-300 dark:ring-emerald-900/50">
+                  <AvatarWithFallback src={c.photo} alt={c.name} letter={c.name.slice(0, 1)} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-base font-bold text-slate-900 dark:text-slate-50">
+                    {c.name}
+                  </p>
+                  <p className="mt-0.5 text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                    {c.role}
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                    {c.bio}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5 flex flex-wrap justify-center gap-2 sm:justify-start">
+                <a
+                  href={c.phoneLink}
+                  className="contact-shake inline-flex items-center gap-1.5 rounded-full bg-amber-400 px-4 py-2 text-sm font-bold text-emerald-950 transition hover:bg-amber-300"
+                >
+                  <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                  </svg>
+                  {c.phoneDisplay}
+                </a>
+                {c.whatsappLink && (
+                  <a
+                    href={c.whatsappLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="contact-shake inline-flex items-center gap-1.5 rounded-full bg-[#25D366] px-4 py-2 text-sm font-bold text-white transition hover:brightness-95"
+                  >
+                    <svg className="size-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                      <path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.89 1.22 3.09.15.2 2.1 3.2 5.1 4.49.71.31 1.27.49 1.7.63.72.23 1.37.2 1.88.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.04 21.79h-.01a9.87 9.87 0 01-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 01-1.51-5.26c0-5.45 4.44-9.88 9.9-9.88a9.83 9.83 0 019.88 9.89c0 5.45-4.44 9.88-9.89 9.88m8.42-18.3A11.82 11.82 0 0012.04 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.9 11.9 0 005.68 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41" />
+                    </svg>
+                    WhatsApp
+                  </a>
+                )}
+                {c.linkedin && (
+                  <a
+                    href={c.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="contact-shake inline-flex items-center gap-1.5 rounded-full bg-[#0077B5]/10 px-4 py-2 text-sm font-bold text-[#0077B5] transition hover:bg-[#0077B5] hover:text-white"
+                  >
+                    <svg className="size-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                      <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 110-4.12 2.06 2.06 0 010 4.12zM7.12 20.45H3.56V9h3.56v11.45z" />
+                    </svg>
+                    LinkedIn
+                  </a>
+                )}
+                <a
+                  href={`mailto:${c.email}?subject=${encodeURIComponent(
+                    "About Medical Opportunities Hub Uganda",
+                  )}`}
+                  className="contact-shake inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:border-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+                >
+                  <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  Email
+                </a>
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-base font-bold text-slate-900 dark:text-slate-50">
-                {FOUNDER_NAME}
-              </p>
-              <p className="mt-0.5 text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
-                Founder · Medical Doctor
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                Medical Opportunities Hub Uganda is a small, growing project I built and still maintain
-                myself, alongside my clinical work. I started it so that any
-                patient in Uganda can check who is treating them, and so that
-                good clinicians get found. And it works the other way too:
-                health workers can find jobs, scholarships and grants to grow
-                their careers, while claiming their profiles to attract
-                patients. It is
-                free for patients, and your support keeps it that way.
-              </p>
-            </div>
-          </div>
-          <div className="mt-5 flex flex-wrap justify-center gap-2 sm:justify-start">
-            <a
-              href={FOUNDER_PHONE_LINK}
-              className="contact-shake inline-flex items-center gap-1.5 rounded-full bg-amber-400 px-4 py-2 text-sm font-bold text-emerald-950 transition hover:bg-amber-300"
-            >
-              <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-              </svg>
-              {FOUNDER_PHONE_DISPLAY}
-            </a>
-            <a
-              href={FOUNDER_WHATSAPP_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ animationDelay: "0.2s" }}
-              className="contact-shake inline-flex items-center gap-1.5 rounded-full bg-[#25D366] px-4 py-2 text-sm font-bold text-white transition hover:brightness-95"
-            >
-              <svg className="size-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-                <path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.89 1.22 3.09.15.2 2.1 3.2 5.1 4.49.71.31 1.27.49 1.7.63.72.23 1.37.2 1.88.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.04 21.79h-.01a9.87 9.87 0 01-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 01-1.51-5.26c0-5.45 4.44-9.88 9.9-9.88a9.83 9.83 0 019.88 9.89c0 5.45-4.44 9.88-9.89 9.88m8.42-18.3A11.82 11.82 0 0012.04 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.9 11.9 0 005.68 1.45h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.48-8.41" />
-              </svg>
-              WhatsApp
-            </a>
-            <a
-              href={FOUNDER_LINKEDIN}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ animationDelay: "0.4s" }}
-              className="contact-shake inline-flex items-center gap-1.5 rounded-full bg-[#0077B5]/10 px-4 py-2 text-sm font-bold text-[#0077B5] transition hover:bg-[#0077B5] hover:text-white"
-            >
-              <svg className="size-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-                <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 110-4.12 2.06 2.06 0 010 4.12zM7.12 20.45H3.56V9h3.56v11.45z" />
-              </svg>
-              LinkedIn
-            </a>
-            <a
-              href={`mailto:${DEVELOPER_EMAIL}?subject=${encodeURIComponent("Feedback about Medical Opportunities Hub Uganda")}`}
-              style={{ animationDelay: "0.6s" }}
-              className="contact-shake inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:border-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
-            >
-              <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              Email
-            </a>
-          </div>
-          <p className="mt-4 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-            For anything, from a wrong listing to a question about a claim, a
-            partnership, or just to tell me that the site helped you, reach out on any
-            channel above, or use our{" "}
-            <Link href="/contact" className="text-emerald-700 underline dark:text-emerald-400">
-              contact form
-            </Link>
-            . I read everything myself.
-          </p>
+          ))}
         </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
-            <div className="grid size-24 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 text-3xl font-black text-emerald-700 ring-4 ring-emerald-100 dark:bg-emerald-900/50 dark:text-emerald-300 dark:ring-emerald-900/50">
-              <AvatarWithFallback src="/ashraf.webp" alt={COFOUNDER_NAME} letter={COFOUNDER_NAME.slice(0, 1)} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-base font-bold text-slate-900 dark:text-slate-50">
-                {COFOUNDER_NAME}
-              </p>
-              <p className="mt-0.5 text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
-                {COFOUNDER_TITLE}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                {COFOUNDER_BIO}
-              </p>
-            </div>
-          </div>
-        </div>
-        </div>
+        <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+          For anything, from a wrong listing to a question about a claim, a partnership, or just
+          to tell us the site helped you, reach out on any channel above, or use our{" "}
+          <Link href="/contact" className="text-emerald-700 underline dark:text-emerald-400">
+            contact form
+          </Link>
+          . We read everything ourselves.
+        </p>
 
         <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Support the project</h2>
         <p>
