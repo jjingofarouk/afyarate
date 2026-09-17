@@ -13,7 +13,10 @@
     "import": "node scripts/import_supabase.mjs",
     "curate": "node scripts/curate_listing.mjs",
     "import:facilities": "node scripts/import_facilities.mjs",
-    "scrape": "python3 scripts/scrape.py"
+    "scrape": "python3 scripts/scrape.py",
+    "newsletter:send": "node scripts/send_newsletter.mjs",
+    "alerts:send": "node scripts/send_job_alerts.mjs",
+    "claim:email": "node scripts/send_claim_email.mjs"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.20.2",

@@ -40,14 +40,37 @@ export async function GET(req: NextRequest) {
     if (!Number.isInteger(id) || id <= 0) {
       return NextResponse.json({ error: "Missing id" }, { status: 400 });
     }
+    const me = profileId;
     const { data: row } = await supabase
       .from("documents")
       .select("id, profile_id, storage_path, label")
       .eq("id", id)
       .maybeSingle();
     const r = row as { profile_id: string; storage_path: string; label: string } | null;
-    if (!r || r.profile_id !== profileId) {
+    if (!r) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+    if (r.profile_id !== me) {
+      // Employers may open vault documents attached to applications on
+      // listings they own (mirrors legacy application-file.php gating).
+      const { data: apps } = await supabase
+        .from("applications")
+        .select("post_id")
+        .eq("document_id", id)
+        .limit(20);
+      const postIds = ((apps ?? []) as { post_id: number }[]).map((a) => a.post_id);
+      let allowed = false;
+      if (postIds.length > 0) {
+        const { data: owned } = await supabase
+          .from("posts")
+          .select("id")
+          .eq("owner_profile_id", me)
+          .in("id", postIds);
+        allowed = ((owned ?? []) as unknown[]).length > 0;
+      }
+      if (!allowed) {
+        return NextResponse.json({ error: "Not found" }, { status: 404 });
+      }
     }
     const { data, error } = await supabase.storage
       .from("applicant-docs")

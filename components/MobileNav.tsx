@@ -184,8 +184,18 @@ export default function MobileNav() {
                     </Link>
                   ))}
                 </details>
-
-                <p className={sectionLabelClass}>Workspace</p>
+                <Link href="/career" onClick={close} className={linkClass}>
+                  <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.42A12 12 0 0112 21a12 12 0 01-6.16-10.42L12 14z" />
+                  </svg>
+                  Career resources
+                </Link>
+                <Link href="/insights" onClick={close} className={linkClass}>
+                  <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 18V6m4 12V9m4 9v-6m4 6V8m4 10V4" />
+                  </svg>
+                  Market insights
+                </Link>
 
                 <p className={sectionLabelClass}>People</p>
                 <Link href="/community" onClick={close} className={linkClass}>
@@ -201,6 +211,12 @@ export default function MobileNav() {
                   Jobseekers
                 </Link>
                 <p className={sectionLabelClass}>Workspace</p>
+                <Link href="/account" onClick={close} className={linkClass}>
+                  <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  My account
+                </Link>
                 <Link href="/messages" onClick={close} className={linkClass}>
                   <svg className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h8m-8 4h5M21 12a9 9 0 01-13.2 7.9L3 21l1.1-4.8A9 9 0 1121 12z" />
@@ -244,6 +260,12 @@ export default function MobileNav() {
                 </Link>
                 <Link href="/privacy" onClick={close} className={linkClass}>
                   Privacy Policy
+                </Link>
+                <Link href="/disclaimer" onClick={close} className={linkClass}>
+                  Disclaimer
+                </Link>
+                <Link href="/help/guides" onClick={close} className={linkClass}>
+                  Guides
                 </Link>
               </nav>
             </motion.div>

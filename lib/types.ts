@@ -270,6 +270,7 @@ export interface CommunityPost {
   id: number;
   profileId: string | null;
   authorName: string;
+  authorHandle: string | null;
   body: string;
   visibility: CommunityVisibility;
   likeCount: number;

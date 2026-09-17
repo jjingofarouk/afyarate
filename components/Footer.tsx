@@ -259,8 +259,28 @@ export default async function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/career" className={linkClass}>
+                  Career resources
+                </Link>
+              </li>
+              <li>
+                <Link href="/insights" className={linkClass}>
+                  Market insights
+                </Link>
+              </li>
+              <li>
+                <Link href="/account" className={linkClass}>
+                  My account
+                </Link>
+              </li>
+              <li>
                 <Link href="/help" className={linkClass}>
                   Help center
+                </Link>
+              </li>
+              <li>
+                <Link href="/help/guides" className={linkClass}>
+                  Guides
                 </Link>
               </li>
               <li>
@@ -357,6 +377,9 @@ export default async function Footer() {
               </Link>
               <Link href="/privacy" className="text-xs text-slate-500 transition hover:text-emerald-400">
                 Privacy
+              </Link>
+              <Link href="/disclaimer" className="text-xs text-slate-500 transition hover:text-emerald-400">
+                Disclaimer
               </Link>
               <Link href="/admin" className="text-xs text-slate-500 transition hover:text-emerald-400">
                 Admin

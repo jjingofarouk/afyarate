@@ -55,12 +55,19 @@ export async function getCommunityPosts(
     commentCount.set(id, (commentCount.get(id) ?? 0) + 1);
   }
   const liked = new Set(((myLikes?.data ?? []) as Row[]).map((l) => Number(l.post_id)));
+  const handles = new Map<string, string>();
+  const authorIds = [...new Set(posts.map((p) => str(p.profile_id)).filter((v): v is string => !!v))];
+  if (authorIds.length > 0) {
+    const { data: profs } = await supabase.from("profiles").select("id, handle").in("id", authorIds);
+    for (const pr of ((profs ?? []) as Row[])) handles.set(String(pr.id), String(pr.handle ?? ""));
+  }
   return posts.map((p) => {
     const id = Number(p.id);
     return {
       id,
       profileId: str(p.profile_id),
       authorName: String(p.author_name ?? "Member"),
+      authorHandle: str(p.profile_id) ? (handles.get(str(p.profile_id) as string) ?? null) : null,
       body: String(p.body ?? ""),
       visibility: (p.visibility as CommunityPost["visibility"]) ?? "public",
       likeCount: likeCount.get(id) ?? 0,

@@ -13,6 +13,8 @@ import {
 } from "@/lib/best-pages";
 import { getChunkCounts, SITEMAP_CHUNK } from "@/lib/sitemap-chunks";
 import { HELP_ARTICLES } from "@/data/help";
+import { HELP_GUIDES } from "@/data/help-guides";
+import { CAREER_GUIDES } from "@/data/career";
 import { POST_TYPE_LABELS, POST_TYPES } from "@/lib/types";
 import { SITE_URL } from "@/lib/site";
 
@@ -141,12 +143,26 @@ export async function GET(
       { url: `${SITE_URL}/contact`, priority: 0.3, freq: "monthly" },
       { url: `${SITE_URL}/terms`, priority: 0.2, freq: "yearly" },
       { url: `${SITE_URL}/privacy`, priority: 0.2, freq: "yearly" },
+      { url: `${SITE_URL}/disclaimer`, priority: 0.2, freq: "yearly" },
       { url: `${SITE_URL}/help`, priority: 0.5, freq: "monthly" },
+      { url: `${SITE_URL}/help/guides`, priority: 0.5, freq: "monthly" },
+      { url: `${SITE_URL}/career`, priority: 0.6, freq: "monthly" },
+      { url: `${SITE_URL}/insights`, priority: 0.7, freq: "weekly" },
       { url: `${SITE_URL}/stats`, priority: 0.6, freq: "weekly" },
       { url: `${SITE_URL}/stats/uganda`, priority: 0.7, freq: "weekly" },
       ...HELP_ARTICLES.map((a) => ({
         url: `${SITE_URL}/help/${a.slug}`,
         priority: 0.4,
+        freq: "monthly",
+      })),
+      ...HELP_GUIDES.map((g) => ({
+        url: `${SITE_URL}/help/guides/${g.slug}`,
+        priority: 0.5,
+        freq: "monthly",
+      })),
+      ...CAREER_GUIDES.map((g) => ({
+        url: `${SITE_URL}/career/${g.slug}`,
+        priority: 0.5,
         freq: "monthly",
       })),
       ...best,

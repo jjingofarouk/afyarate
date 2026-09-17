@@ -63,13 +63,111 @@ function Saved() {
   );
 }
 
+interface SavedSearch {
+  id: number;
+  name: string;
+  type: string | null;
+  q: string | null;
+  profession: string | null;
+  location: string | null;
+}
+
+function Searches() {
+  const { profileId } = useHandle();
+  const { authFetch } = useAuth();
+  const [items, setItems] = useState<SavedSearch[]>([]);
+  const [name, setName] = useState("");
+  const [q, setQ] = useState("");
+
+  const load = useCallback(async () => {
+    if (!profileId) return;
+    const res = await authFetch(`/api/saved-searches?profileId=${profileId}`);
+    if (res.ok) {
+      const data = (await res.json()) as { items: SavedSearch[] };
+      setItems(data.items);
+    }
+  }, [profileId, authFetch]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const save = async () => {
+    if (!name.trim() || !profileId) return;
+    const res = await authFetch("/api/saved-searches", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ profileId, name: name.trim(), q: q.trim() || null }),
+    });
+    if (res.ok) {
+      setName("");
+      setQ("");
+      void load();
+    }
+  };
+
+  const remove = async (id: number) => {
+    if (!profileId) return;
+    const res = await authFetch(`/api/saved-searches?profileId=${profileId}&id=${id}`, { method: "DELETE" });
+    if (res.ok) void load();
+  };
+
+  const runHref = (s: SavedSearch): string => {
+    const sp = new URLSearchParams();
+    if (s.type) sp.set("type", s.type);
+    if (s.q) sp.set("q", s.q);
+    if (s.profession) sp.set("profession", s.profession);
+    if (s.location) sp.set("location", s.location);
+    const qs = sp.toString();
+    return `/posts${qs ? `?${qs}` : ""}`;
+  };
+
+  return (
+    <div className="mt-10">
+      <h2 className="font-semibold">Saved searches</h2>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Name e.g. Nurse jobs in Gulu"
+          maxLength={120}
+          className="min-w-0 flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+        />
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Keywords (optional)"
+          maxLength={150}
+          className="min-w-0 flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+        />
+        <button type="button" disabled={!name.trim()} onClick={() => void save()} className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+          Save search
+        </button>
+      </div>
+      {items.length > 0 && (
+        <ul className="mt-3 space-y-2">
+          {items.map((s) => (
+            <li key={s.id} className="flex items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm dark:border-slate-800 dark:bg-slate-900">
+              <Link href={runHref(s)} className="font-semibold hover:underline">{s.name}</Link>
+              <button type="button" onClick={() => void remove(s.id)} className="font-semibold text-slate-400 hover:text-red-600">
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export default function SavedPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="text-3xl font-bold tracking-tight">Saved listings</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Saved</h1>
       <div className="mt-6">
         <HandleGate prompt="Pick a display name to see your saved listings">
           <Saved />
+          <Searches />
         </HandleGate>
       </div>
     </div>

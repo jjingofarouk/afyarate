@@ -8,6 +8,8 @@ import ShareButtons from "@/components/ShareButtons";
 import PostViewNudge from "@/components/PostViewNudge";
 import ApplyForm from "@/components/ApplyForm";
 import SaveButton from "@/components/SaveButton";
+import ViewTracker from "@/components/ViewTracker";
+import ListingReportButton from "@/components/ListingReportButton";
 import { POST_TYPE_LABELS, type Post, type PostType } from "@/lib/types";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { jobPostingSchema } from "@/lib/jobPosting";
@@ -484,6 +486,7 @@ export default async function PostDetailPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 lg:max-w-4xl">
+      <ViewTracker slug={post.slug} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -675,10 +678,13 @@ export default async function PostDetailPage({
         </section>
       )}
 
-      <p className="mt-6 text-xs text-slate-400 dark:text-slate-500">
-        This listing is provided for information only. {SITE_NAME} does not guarantee
-        its accuracy and is not involved in the recruitment or application process.
-      </p>
+      <div className="mt-6 flex flex-wrap items-center gap-4">
+        <p className="text-xs text-slate-400 dark:text-slate-500">
+          This listing is provided for information only. {SITE_NAME} does not guarantee
+          its accuracy and is not involved in the recruitment or application process.
+        </p>
+        <ListingReportButton postId={post.id} />
+      </div>
 
       <PostViewNudge postType={post.type} profession={post.profession} />
     </div>

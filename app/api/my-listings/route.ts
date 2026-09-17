@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   const pub = createServerClient();
   const { data: posts, error } = await pub
     .from("posts")
-    .select("id, slug, title, organization, status, deadline, created_at")
+    .select("id, slug, title, organization, status, deadline, views, created_at")
     .eq("owner_profile_id", profileId)
     .order("created_at", { ascending: false })
     .limit(100);

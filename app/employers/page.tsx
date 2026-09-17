@@ -12,6 +12,7 @@ interface OwnedListing {
   organization: string;
   status: string;
   deadline: string | null;
+  views: number;
   applicants: { total: number; byStatus: Record<string, number> };
 }
 
@@ -110,6 +111,15 @@ function Pipeline() {
     URL.revokeObjectURL(url);
   };
 
+  const openVaultDoc = async (docId: number) => {
+    if (!profileId) return;
+    const res = await authFetch(`/api/documents?profileId=${profileId}&id=${docId}&download=1`);
+    if (res.ok) {
+      const data = (await res.json()) as { url: string };
+      window.open(data.url, "_blank");
+    }
+  };
+
   const shown = filter === "all" ? applicants : applicants.filter((a) => a.status === filter);
 
   return (
@@ -129,7 +139,10 @@ function Pipeline() {
                 {l.title}
               </Link>
               <p className="text-sm text-slate-500">
-                {l.applicants.total} applicant{l.applicants.total === 1 ? "" : "s"}
+                {l.views ?? 0} views · {l.applicants.total} applicant{l.applicants.total === 1 ? "" : "s"}
+                {(l.views ?? 0) > 0 && l.applicants.total > 0 && (
+                  <> · {Math.round((l.applicants.total / (l.views ?? 1)) * 100)}% apply rate</>
+                )}
                 {Object.entries(l.applicants.byStatus).map(([s, n]) => ` · ${s}: ${n}`).join("")}
               </p>
             </div>
@@ -193,6 +206,15 @@ function Pipeline() {
                           <a href={a.cv_url} target="_blank" rel="noopener noreferrer" className="rounded-lg px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:underline">
                             CV link ↗
                           </a>
+                        )}
+                        {a.document_id && (
+                          <button
+                            type="button"
+                            onClick={() => void openVaultDoc(a.document_id as number)}
+                            className="rounded-lg px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:underline"
+                          >
+                            Vault doc ↗
+                          </button>
                         )}
                       </div>
                     </li>

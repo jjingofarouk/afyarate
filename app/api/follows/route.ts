@@ -52,11 +52,35 @@ export async function DELETE(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const profileId = req.nextUrl.searchParams.get("profileId") ?? "";
+  const sp = req.nextUrl.searchParams;
+  const follower = sp.get("followerProfileId") ?? sp.get("follower") ?? "";
+  const followed = sp.get("followedProfileId") ?? sp.get("followed") ?? "";
+  const supabase = createServerClient();
+  // Am I following them? (single check for buttons)
+  if (UUID_RE.test(follower) && UUID_RE.test(followed)) {
+    const { data } = await supabase
+      .from("follows")
+      .select("follower_profile_id")
+      .eq("follower_profile_id", follower)
+      .eq("followed_profile_id", followed)
+      .maybeSingle();
+    return NextResponse.json({ following: !!data });
+  }
+  // Everyone I follow (one request per feed render).
+  const followingOf = sp.get("followingOf") ?? "";
+  if (UUID_RE.test(followingOf)) {
+    const { data } = await supabase
+      .from("follows")
+      .select("followed_profile_id")
+      .eq("follower_profile_id", followingOf);
+    return NextResponse.json({
+      ids: ((data ?? []) as { followed_profile_id: string }[]).map((r) => r.followed_profile_id),
+    });
+  }
+  const profileId = sp.get("profileId") ?? "";
   if (!UUID_RE.test(profileId)) {
     return NextResponse.json({ error: "Missing profileId" }, { status: 400 });
   }
-  const supabase = createServerClient();
   const [{ count: followers }, { count: following }] = await Promise.all([
     supabase.from("follows").select("*", { count: "exact", head: true }).eq("followed_profile_id", profileId),
     supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_profile_id", profileId),

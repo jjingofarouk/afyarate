@@ -23,6 +23,24 @@ export async function POST(req: NextRequest) {
   const kind = str(b.kind, 20) || "contact";
   const supabase = createServerClient();
 
+  if (kind === "listing") {
+    // Structured report against a specific listing (safety guide flow).
+    const postId = Number(b.postId ?? b.post_id);
+    const reason = str(b.reason, 80);
+    if (!Number.isInteger(postId) || postId <= 0 || !reason) {
+      return NextResponse.json({ error: "Listing and reason are required" }, { status: 400 });
+    }
+    const profileId = str(b.profileId ?? b.profile_id, 40);
+    const { error } = await supabase.from("listing_reports").insert({
+      post_id: postId,
+      reporter_profile_id: UUID_RE.test(profileId) ? profileId : null,
+      reason,
+      details: str(b.details, 2000) || null,
+    });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ message: "Report received, thank you" }, { status: 201 });
+  }
+
   if (kind === "report") {
     const reporterName = str(b.reporterName ?? b.reporter_name ?? b.name, 120);
     const subject = str(b.subject, 180);

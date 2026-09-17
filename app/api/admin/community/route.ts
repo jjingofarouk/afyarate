@@ -9,7 +9,8 @@ function unauthorized() {
 }
 
 // Unified moderation for the MOHU-merge tables (service role, bypasses RLS).
-// GET ?queue=community|applications|reports|broadcasts|organizations
+// GET ?queue=community|applications|reports|broadcasts|organizations|contact
+//            |credentials|listing-reports
 // PATCH { queue, id, action } — hide|delete, status updates, verify, resolve.
 const QUEUES = new Set([
   "community",
@@ -18,6 +19,8 @@ const QUEUES = new Set([
   "broadcasts",
   "organizations",
   "contact",
+  "credentials",
+  "listing-reports",
 ]);
 
 export async function GET(req: NextRequest) {
@@ -68,6 +71,23 @@ export async function GET(req: NextRequest) {
           .select("id, title, message, audience, is_active, created_at")
           .order("created_at", { ascending: false })
           .limit(20);
+        return NextResponse.json({ items: data ?? [] });
+      }
+      case "credentials": {
+        // Reviewer sees the numbers; they are never exposed publicly.
+        const { data } = await admin
+          .from("professional_credentials")
+          .select("id, profile_id, credential_type, credential_name, issuing_body, credential_number, issued_year, status, created_at")
+          .order("created_at", { ascending: false })
+          .limit(30);
+        return NextResponse.json({ items: data ?? [] });
+      }
+      case "listing-reports": {
+        const { data } = await admin
+          .from("listing_reports")
+          .select("id, post_id, reason, details, status, created_at")
+          .order("created_at", { ascending: false })
+          .limit(30);
         return NextResponse.json({ items: data ?? [] });
       }
       default: {
@@ -151,6 +171,40 @@ export async function PATCH(req: NextRequest) {
       if (action === "deactivate") {
         await admin.from("broadcasts").update({ is_active: false }).eq("id", id);
       } else return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+    } else if (queue === "credentials") {
+      if (!["verified", "rejected", "pending"].includes(action)) {
+        return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+      }
+      const { data: cred } = await admin
+        .from("professional_credentials")
+        .select("profile_id, credential_name")
+        .eq("id", id)
+        .maybeSingle();
+      await admin.from("professional_credentials").update({ status: action }).eq("id", id);
+      const cr = cred as { profile_id: string; credential_name: string } | null;
+      if (cr) {
+        if (action === "verified") {
+          // A verified credential earns the reviewed-credentials badge.
+          await admin.from("profiles").update({ verified: true }).eq("id", cr.profile_id);
+        }
+        await admin.from("notifications").insert({
+          profile_id: cr.profile_id,
+          type: "credential_status",
+          title:
+            action === "verified"
+              ? `Your credential “${cr.credential_name}” was verified`
+              : action === "rejected"
+                ? `Your credential “${cr.credential_name}” was not accepted`
+                : `Your credential “${cr.credential_name}” is back under review`,
+          body: null,
+          link: "/account",
+        });
+      }
+    } else if (queue === "listing-reports") {
+      if (!["reviewing", "resolved", "dismissed", "open"].includes(action)) {
+        return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+      }
+      await admin.from("listing_reports").update({ status: action }).eq("id", id);
     } else {
       return NextResponse.json({ error: "Read-only queue" }, { status: 400 });
     }

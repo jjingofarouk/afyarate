@@ -58,6 +58,7 @@ export default function AuthButton({ full }: { full?: boolean }) {
           <div className="absolute right-0 top-full z-30 mt-1 w-52 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg dark:border-slate-700 dark:bg-slate-900">
             <p className="truncate px-3 py-1.5 text-xs text-slate-400">{user.email}</p>
             {[
+              { href: "/account", label: "My account" },
               { href: "/applications", label: "My applications" },
               { href: "/saved", label: "Saved listings" },
               { href: "/employers", label: "Employer workspace" },

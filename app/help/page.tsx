@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import HelpSearch from "@/components/HelpSearch";
 import { SITE_NAME } from "@/lib/site";
 
@@ -20,6 +21,31 @@ export default function HelpPage() {
 
       <div className="mt-8">
         <HelpSearch />
+      </div>
+
+      <div className="mt-10 grid gap-4 sm:grid-cols-2">
+        <Link
+          href="/help/guides"
+          className="group rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-emerald-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-800"
+        >
+          <h2 className="font-semibold text-slate-900 group-hover:text-emerald-700 dark:text-slate-100 dark:group-hover:text-emerald-400">
+            Guides
+          </h2>
+          <p className="mt-1.5 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+            Jobseeker, employer, organization verification and applicant safety guides.
+          </p>
+        </Link>
+        <Link
+          href="/career"
+          className="group rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-emerald-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-800"
+        >
+          <h2 className="font-semibold text-slate-900 group-hover:text-emerald-700 dark:text-slate-100 dark:group-hover:text-emerald-400">
+            Career resources
+          </h2>
+          <p className="mt-1.5 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+            CVs, cover letters, interviews, application strategy and career planning.
+          </p>
+        </Link>
       </div>
     </div>
   );

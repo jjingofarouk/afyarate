@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getPosts } from "@/lib/posts";
 import { getStats } from "@/lib/practitioners";
+import AvatarWithFallback from "@/components/AvatarWithFallback";
 import { SITE_URL } from "@/lib/site";
 
 // Contact paths for the founder section.
@@ -11,6 +12,12 @@ const FOUNDER_LINKEDIN = "https://www.linkedin.com/in/farouk-jjingo-0341b01a5/";
 const FOUNDER_PHONE_DISPLAY = "+256 751 360385";
 const FOUNDER_PHONE_LINK = "tel:+256751360385";
 const FOUNDER_WHATSAPP_LINK = "https://wa.me/256751360385";
+// Co-founder: details to confirm — full name, title, photo (/ashraf.jpg in
+// public/), and contact links. Initials avatar renders until the photo lands.
+const COFOUNDER_NAME = "Ashraf";
+const COFOUNDER_TITLE = "Co-founder";
+const COFOUNDER_BIO =
+  "Ashraf co-leads Medical Opportunities Hub Uganda. He built and ran the original MOHU jobs and community platform at medicalopportunities.ug — the employer network, jobseeker community and health-worker outreach that this merged platform is built on. He leads partnerships, employer relations and community growth.";
 
 export const metadata: Metadata = {
   title: "About",
@@ -21,15 +28,26 @@ export const metadata: Metadata = {
 
 const personJsonLd = {
   "@context": "https://schema.org",
-  "@type": "Person",
-  name: FOUNDER_NAME,
-  jobTitle: "Founder, Medical Opportunities Hub Uganda",
-  description:
-    "Ugandan medical doctor building Medical Opportunities Hub Uganda: verified practitioner profiles, patient ratings, and health jobs across Uganda.",
-  image: `${SITE_URL}/founder.jpg`,
-  url: FOUNDER_LINKEDIN,
-  sameAs: [FOUNDER_LINKEDIN],
-  worksFor: { "@type": "Organization", name: "Medical Opportunities Hub Uganda", url: SITE_URL },
+  "@graph": [
+    {
+      "@type": "Person",
+      name: FOUNDER_NAME,
+      jobTitle: "Founder, Medical Opportunities Hub Uganda",
+      description:
+        "Ugandan medical doctor building Medical Opportunities Hub Uganda: verified practitioner profiles, patient ratings, and health jobs across Uganda.",
+      image: `${SITE_URL}/founder.jpg`,
+      url: FOUNDER_LINKEDIN,
+      sameAs: [FOUNDER_LINKEDIN],
+      worksFor: { "@type": "Organization", name: "Medical Opportunities Hub Uganda", url: SITE_URL },
+    },
+    {
+      "@type": "Person",
+      name: COFOUNDER_NAME,
+      jobTitle: `${COFOUNDER_TITLE}, Medical Opportunities Hub Uganda`,
+      description: COFOUNDER_BIO,
+      worksFor: { "@type": "Organization", name: "Medical Opportunities Hub Uganda", url: SITE_URL },
+    },
+  ],
 };
 
 export default async function AboutPage() {
@@ -114,6 +132,7 @@ export default async function AboutPage() {
         </p>
 
         <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Who built this</h2>
+        <div className="space-y-4">
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
             <div className="size-24 shrink-0 overflow-hidden rounded-full bg-slate-100 ring-4 ring-emerald-100 dark:bg-slate-800 dark:ring-emerald-900/50">
@@ -198,6 +217,27 @@ export default async function AboutPage() {
             </Link>
             . I read everything myself.
           </p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
+            <div className="grid size-24 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 text-3xl font-black text-emerald-700 ring-4 ring-emerald-100 dark:bg-emerald-900/50 dark:text-emerald-300 dark:ring-emerald-900/50">
+              {/* Drop /ashraf.jpg into public/ to show his photo instead. */}
+              <AvatarWithFallback src="/ashraf.jpg" alt={COFOUNDER_NAME} letter={COFOUNDER_NAME.slice(0, 1)} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-base font-bold text-slate-900 dark:text-slate-50">
+                {COFOUNDER_NAME}
+              </p>
+              <p className="mt-0.5 text-xs font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                {COFOUNDER_TITLE}
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                {COFOUNDER_BIO}
+              </p>
+            </div>
+          </div>
+        </div>
         </div>
 
         <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Support the project</h2>

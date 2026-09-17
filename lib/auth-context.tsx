@@ -81,7 +81,21 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     const { data, error } = await sb.auth.signUp({
       email,
       password,
-      options: { data: { display_name: displayName } },
+      options: {
+        data: { display_name: displayName },
+        // Return to THIS environment after the email link is clicked. Without
+        // this, Supabase falls back to the dashboard "Site URL", which is why
+        // production links used to land on localhost.
+        //
+        // Two things must also be true in the Supabase dashboard
+        // (Authentication → URL Configuration):
+        //   1. "Site URL" is the production domain, not localhost.
+        //   2. Every domain you serve from is listed under "Redirect URLs",
+        //      e.g. https://<production-domain>/** — Supabase rejects a
+        //      redirect target that is not allow-listed and silently falls
+        //      back to the Site URL.
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
     if (error) throw new Error(error.message);
     // With "Confirm email" on (Supabase default), there is no session yet.

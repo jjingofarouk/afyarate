@@ -1289,3 +1289,135 @@ create policy "owners can delete their vault files"
   using (bucket_id = 'applicant-docs' and auth.uid()::text = (storage.foldername(name))[1]);
 
 grant insert, delete on public.documents to authenticated;
+
+-- ----------------------------------------------------------------------------
+-- 12. Hiring extras: saved searches (+ expiry runs via API, no table needed).
+-- ----------------------------------------------------------------------------
+
+-- Named listing searches (mirrors legacy saved-searches): "Nurse jobs in
+-- Gulu" saved once, re-run in one tap from /saved.
+create table if not exists public.saved_searches (
+  id bigint generated always as identity primary key,
+  profile_id uuid not null references public.profiles (id) on delete cascade,
+  name text not null,
+  type text,
+  q text,
+  profession text,
+  location text,
+  created_at timestamptz not null default now()
+);
+create index if not exists saved_searches_profile on public.saved_searches (profile_id, created_at desc);
+
+alter table public.saved_searches enable row level security;
+
+-- No anon select (names/queries are private): reads go through
+-- /api/saved-searches via the service role, filtered by profile_id.
+drop policy if exists "anyone can save a search" on public.saved_searches;
+create policy "anyone can save a search"
+  on public.saved_searches for insert with check (true);
+drop policy if exists "anyone can delete a saved search" on public.saved_searches;
+create policy "anyone can delete a saved search"
+  on public.saved_searches for delete using (true);
+
+grant insert, delete on public.saved_searches to anon, authenticated;
+
+-- ----------------------------------------------------------------------------
+-- 13. Account management (mirrors legacy account-management + capabilities +
+--     jobseeker/credentials.php). Primary type stays profiles.role; extra
+--     capabilities are additive and separately switchable.
+-- ----------------------------------------------------------------------------
+
+-- 'active' | 'deactivated' | 'deleted' (validated in /api/account). Kept as a
+-- plain column so the idempotent schema applier needs no DO blocks.
+alter table public.profiles add column if not exists account_status text not null default 'active';
+
+-- Additive capabilities beyond the primary role: a jobseeker can also run an
+-- employer account, a member can opt into healthcare-professional tools, etc.
+create table if not exists public.profile_capabilities (
+  profile_id uuid not null references public.profiles (id) on delete cascade,
+  capability text not null
+    check (capability in ('job_seeking','organization','healthcare_professional')),
+  active boolean not null default true,
+  updated_at timestamptz not null default now(),
+  primary key (profile_id, capability)
+);
+
+alter table public.profile_capabilities enable row level security;
+
+drop policy if exists "anyone can set a capability" on public.profile_capabilities;
+create policy "anyone can set a capability"
+  on public.profile_capabilities for insert with check (true);
+drop policy if exists "anyone can update a capability" on public.profile_capabilities;
+create policy "anyone can update a capability"
+  on public.profile_capabilities for update using (true);
+drop policy if exists "anyone can remove a capability" on public.profile_capabilities;
+create policy "anyone can remove a capability"
+  on public.profile_capabilities for delete using (true);
+
+grant select, insert, update, delete on public.profile_capabilities to anon, authenticated;
+
+-- Professional credentials submitted for review (qualifications, licences).
+-- credential_number is private: never selected by any public endpoint, and the
+-- table has no anon/auth select policy (reads go through /api/credentials).
+create table if not exists public.professional_credentials (
+  id bigint generated always as identity primary key,
+  profile_id uuid not null references public.profiles (id) on delete cascade,
+  credential_type text not null,
+  credential_name text not null,
+  issuing_body text,
+  credential_number text,
+  issued_year int,
+  status text not null default 'pending'
+    check (status in ('pending','verified','rejected')),
+  review_note text,
+  created_at timestamptz not null default now()
+);
+create index if not exists professional_credentials_profile
+  on public.professional_credentials (profile_id, created_at desc);
+
+alter table public.professional_credentials enable row level security;
+
+-- Verified credentials power a badge on the member profile, so the *existence*
+-- of a verified credential is public; numbers stay private in the API layer.
+drop policy if exists "anyone can submit a credential" on public.professional_credentials;
+create policy "anyone can submit a credential"
+  on public.professional_credentials for insert with check (true);
+drop policy if exists "anyone can withdraw a pending credential" on public.professional_credentials;
+create policy "anyone can withdraw a pending credential"
+  on public.professional_credentials for delete using (true);
+
+grant insert, delete on public.professional_credentials to anon, authenticated;
+
+-- Listing reports/suspicious-activity flags raised from the safety guide flow.
+create table if not exists public.listing_reports (
+  id bigint generated always as identity primary key,
+  post_id bigint references public.posts (id) on delete set null,
+  reporter_profile_id uuid references public.profiles (id) on delete set null,
+  reason text not null,
+  details text,
+  status text not null default 'open'
+    check (status in ('open','reviewing','resolved','dismissed')),
+  created_at timestamptz not null default now()
+);
+create index if not exists listing_reports_status on public.listing_reports (status, created_at desc);
+
+alter table public.listing_reports enable row level security;
+
+drop policy if exists "anyone can report a listing" on public.listing_reports;
+create policy "anyone can report a listing"
+  on public.listing_reports for insert with check (true);
+
+grant insert on public.listing_reports to anon, authenticated;
+
+-- ----------------------------------------------------------------------------
+-- 14. Job alert digest bookkeeping. One row per (alert, listing) actually
+--     emailed, so scripts/send_job_alerts.mjs never sends the same listing
+--     twice and can honour daily/weekly frequency without extra state.
+-- ----------------------------------------------------------------------------
+create table if not exists public.job_alert_sends (
+  alert_id bigint not null references public.job_alerts (id) on delete cascade,
+  post_id bigint not null references public.posts (id) on delete cascade,
+  sent_at timestamptz not null default now(),
+  primary key (alert_id, post_id)
+);
+create index if not exists job_alert_sends_alert on public.job_alert_sends (alert_id, sent_at desc);

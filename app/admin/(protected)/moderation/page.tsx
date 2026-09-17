@@ -3,7 +3,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { adminJson } from "@/lib/admin-client";
 
-type Queue = "community" | "applications" | "reports" | "broadcasts" | "organizations" | "contact";
+type Queue =
+  | "community"
+  | "applications"
+  | "reports"
+  | "broadcasts"
+  | "organizations"
+  | "contact"
+  | "credentials"
+  | "listing-reports";
 
 const QUEUES: { id: Queue; label: string }[] = [
   { id: "community", label: "Community" },
@@ -12,6 +20,8 @@ const QUEUES: { id: Queue; label: string }[] = [
   { id: "contact", label: "Inbox" },
   { id: "broadcasts", label: "Broadcasts" },
   { id: "organizations", label: "Organizations" },
+  { id: "credentials", label: "Credentials" },
+  { id: "listing-reports", label: "Listing reports" },
 ];
 
 const ACTIONS: Record<Queue, { id: string; label: string }[]> = {
@@ -36,6 +46,17 @@ const ACTIONS: Record<Queue, { id: string; label: string }[]> = {
   organizations: [
     { id: "verify", label: "Verify" },
     { id: "unverify", label: "Unverify" },
+  ],
+  credentials: [
+    { id: "verified", label: "Verify" },
+    { id: "rejected", label: "Reject" },
+    { id: "pending", label: "Reopen" },
+  ],
+  "listing-reports": [
+    { id: "reviewing", label: "Reviewing" },
+    { id: "resolved", label: "Resolve" },
+    { id: "dismissed", label: "Dismiss" },
+    { id: "open", label: "Reopen" },
   ],
 };
 

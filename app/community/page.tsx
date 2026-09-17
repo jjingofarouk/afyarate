@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import HandleGate, { useHandle } from "@/components/HandleGate";
+import BroadcastsStrip from "@/components/BroadcastsStrip";
+import { useAuth } from "@/lib/auth-context";
 import { getDisplayName, getProfileId } from "@/lib/handle";
 import type { CommunityComment, CommunityPost } from "@/lib/types";
 
@@ -17,7 +19,7 @@ function timeAgo(iso: string): string {
   return d === 1 ? "yesterday" : `${d}d ago`;
 }
 
-function PostCard({ post, onChanged }: { post: CommunityPost; onChanged: () => void }) {
+function PostCard({ post, onChanged, following, onToggleFollow }: { post: CommunityPost; onChanged: () => void; following: boolean; onToggleFollow: (profileId: string, next: boolean) => void }) {
   const { profileId, displayName } = useHandle();
   const [comments, setComments] = useState<CommunityComment[] | null>(null);
   const [draft, setDraft] = useState("");
@@ -74,10 +76,25 @@ function PostCard({ post, onChanged }: { post: CommunityPost; onChanged: () => v
         <span className="grid size-8 place-items-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
           {post.authorName.slice(0, 1).toUpperCase()}
         </span>
-        <div>
-          <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{post.authorName}</p>
+        <div className="min-w-0 flex-1">
+          {post.authorHandle ? (
+            <a href={`/members/${post.authorHandle}`} className="text-sm font-semibold text-slate-900 hover:underline dark:text-slate-100">
+              {post.authorName}
+            </a>
+          ) : (
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{post.authorName}</p>
+          )}
           <p className="text-xs text-slate-400">{timeAgo(post.createdAt)}</p>
         </div>
+        {post.profileId && profileId && post.profileId !== profileId && (
+          <button
+            type="button"
+            onClick={() => onToggleFollow(post.profileId as string, !following)}
+            className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${following ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300" : "bg-emerald-600 text-white"}`}
+          >
+            {following ? "Following" : "Follow"}
+          </button>
+        )}
       </div>
       <p className="mt-2 whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">{post.body}</p>
       <div className="mt-3 flex items-center gap-4 text-sm">
@@ -129,7 +146,9 @@ function PostCard({ post, onChanged }: { post: CommunityPost; onChanged: () => v
 
 function Feed() {
   const { profileId, displayName } = useHandle();
+  const { authFetch } = useAuth();
   const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [body, setBody] = useState("");
   const [posting, setPosting] = useState(false);
@@ -141,12 +160,41 @@ function Feed() {
       const data = (await res.json()) as { items: CommunityPost[] };
       setPosts(data.items);
     }
+    if (pid) {
+      const f = await fetch(`/api/follows?followingOf=${pid}`);
+      if (f.ok) {
+        const data = (await f.json()) as { ids: string[] };
+        setFollowingIds(new Set(data.ids));
+      }
+    }
     setLoading(false);
   }, []);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const toggleFollow = async (targetId: string, next: boolean) => {
+    const pid = getProfileId();
+    if (!pid || pid === targetId) return;
+    const res = next
+      ? await authFetch("/api/follows", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ followerProfileId: pid, followedProfileId: targetId }),
+        })
+      : await authFetch(`/api/follows?followerProfileId=${pid}&followedProfileId=${targetId}`, {
+          method: "DELETE",
+        });
+    if (res.ok) {
+      setFollowingIds((s) => {
+        const c = new Set(s);
+        if (next) c.add(targetId);
+        else c.delete(targetId);
+        return c;
+      });
+    }
+  };
 
   const publish = async () => {
     if (!body.trim()) return;
@@ -196,7 +244,15 @@ function Feed() {
           No posts yet — start the conversation above.
         </p>
       ) : (
-        posts.map((p) => <PostCard key={p.id} post={p} onChanged={() => void load()} />)
+        posts.map((p) => (
+          <PostCard
+            key={p.id}
+            post={p}
+            onChanged={() => void load()}
+            following={!!p.profileId && followingIds.has(p.profileId)}
+            onToggleFollow={(targetId, next) => void toggleFollow(targetId, next)}
+          />
+        ))
       )}
     </div>
   );
@@ -209,7 +265,8 @@ export default function CommunityPage() {
       <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
         Health workers and the public in Uganda — news, questions and shout-outs.
       </p>
-      <div className="mt-6">
+      <div className="mt-6 space-y-4">
+        <BroadcastsStrip />
         <HandleGate prompt="Pick a display name to join the community">
           <Feed />
         </HandleGate>
