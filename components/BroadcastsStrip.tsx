@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import type { Broadcast } from "@/lib/types";
 import { Megaphone, X } from "lucide-react";
 
-// Active announcements strip (mirrors legacy mohu_broadcasts). Renders
+// Active announcements strip (mirrors the legacy broadcasts table). Renders
 // nothing when there are no unread broadcasts.
 export default function BroadcastsStrip() {
   const { authFetch } = useAuth();

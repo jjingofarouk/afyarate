@@ -1,4 +1,4 @@
-# Musawo: Rate Uganda's Health Workers
+# Rate My Musawo: Uganda's Health Workers
 
 A web app where anyone can look up a licensed Ugandan health professional (doctor,
 nurse, pharmacist, allied health professional), see patient ratings, and leave
@@ -61,6 +61,21 @@ npm run dev                # http://localhost:3000
 
 `npm run import` is safe to re-run any time: it rebuilds the registry tables but
 **preserves user ratings**.
+
+### Supabase auth settings
+
+Two settings live in the Supabase dashboard, not in this repo:
+
+- **Authentication → Sign In / Providers → Email → "Confirm email": OFF.**
+  Signup is meant to log people straight in. With it on, Supabase returns no
+  session and `/login` falls back to "check your email for a confirmation link".
+  The client handles both cases (`needsConfirm` in `lib/auth-context.tsx`), so
+  turning it back on for production needs no code change.
+- **Authentication → URL Configuration:** "Site URL" must be the production
+  domain, not localhost, and every domain you serve from must be listed under
+  "Redirect URLs" (e.g. `https://<domain>/**`). Supabase silently falls back to
+  the Site URL for a redirect target that is not allow-listed, which is why
+  confirmation links used to land on localhost.
 
 ## Listings board & admin panel
 

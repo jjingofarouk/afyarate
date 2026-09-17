@@ -69,12 +69,12 @@ export default async function HomeGateways() {
   ];
 
   return (
-    <section aria-label="Explore MOHU" className="relative overflow-hidden">
-      {/* Brand artwork from the official kit, knocked back under a navy wash so
-          the tiles stay readable. */}
+    <section aria-label="Explore Rate My Musawo" className="relative overflow-hidden">
+      {/* Uganda landscape artwork, knocked back under a navy wash so the tiles
+          stay readable. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/hero-mohu.webp"
+        src="/hero-uganda-day.webp"
         alt=""
         aria-hidden
         className="absolute inset-0 size-full object-cover object-center"

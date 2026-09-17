@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     "Find and rate hospitals, clinics and pharmacies across Uganda. Search by name, city or specialty, read patient ratings and leave your own.",
   alternates: { canonical: "/facilities" },
   openGraph: {
-    title: "Rate Uganda's Hospitals & Pharmacies · Medical Opportunities Hub Uganda",
+    title: "Rate Uganda's Hospitals & Pharmacies · Rate My Musawo",
     description:
       "Find and rate hospitals, clinics and pharmacies across Uganda. Search by name, city or specialty.",
     type: "website",

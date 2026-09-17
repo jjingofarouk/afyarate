@@ -3,23 +3,14 @@ import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/site";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: `${SITE_NAME} (MOHU)`,
-    short_name: "MOHU",
+    name: `${SITE_NAME}: Rate Uganda's Health Workers`,
+    short_name: SITE_NAME,
     description: SITE_DESCRIPTION,
     start_url: "/",
     display: "standalone",
-    background_color: "#ffffff",
-    // Brand navy from the official palette.
-    theme_color: "#082f57",
-    icons: [
-      { src: "/brand/mohu-mark-192.png", sizes: "192x192", type: "image/png" },
-      { src: "/brand/mohu-mark-512.png", sizes: "512x512", type: "image/png" },
-      {
-        src: "/brand/mohu-mark-512.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "maskable",
-      },
-    ],
+    background_color: "#f8fafc",
+    // Brand green from the RateMusawo logo (emerald-600).
+    theme_color: "#059669",
+    icons: [{ src: "/logo-mark.png", sizes: "512x512", type: "image/png", purpose: "any" }],
   };
 }

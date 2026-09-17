@@ -8,7 +8,7 @@ function unauthorized() {
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 }
 
-// Unified moderation for the MOHU-merge tables (service role, bypasses RLS).
+// Unified moderation for the merged community tables (service role, bypasses RLS).
 // GET ?queue=community|applications|reports|broadcasts|organizations|contact
 //            |credentials|listing-reports
 // PATCH { queue, id, action } — hide|delete, status updates, verify, resolve.

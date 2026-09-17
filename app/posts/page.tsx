@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     types: { "application/rss+xml": "/posts/feed.xml" },
   },
   openGraph: {
-    title: "Jobs & Opportunities for Health Workers in Uganda · Medical Opportunities Hub Uganda",
+    title: "Jobs & Opportunities for Health Workers in Uganda · Rate My Musawo",
     description:
       "Jobs, internships, scholarships, grants and fellowships for healthcare professionals in Uganda. Updated daily.",
     type: "website",

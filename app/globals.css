@@ -7,11 +7,10 @@
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
     Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 
-  /* MOHU brand palette, taken from the official brand kit
-     (--mohu-navy: #082f57, --mohu-green: #079654). Navy is the structural
-     colour for dark surfaces (header, footer, trust band); emerald stays the
-     action colour, since our emerald-600 (#059669) is already within a
-     hair of the brand green. */
+  /* RateMusawo brand palette: deep teal-green structure with an emerald
+     action colour. Navy is the structural colour for dark surfaces (header,
+     footer, trust band); emerald stays the action colour, since our
+     emerald-600 (#059669) is already within a hair of the brand green. */
   --color-navy-50: #f2f7fb;
   --color-navy-100: #e3edf7;
   --color-navy-200: #c1d8ea;

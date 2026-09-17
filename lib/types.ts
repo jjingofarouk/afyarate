@@ -196,7 +196,7 @@ export interface FacilitySearchResult {
 }
 
 // ---------------------------------------------------------------------------
-// MOHU merge: accounts, jobs pipeline, community, messaging, updates.
+// Merged platform: accounts, jobs pipeline, community, messaging, updates.
 // Identity is a one-click profile handle (uuid, no passwords) until Supabase
 // Auth lands; the handle is stored in localStorage (see lib/handle.ts).
 // ---------------------------------------------------------------------------

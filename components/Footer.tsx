@@ -26,7 +26,7 @@ export default async function Footer() {
 
   return (
     <footer
-      className="relative mt-16 bg-navy-950 text-slate-300"
+      className="dark relative mt-16 bg-navy-950 text-slate-300"
       style={{ colorScheme: "dark" }}
     >
       {/* Signature emerald glow line: the footer stays dark in every theme. */}
@@ -40,7 +40,10 @@ export default async function Footer() {
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(47,116,163,0.18),transparent)]"
       />
-      {/* Job alerts band */}
+      {/* Job alerts band. The `dark` class on <footer> above forces the dark
+          variant for every descendant in BOTH themes, so the shared Newsletter
+          component (white inputs by default) renders dark here instead of
+          light-mode controls on a navy surface. Do not remove it. */}
       <div className="border-b border-white/10">
         <div className="mx-auto max-w-6xl px-4 py-10">
           <Newsletter
@@ -56,16 +59,19 @@ export default async function Footer() {
       <div className="mx-auto max-w-6xl px-4 py-12">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <div>
-            <Link href="/" className="inline-flex" aria-label={`${SITE_NAME} home`}>
-              {/* The white-outline lockup from the brand kit, made for dark
-                  surfaces like this one. */}
+            <Link href="/" className="flex items-center gap-2" aria-label={`${SITE_NAME} home`}>
+              {/* The R mark on its own; the wordmark is live text so it stays
+                  legible instead of shrinking into the artwork. */}
               <Image
-                src="/brand/mohu-logo-dark.webp"
-                alt={SITE_NAME}
-                width={1400}
-                height={420}
-                className="h-12 w-auto"
+                src="/logo-mark.png"
+                alt=""
+                width={512}
+                height={512}
+                className="size-9 shrink-0 object-contain"
               />
+              <span className="text-lg font-semibold tracking-tight text-white">
+                {SITE_NAME}
+              </span>
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-slate-400">
               {SITE_DESCRIPTION}
@@ -337,11 +343,11 @@ export default async function Footer() {
         {/* Fund strip: visible on every page of the site. */}
         <div className="mt-10 flex flex-col items-center justify-between gap-3 rounded-2xl border border-amber-400/25 bg-amber-400/5 px-6 py-4 text-center sm:flex-row sm:text-left">
           <p className="text-sm text-slate-300">
-            <span className="font-semibold text-white">Medical Opportunities Hub Uganda is free and has no ads.</span>{" "}
+            <span className="font-semibold text-white">Rate My Musawo is free and has no ads.</span>{" "}
             Reader support keeps the registry fresh.
           </p>
           <a
-            href="mailto:jobsopportunityug@gmail.com?subject=Funding%20Medical%20Opportunities%20Hub%20Uganda"
+            href="mailto:ratemusawo@gmail.com?subject=Funding%20Rate%20My%20Musawo"
             className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-amber-400 px-5 py-2.5 text-sm font-extrabold text-emerald-950 transition hover:bg-amber-300"
           >
             Fund this project!

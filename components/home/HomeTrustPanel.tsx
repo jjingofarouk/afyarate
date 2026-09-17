@@ -21,7 +21,7 @@ const ITEMS: { Icon: LucideIcon; title: string; blurb: string; href?: string }[]
   {
     Icon: ShieldCheck,
     title: "Applicant safety",
-    blurb: "Never pay money to apply through MOHU.",
+    blurb: "Never pay money to apply through Rate My Musawo.",
     href: "/help/guides/safety",
   },
 ];
@@ -34,7 +34,7 @@ const ITEMS: { Icon: LucideIcon; title: string; blurb: string; href?: string }[]
 export default function HomeTrustPanel() {
   return (
     <section
-      aria-label="Why MOHU"
+      aria-label="Why Rate My Musawo"
       className="border-y border-navy-800 bg-navy-950"
       style={{ colorScheme: "dark" }}
     >

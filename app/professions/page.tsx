@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     "Browse medical and health jobs, internships, scholarships, grants and fellowships in Uganda by profession: doctors, nurses, clinical officers, midwives, lab technicians and more.",
   alternates: { canonical: "/professions" },
   openGraph: {
-    title: "Browse Health Jobs by Profession in Uganda · Medical Opportunities Hub Uganda",
+    title: "Browse Health Jobs by Profession in Uganda · Rate My Musawo",
     description:
       "Find health sector jobs and opportunities in Uganda by profession.",
     type: "website",

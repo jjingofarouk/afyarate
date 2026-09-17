@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     "Search every licensed doctor, nurse, clinical officer, midwife, pharmacist, dentist and allied health professional in Uganda by profession, with patient ratings.",
   alternates: { canonical: "/practitioners" },
   openGraph: {
-    title: "Browse Uganda's Licensed Health Professionals · Medical Opportunities Hub Uganda",
+    title: "Browse Uganda's Licensed Health Professionals · Rate My Musawo",
     description:
       "Find licensed doctors, nurses, clinical officers, pharmacists and allied health professionals in Uganda by profession.",
     type: "website",

@@ -1,5 +1,5 @@
 /**
- * Medical Opportunities Hub Uganda — job alert digest sender.
+ * Rate My Musawo — job alert digest sender.
  * Usage:  node scripts/send_job_alerts.mjs [--dry] [--to email] [--force]
  *
  * Reads active rows from public.job_alerts, matches newly published listings
@@ -116,7 +116,7 @@ function buildEmail(alert, posts) {
   <div style="max-width:600px;margin:0 auto;padding:24px;">
     <div style="background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px;">
       <p style="margin:0;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#059669;">
-        Medical Opportunities Hub Uganda
+        Rate My Musawo
       </p>
       <h1 style="margin:8px 0 0;font-size:20px;color:#0f172a;">
         ${posts.length} new opportunit${posts.length === 1 ? "y" : "ies"} for you
@@ -133,7 +133,7 @@ function buildEmail(alert, posts) {
       </a>
       <p style="margin:20px 0 0;font-size:12px;color:#94a3b8;line-height:1.6;">
         You receive this because you set a ${escapeHtml(alert.frequency)} job alert on
-        Medical Opportunities Hub Uganda. Never pay anyone to secure an opportunity.<br/>
+        Rate My Musawo. Never pay anyone to secure an opportunity.<br/>
         <a href="${SITE}/alerts" style="color:#94a3b8;">Manage or unsubscribe</a>
       </p>
     </div>
@@ -225,7 +225,7 @@ async function main() {
     }
 
     await sendWithRetry({
-      from: `"Medical Opportunities Hub Uganda" <${process.env.GMAIL_USER}>`,
+      from: `"Rate My Musawo" <${process.env.GMAIL_USER}>`,
       to: alert.email,
       subject:
         hits.length === 1

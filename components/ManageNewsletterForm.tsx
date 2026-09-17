@@ -233,7 +233,7 @@ export default function ManageNewsletterForm({
               href="/"
               className="mt-6 inline-block rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
             >
-              Back to Medical Opportunities Hub Uganda
+              Back to Rate My Musawo
             </a>
           </div>
         ) : (
@@ -340,7 +340,7 @@ export default function ManageNewsletterForm({
             <div className="mt-6 rounded-2xl border border-red-100 bg-white p-6 shadow-sm dark:border-red-900/30 dark:bg-slate-900">
               <h2 className="text-sm font-bold text-slate-900 dark:text-slate-50">Unsubscribe</h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                You won't receive any more emails from Medical Opportunities Hub Uganda.
+                You won't receive any more emails from Rate My Musawo.
               </p>
 
               {unsubStatus === "confirm" && (

@@ -1,5 +1,5 @@
 /**
- * Medical Opportunities Hub Uganda, local newsletter sender.
+ * Rate My Musawo, local newsletter sender.
  * Usage:  node scripts/send_newsletter.mjs [--dry] [--to email] [--reset] [--force]
  *
  * Sends ONE featured opportunity per subscriber based on their preferences.
@@ -591,8 +591,8 @@ function buildEmail(sub, post) {
       : regionHit,
   ].filter(Boolean).join(" · ");
   const subject     = holiday
-    ? `${holiday.emoji} Happy ${holiday.name} | ${subjectCore} | Medical Opportunities Hub Uganda`
-    : `${timePeriodLabel()}: ${subjectCore} | Medical Opportunities Hub Uganda`;
+    ? `${holiday.emoji} Happy ${holiday.name} | ${subjectCore} | Rate My Musawo`
+    : `${timePeriodLabel()}: ${subjectCore} | Rate My Musawo`;
 
   // Per-cell border-radius (overflow:hidden is unreliable in email clients)
   const imgRadius   = "border-radius:10px 10px 0 0;";
@@ -614,9 +614,9 @@ function buildEmail(sub, post) {
 
         <!-- Header -->
         <tr><td style="background:#0f4c24;border-radius:12px 12px 0 0;padding:20px 24px;text-align:center;">
-          <img src="${SITE}/logo.png" alt="Medical Opportunities Hub Uganda" width="52" height="52"
+          <img src="${SITE}/logo.png" alt="Rate My Musawo" width="52" height="52"
             style="border-radius:8px;display:block;margin:0 auto 10px;">
-          <p style="margin:0;font-size:21px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Medical Opportunities Hub Uganda</p>
+          <p style="margin:0;font-size:21px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Rate My Musawo</p>
           <p style="margin:3px 0 0;font-size:12px;color:#86efac;letter-spacing:0.2px;">Jobs, grants, scholarships, fellowships, conferences, & more for Uganda's health workers</p>
         </td></tr>
 
@@ -695,7 +695,7 @@ function buildEmail(sub, post) {
         <!-- Footer -->
         <tr><td style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:0 0 12px 12px;padding:20px 24px;text-align:center;">
           <p style="margin:0 0 6px;font-size:12px;color:#9ca3af;">
-            You're receiving this because you subscribed to Medical Opportunities Hub Uganda opportunity alerts.
+            You're receiving this because you subscribed to Rate My Musawo opportunity alerts.
           </p>
           <p style="margin:0 0 6px;font-size:12px;">
             <a href="${manageLink(sub)}"
@@ -753,7 +753,7 @@ function buildWelcomeEmail(sub) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Welcome to Medical Opportunities Hub Uganda</title>
+  <title>Welcome to Rate My Musawo</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f3f4f6;padding:20px 8px 32px;">
@@ -762,9 +762,9 @@ function buildWelcomeEmail(sub) {
 
         <!-- Header -->
         <tr><td style="background:#0f4c24;border-radius:12px 12px 0 0;padding:20px 24px;text-align:center;">
-          <img src="${SITE}/logo.png" alt="Medical Opportunities Hub Uganda" width="52" height="52"
+          <img src="${SITE}/logo.png" alt="Rate My Musawo" width="52" height="52"
             style="border-radius:8px;display:block;margin:0 auto 10px;">
-          <p style="margin:0;font-size:21px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Medical Opportunities Hub Uganda</p>
+          <p style="margin:0;font-size:21px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">Rate My Musawo</p>
           <p style="margin:3px 0 0;font-size:12px;color:#86efac;letter-spacing:0.2px;">Jobs, grants, scholarships, fellowships, conferences, & more for Uganda's health workers</p>
         </td></tr>
 
@@ -772,7 +772,7 @@ function buildWelcomeEmail(sub) {
         <tr><td style="background:#ffffff;padding:32px 24px 24px;">
           <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#111827;">You're in, ${name}! 🎉</p>
           <p style="margin:0 0 14px;font-size:15px;color:#374151;line-height:1.7;">
-            Welcome to Medical Opportunities Hub Uganda, Uganda's hub for health worker jobs, scholarships, grants, fellowships and conferences.
+            Welcome to Rate My Musawo, Uganda's hub for health worker jobs, scholarships, grants, fellowships and conferences.
           </p>
           <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.7;">
             ${intro}
@@ -815,7 +815,7 @@ function buildWelcomeEmail(sub) {
 </html>`;
 
   return {
-    subject: `Welcome to Medical Opportunities Hub Uganda, ${name}!`,
+    subject: `Welcome to Rate My Musawo, ${name}!`,
     html,
   };
 }
@@ -845,7 +845,7 @@ async function sendWelcomeEmails() {
 
     try {
       await sendWithRetry({
-        from: `"Medical Opportunities Hub Uganda" <${process.env.GMAIL_USER}>`,
+        from: `"Rate My Musawo" <${process.env.GMAIL_USER}>`,
         to: sub.email,
         subject,
         html,
@@ -879,7 +879,7 @@ function isExpired(post) {
 
 // ── Main ───────────────────────────────────────────────────────────────────
 async function main() {
-  console.log(`\nMedical Opportunities Hub Uganda Newsletter, ${DRY_RUN ? "DRY RUN" : "LIVE SEND"}`);
+  console.log(`\nRate My Musawo Newsletter, ${DRY_RUN ? "DRY RUN" : "LIVE SEND"}`);
 
   // Gate the real send: only applies to unattended full runs (not --dry,
   // not --to test sends, not --force). Cron fires this every 15 min around
@@ -973,7 +973,7 @@ async function main() {
 
     try {
       await sendWithRetry({
-        from: `"Medical Opportunities Hub Uganda" <${process.env.GMAIL_USER}>`,
+        from: `"Rate My Musawo" <${process.env.GMAIL_USER}>`,
         to: sub.email,
         subject,
         html,

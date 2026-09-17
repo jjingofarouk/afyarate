@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   description: `Verified ambulance and emergency patient transport services across Uganda, listed on ${SITE_NAME}. Every listing is reviewed before publishing.`,
   alternates: { canonical: "/ambulances" },
   openGraph: {
-    title: "Ambulance Services in Uganda · Medical Opportunities Hub Uganda",
+    title: "Ambulance Services in Uganda · Rate My Musawo",
     description: "Verified ambulance and emergency patient transport services across Uganda.",
     type: "website",
   },

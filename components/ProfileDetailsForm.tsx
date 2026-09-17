@@ -335,7 +335,7 @@ export function SupportLinks() {
       <div className="mt-3 flex flex-wrap gap-2">
         <a
           href={`https://wa.me/${process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "256751360385"}?text=${encodeURIComponent(
-            "Hi! I just claimed my MOHU profile and I need help setting it up."
+            "Hi! I just claimed my Rate My Musawo profile and I need help setting it up."
           )}`}
           target="_blank"
           rel="noopener noreferrer"

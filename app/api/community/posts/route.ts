@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// Publish a community post (goes live immediately, like legacy MOHU;
+// Publish a community post (goes live immediately, like the legacy platform;
 // admin can hide from the moderation queue).
 export async function POST(req: NextRequest) {
   if (!(await isDbReady())) {

@@ -7,7 +7,6 @@ import HomeJobs from "@/components/home/HomeJobs";
 import HomeRatings from "@/components/home/HomeRatings";
 import HomeRegistry from "@/components/home/HomeRegistry";
 import HomeFacilities from "@/components/home/HomeFacilities";
-import HomeNewsletter from "@/components/home/HomeNewsletter";
 import HomeEmergency from "@/components/home/HomeEmergency";
 import HomeHiring from "@/components/home/HomeHiring";
 import HomeGateways from "@/components/home/HomeGateways";
@@ -17,7 +16,6 @@ import HomeTrustPanel from "@/components/home/HomeTrustPanel";
 import HomeHeroSearch, { HeroSearchFallback } from "@/components/home/HomeHeroSearch";
 import {
   AmberFallback,
-  EmeraldFallback,
   JobsFallback,
   PlainFallback,
   SkyFallback,
@@ -34,7 +32,7 @@ export const metadata: Metadata = {
 
 const FAQS = [
   {
-    q: "Is Medical Opportunities Hub Uganda free to use?",
+    q: "Is Rate My Musawo free to use?",
     a: "Yes. Searching the registry, browsing jobs and opportunities, and reading facility and practitioner pages is completely free.",
   },
   {
@@ -172,10 +170,6 @@ export default async function HomePage({
       </Suspense>
       <Suspense fallback={<SkyFallback />}>
         <HomeFacilities />
-      </Suspense>
-
-      <Suspense fallback={<EmeraldFallback />}>
-        <HomeNewsletter />
       </Suspense>
 
       {/* Recruiter strip. */}

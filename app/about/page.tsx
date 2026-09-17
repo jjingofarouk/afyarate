@@ -3,16 +3,13 @@ import Link from "next/link";
 import { getPosts } from "@/lib/posts";
 import { getStats } from "@/lib/practitioners";
 import AvatarWithFallback from "@/components/AvatarWithFallback";
-import { SITE_URL } from "@/lib/site";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 // Project funding contact.
-const DEVELOPER_EMAIL = "jobsopportunityug@gmail.com";
+const DEVELOPER_EMAIL = "ratemusawo@gmail.com";
 
-// The team. Both are co-founders with equal standing, so the section below
-// renders from this one list in this one order instead of two hand-written
-// cards — that is what keeps them genuinely at parity. Ashraf's name leads.
-// Contact details are the ones already published by the platform.
-interface CoFounder {
+// The founder. Contact details are the ones already published by the platform.
+interface Founder {
   name: string;
   role: string;
   bio: string;
@@ -24,33 +21,24 @@ interface CoFounder {
   linkedin?: string;
 }
 
-const COFOUNDERS: CoFounder[] = [
-  {
-    name: "Dr. Kasagga Ashraf",
-    role: "Co-founder · Medical Doctor",
-    photo: "/ashraf.webp",
-    email: "jobsopportunityug@gmail.com",
-    phoneDisplay: "+256 791 884070",
-    phoneLink: "tel:+256791884070",
-    bio: "Ashraf built and ran the original Medical Opportunities Hub platform: the employer network, the jobseeker community and the health-worker outreach this site grew out of. He leads partnerships, employer relations and community growth, and keeps the listings and alerts reaching the right people.",
-  },
+const FOUNDERS: Founder[] = [
   {
     name: "Dr. Farouk Jjingo",
-    role: "Co-founder · Medical Doctor",
+    role: "Founder · Medical Doctor",
     photo: "/farouk.webp",
-    email: "jobsopportunityug@gmail.com",
+    email: "ratemusawo@gmail.com",
     phoneDisplay: "+256 751 360385",
     phoneLink: "tel:+256751360385",
     whatsappLink: "https://wa.me/256751360385",
     linkedin: "https://www.linkedin.com/in/farouk-jjingo-0341b01a5/",
-    bio: "Farouk builds and maintains the registry side: the verified licensing data, patient ratings, and the hospital and pharmacy directory. He started that work so any patient in Uganda can check who is treating them and so good clinicians get found, and keeps it running alongside his clinical work.",
+    bio: "Rate My Musawo is a small, growing project I built and still maintain myself, alongside my clinical work. I started it so that any patient in Uganda can check who is treating them, and so that good clinicians get found. And it works the other way too: health workers can find jobs, scholarships and grants to grow their careers, while claiming their profiles to attract patients. It is free for patients, and your support keeps it that way.",
   },
 ];
 
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Medical Opportunities Hub Uganda was built by two Ugandan doctors, Dr. Kasagga Ashraf and Dr. Farouk Jjingo. Verified practitioners, patient ratings, health jobs and facilities across Uganda.",
+    "Rate My Musawo was built by Dr. Farouk Jjingo, a Ugandan doctor. Verified practitioners, patient ratings, health jobs and facilities across Uganda.",
   alternates: { canonical: "/about" },
 };
 
@@ -58,15 +46,15 @@ export const metadata: Metadata = {
 // in the same order, with the same job titles.
 const personJsonLd = {
   "@context": "https://schema.org",
-  "@graph": COFOUNDERS.map((c) => ({
+  "@graph": FOUNDERS.map((c) => ({
     "@type": "Person",
     name: c.name,
-    jobTitle: "Co-founder, Medical Opportunities Hub Uganda",
+    jobTitle: `Founder, ${SITE_NAME}`,
     description: c.bio,
     image: `${SITE_URL}${c.photo}`,
     email: c.email,
     ...(c.linkedin ? { url: c.linkedin, sameAs: [c.linkedin] } : {}),
-    worksFor: { "@type": "Organization", name: "Medical Opportunities Hub Uganda", url: SITE_URL },
+    worksFor: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
   })),
 };
 
@@ -102,7 +90,7 @@ export default async function AboutPage() {
             About us
           </p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            About Medical Opportunities Hub Uganda
+            About {SITE_NAME}
           </h1>
         </div>
       </section>
@@ -114,7 +102,7 @@ export default async function AboutPage() {
         />
         <div className="space-y-5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
         <p>
-          <strong>Medical Opportunities Hub Uganda</strong> (MOHU) is the home
+          <strong>Rate My Musawo</strong> (Luganda for <em>health worker</em>) is the home
           for Uganda&apos;s health workers and the patients they serve.
           Patients can verify a practitioner&apos;s licence, read ratings from
           other patients, find hospitals, pharmacies and ambulance services.
@@ -173,7 +161,7 @@ export default async function AboutPage() {
 
         <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Who built this</h2>
         <div className="space-y-4">
-          {COFOUNDERS.map((c) => (
+          {FOUNDERS.map((c) => (
             <div
               key={c.name}
               className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
@@ -232,7 +220,7 @@ export default async function AboutPage() {
                 )}
                 <a
                   href={`mailto:${c.email}?subject=${encodeURIComponent(
-                    "About Medical Opportunities Hub Uganda",
+                    "About Rate My Musawo",
                   )}`}
                   className="contact-shake inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:border-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
                 >
@@ -247,16 +235,16 @@ export default async function AboutPage() {
         </div>
         <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
           For anything, from a wrong listing to a question about a claim, a partnership, or just
-          to tell us the site helped you, reach out on any channel above, or use our{" "}
+          to tell me that the site helped you, reach out on any channel above, or use our{" "}
           <Link href="/contact" className="text-emerald-700 underline dark:text-emerald-400">
             contact form
           </Link>
-          . We read everything ourselves.
+          . I read everything myself.
         </p>
 
         <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Support the project</h2>
         <p>
-          Medical Opportunities Hub Uganda is free for patients and has no ads. It is kept alive by
+          Rate My Musawo is free for patients and has no ads. It is kept alive by
           claimed-profile fees from practitioners, plus contributions from
           readers who chip in.
           If the site helped you verify a doctor, find a job, or reach a
@@ -269,7 +257,7 @@ export default async function AboutPage() {
         </p>
         <div className="flex flex-wrap gap-3">
           <a
-            href={`mailto:${DEVELOPER_EMAIL}?subject=${encodeURIComponent("Funding Medical Opportunities Hub Uganda")}`}
+            href={`mailto:${DEVELOPER_EMAIL}?subject=${encodeURIComponent("Funding Rate My Musawo")}`}
             className="cta-bob inline-flex items-center gap-2 rounded-xl bg-amber-400 px-6 py-3 text-sm font-extrabold text-emerald-950 shadow-lg transition hover:bg-amber-300"
           >
             <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2" aria-hidden>
@@ -288,7 +276,7 @@ export default async function AboutPage() {
         <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Disclaimer</h2>
         <p>
           Licensing information is shown exactly as published by the portal and may
-          lag the regulator&apos;s records. Medical Opportunities Hub Uganda is not affiliated with any
+          lag the regulator&apos;s records. Rate My Musawo is not affiliated with any
           council or regulator. Always verify directly with the relevant
           council or the official portal for matters that matter (e.g. emergencies,
           legal or credentialing purposes).
@@ -299,7 +287,7 @@ export default async function AboutPage() {
 
       {/* Sticky fund CTA: floats at the bottom while reading this page only. */}
       <a
-        href={`mailto:${DEVELOPER_EMAIL}?subject=${encodeURIComponent("Funding Medical Opportunities Hub Uganda")}`}
+        href={`mailto:${DEVELOPER_EMAIL}?subject=${encodeURIComponent("Funding Rate My Musawo")}`}
         className="fixed bottom-4 left-1/2 z-40 inline-flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-amber-400 px-6 py-3 text-sm font-extrabold text-emerald-950 shadow-2xl transition hover:bg-amber-300"
       >
         <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.4" aria-hidden>

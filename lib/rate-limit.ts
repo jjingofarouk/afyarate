@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 
-// Shared in-memory rate limiter for the MOHU-merge APIs. Same approach as the
+// Shared in-memory rate limiter for the merged-platform APIs. Same approach as the
 // ratings/posts routes (per-IP buckets); a persistent store is the follow-up.
 
 const buckets = new Map<string, number[]>();

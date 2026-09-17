@@ -17,7 +17,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { handle } = await params;
   return {
-    title: `@${handle} on MOHU`,
+    title: `@${handle} on Rate My Musawo`,
     alternates: { canonical: `/members/${handle}` },
   };
 }

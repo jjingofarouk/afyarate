@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
     amount: CLAIM_AMOUNT_UGX,
     phone,
     reference,
-    description: `MOHU verified facility (one-time) - ${facility.name}`,
+    description: `Rate My Musawo verified facility (one-time) - ${facility.name}`,
     metadata: [{ facilityClaimId: String(claim.id) }],
   });
 
