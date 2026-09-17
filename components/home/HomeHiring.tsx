@@ -17,7 +17,7 @@ export default function HomeHiring() {
     <section
       id="hiring"
       aria-label="Hiring health workers"
-      className="scroll-mt-20 border-y border-slate-800 bg-slate-950 dark:border-slate-700"
+      className="scroll-mt-20 border-y border-navy-800 bg-navy-950 dark:border-navy-800"
     >
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-4 py-12 text-center sm:py-16 lg:flex-row lg:gap-10 lg:text-left">
         <div className="min-w-0 flex-1">

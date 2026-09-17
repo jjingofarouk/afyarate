@@ -34,6 +34,8 @@ export const metadata: Metadata = {
     "Uganda medical council",
     "rate a doctor",
     "Musawo",
+    "MOHU",
+    "Medical Opportunities Hub Uganda",
   ],
   alternates: { canonical: "/" },
   openGraph: {
@@ -43,13 +45,13 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    images: [{ url: "/logo.png", width: 1254, height: 1254, alt: SITE_NAME }],
+    images: [{ url: "/brand/og.png", width: 1200, height: 630, alt: SITE_NAME }],
   },
   twitter: {
     card: "summary_large_image",
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    images: ["/logo.png"],
+    images: ["/brand/og.png"],
   },
   robots: { index: true, follow: true },
 };
@@ -113,18 +115,32 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
         <AuthProvider>
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
+        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-navy-900 dark:bg-navy-950/90">
           <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
-            <Link href="/" className="flex shrink-0 items-center gap-2">
+            <Link
+              href="/"
+              className="flex shrink-0 items-center gap-2"
+              aria-label={`${SITE_NAME} home`}
+            >
+              {/* Official MOHU logo mark (square master, transparent). The
+                  wordmark is live text so it stays crisp and searchable; the
+                  sub-line only appears once there is room for it. */}
               <Image
-                src="/logo.png"
-                alt={`${SITE_NAME} logo`}
-                width={36}
-                height={36}
+                src="/brand/mohu-mark.png"
+                alt=""
+                width={256}
+                height={256}
                 priority
-                className="rounded-full object-cover"
+                className="size-9 shrink-0 object-contain sm:size-10"
               />
-              <span className="hidden text-lg font-semibold tracking-tight sm:inline">{SITE_NAME}</span>
+              <span className="hidden flex-col justify-center leading-none sm:flex">
+                <span className="text-lg font-black tracking-tight text-navy-900 dark:text-white">
+                  MOHU
+                </span>
+                <span className="mt-0.5 hidden text-xs font-semibold uppercase tracking-[0.1em] text-slate-500 xl:block dark:text-slate-400">
+                  Medical Opportunities Hub Uganda
+                </span>
+              </span>
             </Link>
             <div className="min-w-0 flex-1">
               <HeaderSearch />

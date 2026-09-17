@@ -26,7 +26,7 @@ export default async function Footer() {
 
   return (
     <footer
-      className="relative mt-16 bg-[#04070d] text-slate-300"
+      className="relative mt-16 bg-navy-950 text-slate-300"
       style={{ colorScheme: "dark" }}
     >
       {/* Signature emerald glow line: the footer stays dark in every theme. */}
@@ -34,9 +34,11 @@ export default async function Footer() {
         aria-hidden
         className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-400/70 to-transparent"
       />
+      {/* Brand navy wash from the official palette, now that the shell is navy
+          rather than near-black. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(16,185,129,0.08),transparent)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(47,116,163,0.18),transparent)]"
       />
       {/* Job alerts band */}
       <div className="border-b border-white/10">
@@ -54,17 +56,16 @@ export default async function Footer() {
       <div className="mx-auto max-w-6xl px-4 py-12">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <div>
-            <Link href="/" className="flex items-center gap-2">
+            <Link href="/" className="inline-flex" aria-label={`${SITE_NAME} home`}>
+              {/* The white-outline lockup from the brand kit, made for dark
+                  surfaces like this one. */}
               <Image
-                src="/logo.png"
-                alt={`${SITE_NAME} logo`}
-                width={36}
-                height={36}
-                className="rounded-full object-cover"
+                src="/brand/mohu-logo-dark.webp"
+                alt={SITE_NAME}
+                width={1400}
+                height={420}
+                className="h-12 w-auto"
               />
-              <span className="text-lg font-semibold tracking-tight text-white">
-                {SITE_NAME}
-              </span>
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-slate-400">
               {SITE_DESCRIPTION}
@@ -340,7 +341,7 @@ export default async function Footer() {
             Reader support keeps the registry fresh.
           </p>
           <a
-            href="mailto:ratemusawo@gmail.com?subject=Funding%20Rate%20Musawo"
+            href="mailto:ratemusawo@gmail.com?subject=Funding%20Medical%20Opportunities%20Hub%20Uganda"
             className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-amber-400 px-5 py-2.5 text-sm font-extrabold text-emerald-950 transition hover:bg-amber-300"
           >
             Fund this project!
