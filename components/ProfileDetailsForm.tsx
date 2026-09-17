@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createBrowserClient } from "@/lib/supabase/client";
 import { formatFeeWithUsd } from "@/lib/currency";
+import { Check } from "lucide-react";
 
 const inputClass =
   "w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-emerald-900/40";
@@ -308,7 +309,13 @@ export default function ProfileDetailsForm({
         disabled={saving}
         className="mt-6 w-full rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {saving ? "Saving…" : saved ? "Saved ✓" : "Save my details"}
+        {saving ? "Saving…" : saved ? (
+          <>
+            Saved <Check className="inline size-4 align-[-0.125em]" aria-hidden />
+          </>
+        ) : (
+          "Save my details"
+        )}
       </button>
 
       <p className="mt-3 text-center text-xs text-slate-400 dark:text-slate-500">
@@ -328,7 +335,7 @@ export function SupportLinks() {
       <div className="mt-3 flex flex-wrap gap-2">
         <a
           href={`https://wa.me/${process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "256751360385"}?text=${encodeURIComponent(
-            "Hi! I just claimed my Musawo profile and I need help setting it up."
+            "Hi! I just claimed my MOHU profile and I need help setting it up."
           )}`}
           target="_blank"
           rel="noopener noreferrer"

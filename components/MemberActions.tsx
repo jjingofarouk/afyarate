@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ensureProfile, getDisplayName, getProfileId } from "@/lib/handle";
 import { useAuth } from "@/lib/auth-context";
+import { Check } from "lucide-react";
 
 // Follow + Message actions for a member profile. Visitors without an
 // identity get a one-line name prompt first (no full gate — the profile
@@ -77,7 +78,13 @@ export default function MemberActions({ targetProfileId }: { targetProfileId: st
         disabled={pending === "follow"}
         className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
       >
-        {following ? "Following ✓" : "Follow"}
+        {following ? (
+          <>
+            Following <Check className="size-4" aria-hidden />
+          </>
+        ) : (
+          "Follow"
+        )}
       </button>
       <button
         type="button"

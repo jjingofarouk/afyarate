@@ -309,7 +309,7 @@ export default function FacilityClaimFlow() {
       <div className="mx-auto mt-6 max-w-sm rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
         <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Need help?</p>
         <a
-          href={`https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent("Hi! We just claimed our facility on Musawo and need help.")}`}
+          href={`https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent("Hi! We just claimed our facility on MOHU and need help.")}`}
           target="_blank"
           rel="noopener noreferrer"
           className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700"

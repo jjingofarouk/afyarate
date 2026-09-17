@@ -280,7 +280,7 @@ export default function ClaimBanner() {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Claim your Musawo profile"
+        aria-label="Claim your MOHU profile"
         className="relative z-10 w-full animate-[claimBannerIn_0.4s_cubic-bezier(0.175,0.885,0.32,1.1)_both] overflow-hidden rounded-t-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900 sm:max-w-xl sm:rounded-3xl"
       >
         {/* Close button */}

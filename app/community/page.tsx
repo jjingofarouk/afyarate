@@ -6,6 +6,7 @@ import BroadcastsStrip from "@/components/BroadcastsStrip";
 import { useAuth } from "@/lib/auth-context";
 import { getDisplayName, getProfileId } from "@/lib/handle";
 import type { CommunityComment, CommunityPost } from "@/lib/types";
+import { Heart, MessageCircle } from "lucide-react";
 
 function timeAgo(iso: string): string {
   const ms = Date.now() - new Date(iso).getTime();
@@ -103,14 +104,14 @@ function PostCard({ post, onChanged, following, onToggleFollow }: { post: Commun
           onClick={() => void toggleLike()}
           className={`font-semibold ${post.likedByMe ? "text-emerald-600" : "text-slate-400 hover:text-emerald-600"}`}
         >
-          ♥ {post.likeCount}
+          <Heart className="inline size-4 align-[-0.125em]" aria-hidden /> {post.likeCount}
         </button>
         <button
           type="button"
           onClick={() => void (comments ? setComments(null) : loadComments())}
           className="font-semibold text-slate-400 hover:text-emerald-600"
         >
-          💬 {post.commentCount}
+          <MessageCircle className="inline size-4 align-[-0.125em]" aria-hidden /> {post.commentCount}
         </button>
       </div>
       {comments && (

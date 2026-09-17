@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { adminJson } from "@/lib/admin-client";
+import { Star } from "lucide-react";
 
 interface Provider {
   id: number;
@@ -95,7 +96,7 @@ export default function AmbulancesAdminPage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-                    {p.name} {p.featured && <span className="ml-1 text-amber-600">★ Featured</span>}
+                    {p.name} {p.featured && <span className="ml-1 text-amber-600"><Star className="inline size-4 align-[-0.125em]" aria-hidden /> Featured</span>}
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     {p.phone}

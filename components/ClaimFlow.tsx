@@ -453,7 +453,7 @@ export default function ClaimFlow() {
         </p>
         <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
           <a
-            href={`https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent("Hi! I just claimed my Musawo profile and I need help adding my details.")}`}
+            href={`https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent("Hi! I just claimed my MOHU profile and I need help adding my details.")}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-emerald-700"

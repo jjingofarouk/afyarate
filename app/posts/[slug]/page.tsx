@@ -13,6 +13,7 @@ import ListingReportButton from "@/components/ListingReportButton";
 import { POST_TYPE_LABELS, type Post, type PostType } from "@/lib/types";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { jobPostingSchema } from "@/lib/jobPosting";
+import { Star } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -524,7 +525,7 @@ export default async function PostDetailPage({
             )}
             {post.featured && (
               <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                ★ Featured
+                <Star className="inline size-4 align-[-0.125em]" aria-hidden /> Featured
               </span>
             )}
           </div>

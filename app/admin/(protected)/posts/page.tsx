@@ -7,6 +7,7 @@ import { adminJson } from "@/lib/admin-client";
 import { POST_TYPES, POST_TYPE_LABELS, type Post, type PostType } from "@/lib/types";
 import StatusBadge from "@/components/admin/StatusBadge";
 import PostActions from "@/components/admin/PostActions";
+import { Star } from "lucide-react";
 
 const STATUS_TABS = [
   { key: "", label: "All" },
@@ -195,7 +196,7 @@ function Manager() {
                   </td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{post.deadline ?? "-"}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
-                    {post.featured ? "⭐" : "-"}
+                    {post.featured ? <Star className="inline size-4 align-[-0.125em]" aria-hidden /> : "-"}
                   </td>
                   <td className="px-4 py-3">
                     {post.submitterEmail ? (

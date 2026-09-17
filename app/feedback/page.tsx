@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import HandleGate, { useHandle } from "@/components/HandleGate";
 import { getDisplayName, getProfileId } from "@/lib/handle";
 import type { PlatformFeedback } from "@/lib/types";
+import { Star, ThumbsUp, ThumbsDown } from "lucide-react";
 
 function Stars({ value, onPick }: { value: number; onPick: (n: number) => void }) {
   return (
@@ -16,7 +17,7 @@ function Stars({ value, onPick }: { value: number; onPick: (n: number) => void }
           aria-label={`${n} star${n > 1 ? "s" : ""}`}
           className={`text-2xl ${n <= value ? "text-amber-400" : "text-slate-300"}`}
         >
-          ★
+          <Star className="size-6" aria-hidden />
         </button>
       ))}
     </div>
@@ -95,15 +96,17 @@ function Board() {
         <div key={f.id} className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
           <p className="text-sm">
             <span className="font-semibold">{f.authorName}</span>{" "}
-            <span className="text-amber-500">{"★".repeat(f.rating)}</span>
+            <span className="text-amber-500">{Array.from({ length: f.rating }).map((_, i) => (
+              <Star key={i} className="inline size-4 align-[-0.125em] fill-amber-500 text-amber-500" aria-hidden />
+            ))}</span>
           </p>
           <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{f.feedbackText}</p>
           <div className="mt-2 flex gap-3 text-sm">
             <button type="button" onClick={() => void vote(f.id, 1)} className="text-slate-400 hover:text-emerald-600">
-              👍 Helpful ({f.helpful})
+              <ThumbsUp className="inline size-4 align-[-0.125em]" aria-hidden /> Helpful ({f.helpful})
             </button>
             <button type="button" onClick={() => void vote(f.id, -1)} className="text-slate-400 hover:text-red-600">
-              👎 ({f.notHelpful})
+              <ThumbsDown className="inline size-4 align-[-0.125em]" aria-hidden /> ({f.notHelpful})
             </button>
           </div>
         </div>

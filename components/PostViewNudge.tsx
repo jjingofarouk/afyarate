@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Newsletter from "@/components/Newsletter";
+import { Bell } from "lucide-react";
 
 const DISMISS_KEY = "rm-nudge-v1";
 
@@ -77,7 +78,9 @@ export default function PostViewNudge({
           style={{ animation: "fab-pop 0.35s ease-out both" }}
         >
           <div className="flex items-start gap-3 p-4">
-            <span className="text-2xl leading-none select-none" aria-hidden>🔔</span>
+            <span className="text-amber-600" aria-hidden>
+              <Bell className="size-6" />
+            </span>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                 More {typeLabel}s like this?

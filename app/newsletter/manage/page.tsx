@@ -2,6 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getProfessions, getLocations } from "@/lib/posts";
 import ManageNewsletterForm from "@/components/ManageNewsletterForm";
 import type { Metadata } from "next";
+import { Link2, Search } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -49,7 +50,7 @@ function InvalidLink() {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-slate-50 p-8 dark:bg-slate-950">
       <div className="max-w-sm text-center">
-        <p className="text-4xl">🔗</p>
+        <p className="text-4xl"><Link2 className="mx-auto size-9 text-slate-400" aria-hidden /></p>
         <h1 className="mt-4 text-xl font-bold text-slate-900 dark:text-slate-50">Invalid link</h1>
         <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
           This preferences link looks broken. Check your email for the correct link.
@@ -67,7 +68,7 @@ function NotFound() {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-slate-50 p-8 dark:bg-slate-950">
       <div className="max-w-sm text-center">
-        <p className="text-4xl">🔍</p>
+        <p className="text-4xl"><Search className="mx-auto size-9 text-slate-400" aria-hidden /></p>
         <h1 className="mt-4 text-xl font-bold text-slate-900 dark:text-slate-50">Link not recognised</h1>
         <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
           This preferences link has expired or is invalid. Check your latest email from Medical Opportunities Hub Uganda for a fresh link.

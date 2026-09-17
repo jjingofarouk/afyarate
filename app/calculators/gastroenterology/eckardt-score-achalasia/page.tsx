@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { TriangleAlert } from "lucide-react";
 import EckardtCalculator from "./EckardtCalculator";
 import {
   ECKARDT_SCORE_META,
@@ -281,7 +282,7 @@ export default function EckardtScoreAchalasiaPage() {
                 key={i}
                 className="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-900/40 dark:bg-red-950/20"
               >
-                <p className="text-sm font-semibold text-red-800 dark:text-red-300">⚠ {rf.flag}</p>
+                <p className="text-sm font-semibold text-red-800 dark:text-red-300"><TriangleAlert className="inline size-4 align-[-0.125em]" aria-hidden /> {rf.flag}</p>
                 <p className="mt-1 text-sm text-red-700 dark:text-red-400">{rf.action}</p>
               </div>
             ))}

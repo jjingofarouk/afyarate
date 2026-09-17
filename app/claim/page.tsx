@@ -6,7 +6,7 @@ import ContactForm from "@/components/ContactForm";
 export const metadata: Metadata = {
   title: "Claim your profile",
   description:
-    "Claim your health worker profile on Musawo: a verified licence badge, your contacts and workplace, visible to patients. One payment of UGX 5,000, valid forever.",
+    "Claim your health worker profile on MOHU: a verified licence badge, your contacts and workplace, visible to patients. One payment of UGX 5,000, valid forever.",
   alternates: { canonical: "/claim" },
 };
 

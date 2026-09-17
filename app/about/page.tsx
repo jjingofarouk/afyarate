@@ -114,8 +114,8 @@ export default async function AboutPage() {
         />
         <div className="space-y-5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
         <p>
-          <strong>Medical Opportunities Hub Uganda</strong> (Luganda for <em>health worker</em>) is the
-          home for Uganda&apos;s health workers and the patients they serve.
+          <strong>Medical Opportunities Hub Uganda</strong> (MOHU) is the home
+          for Uganda&apos;s health workers and the patients they serve.
           Patients can verify a practitioner&apos;s licence, read ratings from
           other patients, find hospitals, pharmacies and ambulance services.
           Health workers can claim their verified profile, get rated, find

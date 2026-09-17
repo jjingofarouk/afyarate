@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { OPPORTUNITY_TYPES } from "@/lib/newsletter";
+import { Hand } from "lucide-react";
 
 const INITIAL_SHOW = 8;
 
@@ -222,7 +223,7 @@ export default function ManageNewsletterForm({
 
         {isUnsubscribed ? (
           <div className="rounded-2xl bg-white p-8 text-center shadow-sm dark:bg-slate-900">
-            <p className="text-4xl">👋</p>
+            <p className="text-4xl"><Hand className="mx-auto size-9 text-amber-500" aria-hidden /></p>
             <h1 className="mt-4 text-xl font-bold text-slate-900 dark:text-slate-50">You're unsubscribed</h1>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               We've removed <strong>{subscriber.email}</strong> from our mailing list.

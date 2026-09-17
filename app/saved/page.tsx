@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import HandleGate, { useHandle } from "@/components/HandleGate";
 import { useAuth } from "@/lib/auth-context";
+import { slugify } from "@/lib/practitioner-url";
 import type { Post } from "@/lib/types";
 
 function Saved() {
@@ -116,8 +117,10 @@ function Searches() {
     const sp = new URLSearchParams();
     if (s.type) sp.set("type", s.type);
     if (s.q) sp.set("q", s.q);
-    if (s.profession) sp.set("profession", s.profession);
-    if (s.location) sp.set("location", s.location);
+    // Slugified because the listing filter splits its value on commas and
+    // compares slugs; a raw "Mbarara, Uganda" would never match.
+    if (s.profession) sp.set("profession", slugify(s.profession));
+    if (s.location) sp.set("location", slugify(s.location));
     const qs = sp.toString();
     return `/posts${qs ? `?${qs}` : ""}`;
   };

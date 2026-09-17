@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import HomeSection from "@/components/home/HomeSection";
-import HomeFeatured, { type HomeShuffleKey } from "@/components/home/HomeFeatured";
+import HomeFeatured from "@/components/home/HomeFeatured";
 import HomeJobs from "@/components/home/HomeJobs";
 import HomeRatings from "@/components/home/HomeRatings";
 import HomeRegistry from "@/components/home/HomeRegistry";
@@ -10,6 +10,10 @@ import HomeFacilities from "@/components/home/HomeFacilities";
 import HomeNewsletter from "@/components/home/HomeNewsletter";
 import HomeEmergency from "@/components/home/HomeEmergency";
 import HomeHiring from "@/components/home/HomeHiring";
+import HomeGateways from "@/components/home/HomeGateways";
+import HomeOpportunityTypes from "@/components/home/HomeOpportunityTypes";
+import HomeTrustPanel from "@/components/home/HomeTrustPanel";
+import HomeHeroSearch, { HeroSearchFallback } from "@/components/home/HomeHeroSearch";
 import {
   AmberFallback,
   EmeraldFallback,
@@ -52,67 +56,25 @@ const FAQS = [
 
 export const dynamic = "force-dynamic";
 
-const HOME_SHUFFLE_PERMUTATIONS: HomeShuffleKey[][] = [
-  ["jobs", "practitioners", "facilities"],
-  ["jobs", "facilities", "practitioners"],
-  ["practitioners", "jobs", "facilities"],
-  ["practitioners", "facilities", "jobs"],
-  ["facilities", "jobs", "practitioners"],
-  ["facilities", "practitioners", "jobs"],
-];
-
 /**
- * Daily-rotating homepage section order.
+ * Home page order — opportunities first, directories second.
  *
- * The featured verified (claimed/paid) banner always stays pinned directly
- * under the hero, this only shuffles the three discovery blocks below it
- * (jobs, practitioners, hospitals/pharmacies) so repeat visitors and
- * crawlers see a different layout each day.
+ * The page deliberately does NOT reorder itself between visits. It used to
+ * rotate the jobs/practitioner/facility blocks daily for crawler variety, but
+ * a fixed order is what lets the page tell one story: this is a place to find
+ * work and opportunities, and it also holds the registry patients need. The
+ * registry blocks sit below the opportunity blocks for that reason.
  *
- * Deliberately deterministic per UTC day (not Math.random() per request) so
- * the HTML is stable within a day for SEO, caching and CLS, yet rotates
- * across days. Day-of-year % 6 walks all permutations evenly.
+ * Every data-backed block streams behind its own Suspense boundary, so the
+ * hero paints from a single cheap render with zero database reads.
  */
-function getHomeSectionOrder(now = new Date()): HomeShuffleKey[] {
-  const start = Date.UTC(now.getUTCFullYear(), 0, 0);
-  const dayOfYear = Math.floor((now.getTime() - start) / 86400000);
-  return HOME_SHUFFLE_PERMUTATIONS[dayOfYear % HOME_SHUFFLE_PERMUTATIONS.length];
-}
-
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; layout?: string }>;
+  searchParams: Promise<{ q?: string }>;
 }) {
-  const { q, layout } = await searchParams;
+  const { q } = await searchParams;
 
-  // Daily-rotating visual order for the three discovery blocks below the
-  // pinned featured-verified banner (jobs, practitioners, hospitals). The
-  // paid spotlight never moves; only these three rotate, one permutation per
-  // UTC day (stable within a day for SEO/caching/CLS). `?layout=` overrides
-  // for previewing, e.g. ?layout=facilities,jobs,practitioners.
-  const sectionOrder: HomeShuffleKey[] = (() => {
-    if (layout) {
-      const keys = layout
-        .split(",")
-        .map((s) => s.trim().toLowerCase())
-        .filter(
-          (s): s is HomeShuffleKey =>
-            s === "jobs" || s === "practitioners" || s === "facilities",
-        );
-      const deduped = [...new Set(keys)];
-      if (deduped.length === 3) return deduped;
-    }
-    return getHomeSectionOrder();
-  })();
-  const orderOf = (key: HomeShuffleKey | "newsletter"): number =>
-    key === "newsletter" ? 10 : sectionOrder.indexOf(key);
-
-  // Every discovery block below fetches its own data and streams behind a
-  // Suspense boundary: the hero paints in the first flush (~one cheap render,
-  // zero DB reads) while the heavier registry/jobs/facility queries resolve
-  // behind it. Nothing below the hero can delay the first paint, so tapping
-  // home always feels instant.
   return (
     <>
       {/* Hero, full-bleed photo, edge to edge, with text overlaid */}
@@ -154,57 +116,67 @@ export default async function HomePage({
                 wordDelay={0.018}
               />
             </p>
-            <div className="mx-auto mt-8 flex max-w-md flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link
-                href="#listings"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition hover:bg-emerald-400 sm:w-auto"
-              >
-                Browse opportunities
-              </Link>
-              <Link
-                href="#practitioners"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20 sm:w-auto"
-              >
-                Search the registry
-              </Link>
-            </div>
+            <Suspense fallback={<HeroSearchFallback />}>
+              <HomeHeroSearch />
+            </Suspense>
           </div>
         </section>
       </FadeIn>
 
-      {/* Pinned paid spotlight + jump nav (streams; never blocks the hero) */}
+      {/* Four gateways into the site, over the brand artwork. */}
       <Suspense fallback={null}>
-        <HomeFeatured sectionOrder={sectionOrder} />
+        <HomeGateways />
       </Suspense>
 
-      {/* Emergency ambulance strip: fixed above the shuffle, never rotates. */}
+      {/* Opportunity-first: type tiles with live counts, then deadlines that
+          are about to pass. */}
+      <HomeSection
+        id="listings"
+        tone="slate"
+        eyebrow="Opportunities"
+        title="Explore opportunities by type"
+        description="Live counts across every board. Deadlines worth knowing about are flagged first."
+        action={{ href: "/posts", label: "Browse all listings" }}
+      >
+        <Suspense fallback={<JobsFallback />}>
+          <HomeOpportunityTypes />
+        </Suspense>
+      </HomeSection>
+
+      {/* Paid spotlight + the newest listings. */}
+      <Suspense fallback={null}>
+        <HomeFeatured />
+      </Suspense>
+      <Suspense fallback={<JobsFallback />}>
+        <HomeJobs />
+      </Suspense>
+
+      {/* Emergency ambulance strip. */}
       <HomeEmergency />
 
-      {/* Shuffled discovery blocks: visual order rotates daily (see
-          sectionOrder above). DOM order stays fixed for screen readers;
-          `order` controls what visitors see first. */}
-      <div className="flex flex-col">
-        <Suspense fallback={<JobsFallback />}>
-          <HomeJobs style={{ order: orderOf("jobs") }} />
-        </Suspense>
-        <Suspense fallback={<AmberFallback />}>
-          <HomeRatings style={{ order: orderOf("practitioners") }} />
-        </Suspense>
-        <Suspense fallback={<PlainFallback />}>
-          <HomeRegistry q={q} style={{ order: orderOf("practitioners") }} />
-        </Suspense>
-        <Suspense fallback={<SkyFallback />}>
-          <HomeFacilities style={{ order: orderOf("facilities") }} />
-        </Suspense>
-        <Suspense fallback={<EmeraldFallback />}>
-          <HomeNewsletter style={{ order: orderOf("newsletter") }} />
-        </Suspense>
-      </div>
+      {/* What we actually guarantee. */}
+      <HomeTrustPanel />
 
-      {/* Recruiter strip: fixed below discovery, never shuffles. */}
+      {/* The registry: valuable, but no longer the first thing a visitor meets.
+          Each block keeps its own structured data and streams on its own. */}
+      <Suspense fallback={<AmberFallback />}>
+        <HomeRatings />
+      </Suspense>
+      <Suspense fallback={<PlainFallback />}>
+        <HomeRegistry q={q} />
+      </Suspense>
+      <Suspense fallback={<SkyFallback />}>
+        <HomeFacilities />
+      </Suspense>
+
+      <Suspense fallback={<EmeraldFallback />}>
+        <HomeNewsletter />
+      </Suspense>
+
+      {/* Recruiter strip. */}
       <HomeHiring />
 
-      {/* Section 5, explore */}
+      {/* Explore */}
       <HomeSection
         id="explore"
         tone="slate"
@@ -294,7 +266,8 @@ export default async function HomePage({
         tone="white"
         title="Frequently asked questions"
         className="mx-auto w-full"
-      >        <div className="mx-auto max-w-3xl">
+      >
+        <div className="mx-auto max-w-3xl">
           <div className="space-y-3">
             {FAQS.map((f) => (
               <details

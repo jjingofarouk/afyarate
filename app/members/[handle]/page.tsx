@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import MemberActions from "@/components/MemberActions";
 import { SITE_URL } from "@/lib/site";
+import { BadgeCheck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { handle } = await params;
   return {
-    title: `@${handle} on Musawo`,
+    title: `@${handle} on MOHU`,
     alternates: { canonical: `/members/${handle}` },
   };
 }
@@ -70,7 +71,7 @@ export default async function MemberPage({ params }: { params: Promise<{ handle:
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
               {String(p.display_name ?? handle)}{" "}
-              {(p.verified as boolean) && <span title="Verified">✓</span>}
+              {(p.verified as boolean) && <BadgeCheck className="inline size-5 align-[-0.2em] text-emerald-600" aria-label="Verified" />}
             </h1>
             <p className="text-sm text-slate-500">
               @{String(p.handle)} · {String(p.role ?? "member")}

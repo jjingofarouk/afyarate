@@ -227,8 +227,8 @@ export async function searchPractitioners(
 }
 
 /** Top-rated practitioners for the home page: only those with at least one
- *  rating, ordered by number of ratings then average score (a single 5★ is
- *  less meaningful than a well-reviewed 4.5★). Dedicated query because the
+ *  rating, ordered by number of ratings then average score (a single 5-star is
+ *  less meaningful than a well-reviewed 4.5-star). Dedicated query because the
  *  search path deliberately puts profile photos first. */
 export async function getTopRatedPractitioners(limit = 8): Promise<Practitioner[]> {
   const supabase = createServerClient();

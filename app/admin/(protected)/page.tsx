@@ -6,6 +6,7 @@ import { adminJson } from "@/lib/admin-client";
 import { POST_TYPE_LABELS, type Post, type PostType } from "@/lib/types";
 import StatusBadge from "@/components/admin/StatusBadge";
 import PostActions from "@/components/admin/PostActions";
+import { PartyPopper } from "lucide-react";
 
 interface StatCard {
   label: string;
@@ -110,7 +111,7 @@ export default function AdminDashboardPage() {
         ) : queue.length === 0 ? (
           <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900">
             <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
-              All caught up 🎉
+              All caught up <PartyPopper className="inline size-4 align-[-0.125em]" aria-hidden />
             </p>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
               No listings waiting for review right now.

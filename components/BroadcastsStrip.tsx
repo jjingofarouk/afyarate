@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getProfileId } from "@/lib/handle";
 import { useAuth } from "@/lib/auth-context";
 import type { Broadcast } from "@/lib/types";
+import { Megaphone, X } from "lucide-react";
 
 // Active announcements strip (mirrors legacy mohu_broadcasts). Renders
 // nothing when there are no unread broadcasts.
@@ -44,7 +45,7 @@ export default function BroadcastsStrip() {
           key={b.id}
           className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/50 dark:bg-amber-950/20"
         >
-          <span aria-hidden className="text-lg">📢</span>
+          <Megaphone aria-hidden className="size-5 shrink-0 text-amber-700 dark:text-amber-400" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-bold text-amber-900 dark:text-amber-200">{b.title}</p>
             <p className="mt-0.5 whitespace-pre-wrap text-sm text-amber-800 dark:text-amber-300">{b.message}</p>
@@ -55,7 +56,7 @@ export default function BroadcastsStrip() {
             aria-label="Dismiss"
             className="shrink-0 rounded-lg px-2 py-1 text-sm text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/40"
           >
-            ✕
+            <X className="size-4" aria-hidden />
           </button>
         </div>
       ))}

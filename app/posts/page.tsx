@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getPosts, facetOptions } from "@/lib/posts";
+import { getPosts, facetOptions, type PostSort } from "@/lib/posts";
 import PostBoard from "@/components/PostBoard";
 import PostTypeTabs from "@/components/PostTypeTabs";
 import { FadeIn } from "@/components/motion/FadeIn";
@@ -29,11 +29,25 @@ export const metadata: Metadata = {
 export default async function PostsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string; tag?: string; q?: string }>;
+  searchParams: Promise<{
+    type?: string;
+    tag?: string;
+    q?: string;
+    profession?: string;
+    location?: string;
+    sort?: string;
+  }>;
 }) {
-  const { type, tag, q } = await searchParams;
-  if (!type && !tag && !q) redirect("/jobs");
-  const posts = await getPosts({ type, tag, q, sort: "newest" });
+  // profession/location are honoured here (getPosts already filters on them,
+  // comparing slugified values); without them the hero search's location
+  // select and saved searches were silently dropping those filters.
+  const { type, tag, q, profession, location, sort } = await searchParams;
+  const sortBy: PostSort =
+    sort === "closingSoon" || sort === "featured" || sort === "newest" ? sort : "newest";
+  if (!type && !tag && !q && !profession && !location && sortBy === "newest") {
+    redirect("/jobs");
+  }
+  const posts = await getPosts({ type, tag, q, profession, location, sort: sortBy });
 
   const jsonLd = {
     "@context": "https://schema.org",

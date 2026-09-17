@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import HandleGate, { useHandle } from "@/components/HandleGate";
 import { getDisplayName, getProfileId } from "@/lib/handle";
 import type { HealthUpdate } from "@/lib/types";
+import { Heart, MessageCircle } from "lucide-react";
 
 function Updates() {
   const { profileId, displayName } = useHandle();
@@ -104,14 +105,14 @@ function Updates() {
               onClick={() => void react(u.id, u.likedByMe ? "unlike" : "like")}
               className={`font-semibold ${u.likedByMe ? "text-emerald-600" : "text-slate-400 hover:text-emerald-600"}`}
             >
-              ♥ {u.likeCount}
+              <Heart className="inline size-4 align-[-0.125em]" aria-hidden /> {u.likeCount}
             </button>
             <button
               type="button"
               onClick={() => setCommentFor(commentFor === u.id ? null : u.id)}
               className="font-semibold text-slate-400 hover:text-emerald-600"
             >
-              💬 {u.commentCount}
+              <MessageCircle className="inline size-4 align-[-0.125em]" aria-hidden /> {u.commentCount}
             </button>
           </div>
           {commentFor === u.id && (

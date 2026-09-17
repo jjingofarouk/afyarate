@@ -7,6 +7,7 @@ import { createBrowserClient } from "@/lib/supabase/client";
 import { adminJson } from "@/lib/admin-client";
 import { POST_TYPES, POST_TYPE_LABELS, type Post } from "@/lib/types";
 import StatusBadge from "./StatusBadge";
+import { ArrowUpRight } from "lucide-react";
 
 const inputClass =
   "w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/40";
@@ -182,7 +183,7 @@ export default function PostForm({ post }: { post?: Post }) {
               target="_blank"
               className="text-xs font-semibold text-emerald-700 hover:underline dark:text-emerald-400"
             >
-              View public page ↗
+              View public page <ArrowUpRight className="inline size-4 align-[-0.125em]" aria-hidden />
             </Link>
           )}
         </div>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import HandleGate, { useHandle } from "@/components/HandleGate";
 import { useAuth } from "@/lib/auth-context";
+import { ArrowUpRight } from "lucide-react";
 
 interface OwnedListing {
   id: number;
@@ -204,7 +205,7 @@ function Pipeline() {
                         ))}
                         {a.cv_url && (
                           <a href={a.cv_url} target="_blank" rel="noopener noreferrer" className="rounded-lg px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:underline">
-                            CV link ↗
+                            CV link <ArrowUpRight className="inline size-4 align-[-0.125em]" aria-hidden />
                           </a>
                         )}
                         {a.document_id && (
@@ -213,7 +214,7 @@ function Pipeline() {
                             onClick={() => void openVaultDoc(a.document_id as number)}
                             className="rounded-lg px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:underline"
                           >
-                            Vault doc ↗
+                            Vault doc <ArrowUpRight className="inline size-4 align-[-0.125em]" aria-hidden />
                           </button>
                         )}
                       </div>

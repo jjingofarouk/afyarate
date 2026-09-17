@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ensureProfile, getDisplayName, getProfileId } from "@/lib/handle";
 import { useAuth } from "@/lib/auth-context";
+import { Star } from "lucide-react";
 
 // Save/unsave toggle for a listing. Creates a one-click handle on first use.
 export default function SaveButton({ postId }: { postId: number }) {
@@ -51,7 +52,15 @@ export default function SaveButton({ postId }: { postId: number }) {
           : "border-slate-300 text-slate-600 hover:border-emerald-600 hover:text-emerald-700 dark:border-slate-700 dark:text-slate-300"
       }`}
     >
-      {saved ? "★ Saved" : "☆ Save"}
+      {saved ? (
+        <>
+          <Star className="size-4 fill-current" aria-hidden /> Saved
+        </>
+      ) : (
+        <>
+          <Star className="size-4" aria-hidden /> Save
+        </>
+      )}
     </button>
   );
 }

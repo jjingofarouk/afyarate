@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import HandleGate, { useHandle } from "@/components/HandleGate";
 import { useAuth } from "@/lib/auth-context";
 import type { SeekerProfile } from "@/lib/types";
+import { Check } from "lucide-react";
 
 const input =
   "w-full rounded-xl border border-slate-300 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800";
@@ -76,7 +77,7 @@ function MyProfile() {
       <button type="button" onClick={() => void save()} className="mt-3 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">
         Save profile
       </button>
-      {saved && <span className="ml-3 text-sm text-emerald-600">Saved ✓</span>}
+      {saved && <span className="ml-3 text-sm text-emerald-600">Saved <Check className="inline size-4 align-[-0.125em]" aria-hidden /></span>}
     </div>
   );
 }
