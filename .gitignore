@@ -65,3 +65,7 @@ next-env.d.ts
 
 # newsletter cron state (machine-local, not shared)
 /.newsletter-last-sent
+
+# legacy PHP public_html dumps (large, duplicated, contain a full backup zip)
+/public_html/
+/supabase/public_html/
