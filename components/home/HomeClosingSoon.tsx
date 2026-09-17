@@ -48,21 +48,28 @@ export default function HomeClosingSoon({ posts }: { posts: Post[] }) {
       </div>
       <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {closing.map(({ post, days }) => (
-          <li key={post.id}>
+          // min-w-0 on the grid ITEM is what stops this overflowing: an auto
+          // grid track cannot shrink below its item's min-content, and the
+          // two-line card has a min-content wider than a phone screen.
+          <li key={post.id} className="min-w-0">
             <Link
               href={`/posts/${post.slug}`}
-              className="flex h-full items-start justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-amber-400 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+              // Stacked on phones (the deadline badge otherwise eats half the
+              // width), side by side from sm up.
+              className="flex h-full min-w-0 flex-col gap-2 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-amber-400 hover:shadow-md sm:flex-row sm:items-start sm:justify-between sm:gap-3 dark:border-slate-800 dark:bg-slate-900"
             >
               <span className="min-w-0">
-                <strong className="block text-sm font-bold text-slate-900 dark:text-slate-50">
+                {/* break-words, not truncate: a nowrap line makes the intrinsic
+                    min-content as wide as the whole string. */}
+                <strong className="block break-words text-sm font-bold text-slate-900 dark:text-slate-50">
                   {post.title}
                 </strong>
-                <small className="mt-0.5 block truncate text-sm text-slate-500 dark:text-slate-400">
+                <small className="mt-0.5 block break-words text-sm text-slate-500 dark:text-slate-400">
                   {post.organization}
                   {post.location ? ` · ${post.location}` : ""}
                 </small>
               </span>
-              <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-1 text-sm font-bold text-amber-900 dark:bg-amber-950/50 dark:text-amber-300">
+              <span className="shrink-0 self-start whitespace-nowrap rounded-full bg-amber-100 px-2.5 py-1 text-sm font-bold text-amber-900 dark:bg-amber-950/50 dark:text-amber-300">
                 {deadlineLabel(days)}
               </span>
             </Link>

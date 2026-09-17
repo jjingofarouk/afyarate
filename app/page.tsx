@@ -12,6 +12,7 @@ import HomeEmergency from "@/components/home/HomeEmergency";
 import HomeHiring from "@/components/home/HomeHiring";
 import HomeGateways from "@/components/home/HomeGateways";
 import HomeOpportunityTypes from "@/components/home/HomeOpportunityTypes";
+import HomeManageBand from "@/components/home/HomeManageBand";
 import HomeTrustPanel from "@/components/home/HomeTrustPanel";
 import HomeHeroSearch, { HeroSearchFallback } from "@/components/home/HomeHeroSearch";
 import {
@@ -142,6 +143,10 @@ export default async function HomePage({
           <HomeOpportunityTypes />
         </Suspense>
       </HomeSection>
+
+      {/* What the site does beyond listing adverts: applications end to end for
+          jobseekers, and the whole recruitment process for employers. */}
+      <HomeManageBand />
 
       {/* Paid spotlight + the newest listings. */}
       <Suspense fallback={null}>
