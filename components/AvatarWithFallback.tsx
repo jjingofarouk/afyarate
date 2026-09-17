@@ -27,7 +27,7 @@ export default function AvatarWithFallback({
       src={src}
       alt={alt}
       loading="lazy"
-      className="size-full object-cover object-top"
+      className="size-full object-cover object-center"
       onError={() => setFailed(true)}
     />
   );

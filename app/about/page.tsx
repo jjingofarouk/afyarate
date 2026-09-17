@@ -66,13 +66,33 @@ export default async function AboutPage() {
       ]
     : [];
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
-      />
-      <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">About Medical Opportunities Hub Uganda</h1>
-      <div className="mt-6 space-y-5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+    <>
+      {/* Full-bleed brand band using the founder's artwork. */}
+      <section className="relative flex min-h-[240px] items-end overflow-hidden sm:min-h-[300px] lg:min-h-[340px]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/about-hero.webp"
+          alt=""
+          aria-hidden
+          className="absolute inset-0 size-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/45 to-slate-950/20" />
+        <div className="relative z-10 mx-auto w-full max-w-3xl px-4 pb-8">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-emerald-300">
+            About us
+          </p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            About Medical Opportunities Hub Uganda
+          </h1>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-3xl px-4 py-12">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+        />
+        <div className="space-y-5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
         <p>
           <strong>Medical Opportunities Hub Uganda</strong> (Luganda for <em>health worker</em>) is the
           home for Uganda&apos;s health workers and the patients they serve.
@@ -222,8 +242,7 @@ export default async function AboutPage() {
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
             <div className="grid size-24 shrink-0 place-items-center overflow-hidden rounded-full bg-emerald-100 text-3xl font-black text-emerald-700 ring-4 ring-emerald-100 dark:bg-emerald-900/50 dark:text-emerald-300 dark:ring-emerald-900/50">
-              {/* Drop /ashraf.jpg into public/ to show his photo instead. */}
-              <AvatarWithFallback src="/ashraf.jpg" alt={COFOUNDER_NAME} letter={COFOUNDER_NAME.slice(0, 1)} />
+              <AvatarWithFallback src="/ashraf.webp" alt={COFOUNDER_NAME} letter={COFOUNDER_NAME.slice(0, 1)} />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-base font-bold text-slate-900 dark:text-slate-50">
@@ -293,6 +312,7 @@ export default async function AboutPage() {
         </svg>
         Fund this project!
       </a>
-    </div>
+      </div>
+    </>
   );
 }

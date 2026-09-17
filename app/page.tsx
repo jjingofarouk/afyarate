@@ -118,21 +118,36 @@ export default async function HomePage({
       {/* Hero, full-bleed photo, edge to edge, with text overlaid */}
       <FadeIn>
         <section className="relative flex min-h-[420px] items-center overflow-hidden sm:min-h-[480px] lg:min-h-[600px]">
+          {/* The founder's brand pair: the same Kampala-and-lake view at
+              sunrise (light mode) and dusk (dark mode), so the hero matches the
+              theme instead of fighting it. */}
           <MotionImg
-            src="/hero.jpg"
-            alt="Healthcare workers in a hospital corridor"
-            className="absolute inset-0 h-full w-full object-cover object-center"
+            src="/hero-uganda-day.webp"
+            alt="Kampala and Lake Victoria at sunrise"
+            className="absolute inset-0 h-full w-full object-cover object-center dark:hidden"
             loading="eager"
-            width={1200}
-            height={800}
+            width={1920}
+            height={768}
           />
-          <div className="absolute inset-0 bg-black/60" />
+          <MotionImg
+            src="/hero-uganda-night.webp"
+            alt=""
+            aria-hidden
+            className="absolute inset-0 hidden h-full w-full object-cover object-center dark:block"
+            loading="eager"
+            width={1920}
+            height={768}
+          />
+          {/* Scrim is heaviest in the upper half (the sunrise sky is bright)
+              and lighter over the darker water/wave area, so the photograph
+              still reads as itself while the copy stays legible. */}
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/35 to-slate-950/40 dark:from-slate-950/55 dark:via-slate-950/40 dark:to-slate-950/50" />
 
           <div className="relative z-10 w-full px-4 py-10 text-center sm:px-10 sm:py-16">
-            <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-5xl">
+            <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-white [text-shadow:0_2px_16px_rgba(2,6,23,0.65)] sm:text-5xl">
               <AnimatedWords text="Give and get better healthcare in Uganda." startDelay={0.15} />
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-base text-slate-200">
+            <p className="mx-auto mt-4 max-w-2xl text-base text-slate-100 [text-shadow:0_1px_10px_rgba(2,6,23,0.75)]">
               <AnimatedWords
                 text="Jobs, scholarships, grants, fellowships and conferences, matched to your role and region. Plus verified practitioners, hospitals and pharmacies across Uganda."
                 startDelay={0.6}
