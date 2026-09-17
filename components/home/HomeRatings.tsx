@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { getTopRatedPractitioners } from "@/lib/practitioners";
 import { practitionerUrl } from "@/lib/practitioner-url";
 import { SITE_URL } from "@/lib/site";
@@ -9,11 +10,13 @@ import { StarIcon } from "@/components/home/HomeIcons";
 import { StaggerGrid, StaggerItem } from "@/components/motion/StaggerGrid";
 
 /**
- * Top-rated health workers block (first half of the "practitioners" shuffle
- * slot). Self-fetching so it streams behind a Suspense boundary.
+ * Top-rated health workers block. Always a single row of three so the section
+ * keeps a fixed height on the home page; the rest of the leaderboard lives
+ * behind the "See more" button rather than by lengthening the page.
+ * Self-fetching so it streams behind a Suspense boundary.
  */
 export default async function HomeRatings({ style }: { style?: CSSProperties }) {
-  const topRated = await getTopRatedPractitioners(8).catch(() => []);
+  const topRated = await getTopRatedPractitioners(3).catch(() => []);
   return (
     <>
       <HomeSection
@@ -28,13 +31,22 @@ export default async function HomeRatings({ style }: { style?: CSSProperties }) 
       >
         {topRated.length > 0 ? (
           <>
-            <StaggerGrid className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {topRated.map((p, i) => (
-                <StaggerItem key={p.id} className={i % 2 === 0 ? "lg:mt-4" : ""}>
+            <StaggerGrid className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {topRated.map((p) => (
+                <StaggerItem key={p.id}>
                   <RatedPractitionerCard p={p} />
                 </StaggerItem>
               ))}
             </StaggerGrid>
+            <div className="mt-6 flex justify-center">
+              <Link
+                href="/practitioners"
+                className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600"
+              >
+                See more top-rated health workers
+                <ArrowRight className="size-4" aria-hidden />
+              </Link>
+            </div>
             <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-2xl border border-amber-200/70 bg-white/70 p-5 text-center sm:flex-row sm:text-left dark:border-amber-900/40 dark:bg-slate-900/60">
               <div>
                 <p className="text-base font-semibold text-slate-900 dark:text-slate-50">

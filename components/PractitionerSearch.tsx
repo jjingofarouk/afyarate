@@ -151,12 +151,15 @@ export default function PractitionerSearch({
               className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-base outline-none transition placeholder:text-base placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-emerald-500 dark:focus:ring-emerald-900/40"
             />
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          {/* Wraps from sm up: the council/profession selects size themselves to
+              their longest option, so a single unwrapped row is wider than a
+              tablet viewport and used to force the whole page sideways. */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <select
               value={filters.council}
               onChange={(e) => update({ council: e.target.value })}
               aria-label="Filter by council"
-              className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              className="max-w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             >
               <option value="">All councils</option>
               {data?.councils.map((c) => (
@@ -170,7 +173,7 @@ export default function PractitionerSearch({
                 value={filters.profession}
                 onChange={(e) => update({ profession: e.target.value })}
                 aria-label="Filter by profession"
-                className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                className="max-w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
               >
                 <option value="">All professions</option>
                 {data?.professions.map((p) => (
@@ -205,7 +208,7 @@ export default function PractitionerSearch({
               value={filters.sort}
               onChange={(e) => update({ sort: e.target.value as Filters["sort"] })}
               aria-label="Sort practitioners"
-              className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              className="max-w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             >
               <option value="random">Random mix</option>
               <option value="rating">Top rated</option>
